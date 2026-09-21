@@ -1,0 +1,358 @@
+{
+  "slots": [
+    "bazooka",
+    "homing_missile",
+    "mortar",
+    "homing_pigeon",
+    "sheep_launcher",
+    "grenade",
+    "cluster_bomb",
+    "banana_bomb",
+    "battle_axe",
+    "earthquake",
+    "shotgun",
+    "handgun",
+    "uzi",
+    "minigun",
+    "longbow",
+    "fire_punch",
+    "dragon_ball",
+    "kamikaze",
+    "suicide_bomber",
+    "prod",
+    "dynamite",
+    "mine",
+    "sheep",
+    "super_sheep",
+    "aqua_sheep",
+    "mole_bomb",
+    "air_strike",
+    "napalm_strike",
+    "mail_strike",
+    "mine_strike",
+    "mole_squadron",
+    "blow_torch",
+    "pneumatic_drill",
+    "girder",
+    "baseball_bat",
+    "girder_pack",
+    "ninja_rope",
+    "bungee",
+    "parachute",
+    "teleport",
+    "scales_of_justice",
+    "super_banana",
+    "holy_grenade",
+    "flame_thrower",
+    "salvation_army",
+    "mb_bomb",
+    "petrol_bomb",
+    "skunk",
+    "ming_vase",
+    "sheep_strike",
+    "carpet_bomb",
+    "mad_cow",
+    "old_woman",
+    "donkey",
+    "nuclear_test",
+    "armageddon",
+    "skip_go",
+    "surrender",
+    "select_worm",
+    "freeze",
+    "magic_bullet",
+    "jet_pack",
+    "low_gravity",
+    "fast_walk",
+    "laser_sight",
+    "invisibility",
+    "damage_x2",
+    "crate_spy",
+    "double_turn_time",
+    "crate_shower"
+  ],
+  "slot_icons": {
+    "bazooka": "bazooka",
+    "homing_missile": "hmissile",
+    "mortar": "mortar",
+    "homing_pigeon": "pigeon",
+    "sheep_launcher": "launch",
+    "grenade": "grenade",
+    "cluster_bomb": "cluster",
+    "banana_bomb": "banana",
+    "battle_axe": "axe",
+    "earthquake": "quake",
+    "shotgun": "shotgun",
+    "handgun": "handgun",
+    "uzi": "uzi",
+    "minigun": "minigun",
+    "longbow": "longbow",
+    "fire_punch": "firepnch",
+    "dragon_ball": "dragball",
+    "kamikaze": "kamikaze",
+    "suicide_bomber": "suicide",
+    "prod": "prod",
+    "dynamite": "dynamite",
+    "mine": "mine",
+    "sheep": "sheep",
+    "super_sheep": "sprsheep",
+    "aqua_sheep": "aqua",
+    "mole_bomb": "mole",
+    "air_strike": "airstrke",
+    "napalm_strike": "firestrk",
+    "mail_strike": "postal",
+    "mine_strike": "minestrk",
+    "mole_squadron": "molestrk",
+    "blow_torch": "blwtorch",
+    "pneumatic_drill": "drill",
+    "girder": "girder",
+    "baseball_bat": "baseball",
+    "girder_pack": "girders",
+    "ninja_rope": "rope",
+    "bungee": "bungee",
+    "parachute": "parachut",
+    "teleport": "teleport",
+    "scales_of_justice": "scales",
+    "super_banana": "sbanana",
+    "holy_grenade": "hgrenade",
+    "flame_thrower": "thrower",
+    "salvation_army": "tamborin",
+    "mb_bomb": "mbbomb",
+    "petrol_bomb": "petrolbm",
+    "skunk": "skunk",
+    "ming_vase": "mingvase",
+    "sheep_strike": "shpstrke",
+    "carpet_bomb": "carpet",
+    "mad_cow": "cow",
+    "old_woman": "oldwoman",
+    "donkey": "donkey",
+    "nuclear_test": "nuke",
+    "armageddon": "armagedn",
+    "skip_go": "skipgo",
+    "surrender": "surender",
+    "select_worm": "select",
+    "freeze": "freeze",
+    "magic_bullet": "bullet",
+    "jet_pack": "jetpack",
+    "low_gravity": "gravity",
+    "fast_walk": "speed",
+    "laser_sight": "laser",
+    "invisibility": "invisibl",
+    "damage_x2": "damagex2",
+    "crate_spy": "cratespy",
+    "double_turn_time": "clone",
+    "crate_shower": "canister"
+  },
+  "icons": [
+    {
+      "name": "bazooka"
+    },
+    {
+      "name": "hmissile"
+    },
+    {
+      "name": "mortar"
+    },
+    {
+      "name": "pigeon"
+    },
+    {
+      "name": "launch"
+    },
+    {
+      "name": "grenade"
+    },
+    {
+      "name": "cluster"
+    },
+    {
+      "name": "banana"
+    },
+    {
+      "name": "axe"
+    },
+    {
+      "name": "quake"
+    },
+    {
+      "name": "shotgun"
+    },
+    {
+      "name": "handgun"
+    },
+    {
+      "name": "uzi"
+    },
+    {
+      "name": "minigun"
+    },
+    {
+      "name": "longbow"
+    },
+    {
+      "name": "firepnch"
+    },
+    {
+      "name": "dragball"
+    },
+    {
+      "name": "kamikaze"
+    },
+    {
+      "name": "suicide"
+    },
+    {
+      "name": "prod"
+    },
+    {
+      "name": "dynamite"
+    },
+    {
+      "name": "mine"
+    },
+    {
+      "name": "sheep"
+    },
+    {
+      "name": "sprsheep"
+    },
+    {
+      "name": "aqua"
+    },
+    {
+      "name": "mole"
+    },
+    {
+      "name": "airstrke"
+    },
+    {
+      "name": "firestrk"
+    },
+    {
+      "name": "postal"
+    },
+    {
+      "name": "minestrk"
+    },
+    {
+      "name": "molestrk"
+    },
+    {
+      "name": "blwtorch"
+    },
+    {
+      "name": "drill"
+    },
+    {
+      "name": "girder"
+    },
+    {
+      "name": "baseball"
+    },
+    {
+      "name": "girders"
+    },
+    {
+      "name": "rope"
+    },
+    {
+      "name": "bungee"
+    },
+    {
+      "name": "parachut"
+    },
+    {
+      "name": "teleport"
+    },
+    {
+      "name": "scales"
+    },
+    {
+      "name": "sbanana"
+    },
+    {
+      "name": "hgrenade"
+    },
+    {
+      "name": "thrower"
+    },
+    {
+      "name": "tamborin"
+    },
+    {
+      "name": "mbbomb"
+    },
+    {
+      "name": "petrolbm"
+    },
+    {
+      "name": "skunk"
+    },
+    {
+      "name": "mingvase"
+    },
+    {
+      "name": "shpstrke"
+    },
+    {
+      "name": "carpet"
+    },
+    {
+      "name": "cow"
+    },
+    {
+      "name": "oldwoman"
+    },
+    {
+      "name": "donkey"
+    },
+    {
+      "name": "nuke"
+    },
+    {
+      "name": "armagedn"
+    },
+    {
+      "name": "skipgo"
+    },
+    {
+      "name": "surender"
+    },
+    {
+      "name": "select"
+    },
+    {
+      "name": "freeze"
+    },
+    {
+      "name": "bullet"
+    },
+    {
+      "name": "jetpack"
+    },
+    {
+      "name": "gravity"
+    },
+    {
+      "name": "speed"
+    },
+    {
+      "name": "laser"
+    },
+    {
+      "name": "invisibl"
+    },
+    {
+      "name": "damagex2"
+    },
+    {
+      "name": "cratespy"
+    },
+    {
+      "name": "clone"
+    },
+    {
+      "name": "canister"
+    }
+  ]
+}

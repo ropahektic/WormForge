@@ -1,0 +1,158 @@
+[
+  {
+    "id": "power_missile",
+    "fire": "power",
+    "body": "missile",
+    "copy_from": "bazooka",
+    "fire_type": 1,
+    "fire_method": 3,
+    "sprites": {
+      "body": "missile"
+    },
+    "notes": "Aim, hold space to power, release. Explodes on contact."
+  },
+  {
+    "id": "power_grenade",
+    "fire": "power",
+    "body": "grenade",
+    "copy_from": "grenade",
+    "fire_type": 1,
+    "fire_method": 3,
+    "sprites": {
+      "body": "grenade"
+    },
+    "notes": "Same throw path as bazooka; fuse + bounce."
+  },
+  {
+    "id": "power_homing",
+    "fire": "power",
+    "body": "homing",
+    "copy_from": "homing_missile",
+    "fire_type": 1,
+    "fire_method": 3,
+    "sprites": {
+      "body": "hmissil1",
+      "alt": "hmissil2"
+    },
+    "notes": "Click target, then space-power. Does not steer around terrain."
+  },
+  {
+    "id": "power_pigeon",
+    "fire": "power",
+    "body": "homing",
+    "copy_from": "homing_pigeon",
+    "fire_type": 1,
+    "fire_method": 3,
+    "sprites": {
+      "body": "pigeonr0",
+      "turn": [
+        "pigeonr1",
+        "pigeonr2",
+        "pigeonr3"
+      ]
+    },
+    "notes": "Homing that tries to avoid dirt. Magic bullet (sprite bullet) dodges better."
+  },
+  {
+    "id": "power_cluster",
+    "fire": "power",
+    "body": "cluster",
+    "copy_from": "cluster_bomb",
+    "fire_type": 1,
+    "fire_method": 3,
+    "sprites": {
+      "body": "cluster",
+      "bit": "clustlet"
+    },
+    "notes": "Bit sprite is WeaponFireParams.cluster_params[6] (entry+0x124)."
+  },
+  {
+    "id": "hitscan_uzi",
+    "fire": "hitscan",
+    "body": "hitscan",
+    "copy_from": "uzi",
+    "fire_type": 1,
+    "fire_method": 2,
+    "sprites": {
+      "impact": "uzihit",
+      "case": "uzicase"
+    },
+    "notes": "Table sprite_id is 0. Lua bullets: land.trace + hurt."
+  },
+  {
+    "id": "hitscan_shotgun",
+    "fire": "hitscan",
+    "body": "hitscan",
+    "copy_from": "shotgun",
+    "fire_type": 1,
+    "fire_method": 2,
+    "sprites": {
+      "impact": "shothit",
+      "case": "shotcase"
+    },
+    "notes": "Same ProjectileFire path as uzi/minigun/handgun."
+  },
+  {
+    "id": "drop_mine",
+    "fire": "drop",
+    "body": "placed",
+    "copy_from": "mine",
+    "fire_type": 2,
+    "fire_method": 1,
+    "sprites": {
+      "armed": "mineon",
+      "idle": "mineoff"
+    },
+    "notes": "Lua on_fire needs fire_method 2 so CreateWeaponProjectile wrap owns the body."
+  },
+  {
+    "id": "drop_dynamite",
+    "fire": "drop",
+    "body": "placed",
+    "copy_from": "dynamite",
+    "fire_type": 2,
+    "fire_method": 2,
+    "sprites": {
+      "body": "dynamite"
+    },
+    "notes": "Placed MissileEntity with fuse. Sheep/cow/skunk share this fire path."
+  },
+  {
+    "id": "drop_sheep",
+    "fire": "drop",
+    "body": "placed",
+    "copy_from": "sheep",
+    "fire_type": 2,
+    "fire_method": 2,
+    "sprites": {
+      "walk": "sheepwlk",
+      "fall": "sheepfal"
+    },
+    "notes": "Self-driven animal at worm feet."
+  },
+  {
+    "id": "cursor_strike",
+    "fire": "cursor",
+    "body": "strike",
+    "copy_from": "air_strike",
+    "fire_type": 3,
+    "fire_method": 0,
+    "sprites": {
+      "bomb": "airmisl",
+      "plane": "airjetb"
+    },
+    "notes": "Click map; plane drops munitions."
+  },
+  {
+    "id": "cursor_teleport",
+    "fire": "cursor",
+    "body": "strike",
+    "copy_from": "teleport",
+    "fire_type": 4,
+    "fire_method": 0,
+    "sprites": {
+      "cursor": "cursorr"
+    },
+    "notes": "Special subtype 10, not Strike."
+  }
+]

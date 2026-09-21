@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>wkLua — weapon editor</title>
+  <style>
+    :root {
+      --bg: #12110f;
+      --panel: #1c1a16;
+      --ink: #f3ead4;
+      --muted: #b7ad96;
+      --line: #3a352c;
+      --accent: #e6c15a;
+      --pick: #2a261c;
+      --tab: #2b261c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font: 15px/1.45 "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+    }
+    .app { max-width: 1280px; margin: 0 auto; padding: 20px 16px 56px; }
+    .bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin: 0 0 18px;
+    }
+    .bar a, button.ghost {
+      display: inline-block;
+      background: var(--tab);
+      color: var(--ink);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 8px 12px;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .bar a.primary, button.primary { background: var(--accent); color: #1a1508; border: 0; }
+    button.ghost { font: inherit; cursor: pointer; }
+    h1 { margin: 0 0 4px; font-size: 26px; }
+    p.lead { margin: 0 0 18px; color: var(--muted); }
+    .work {
+      display: grid;
+      grid-template-columns: 200px 1fr 320px;
+      gap: 16px;
+      align-items: start;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+    label.field {
+      display: block;
+      font-size: 11px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 10px 0 5px;
+    }
+    input, select {
+      width: 100%;
+      background: #0e0d0b;
+      color: var(--ink);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 7px 9px;
+      font: inherit;
+    }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .note { color: var(--muted); font-size: 13px; margin: 8px 0 0; }
+    .err { color: #ff8d7a; min-height: 1.2em; }
+    button.primary {
+      margin-top: 14px;
+      background: var(--accent);
+      color: #1a1508;
+      border: 0;
+      border-radius: 6px;
+      padding: 10px 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+        .tree-btn, .tab, .fire, .check, .catalog button, .cat-mode button {
+      cursor: pointer;
+    }
+    .tree h2, .sprites h2, .editor h2 {
+      margin: 0 0 10px;
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .tree-btn {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      color: var(--ink);
+      border: 0;
+      border-radius: 6px;
+      padding: 7px 8px;
+      margin: 0 0 4px;
+    }
+    .tree-btn.child { padding-left: 18px; }
+    .tree-btn.grand { padding-left: 30px; }
+    .tree-btn.active { background: #3d3420; color: var(--accent); }
+    .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+    .tab {
+      background: var(--tab);
+      color: var(--ink);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 11px;
+      font-size: 13px;
+    }
+    .tab.active { background: var(--accent); color: #1a1508; border-color: var(--accent); }
+    .fires { display: flex; flex-wrap: wrap; gap: 6px; }
+    .fire {
+      background: #0e0d0b;
+      color: var(--ink);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 8px 10px;
+    }
+    .fire.active { border-color: var(--accent); color: var(--accent); }
+    .mods { display: grid; gap: 8px; margin-top: 12px; }
+    .check {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      background: #0e0d0b;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px 10px;
+    }
+    .check input { width: auto; margin-top: 3px; }
+    .check b { display: block; }
+    .check span { color: var(--muted); font-size: 13px; }
+    .count { float: right; color: var(--muted); font-size: 12px; }
+    .cat-mode { display: flex; gap: 6px; margin: 8px 0; }
+    .cat-mode button {
+      flex: 1;
+      background: var(--tab);
+      color: var(--ink);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 6px 6px;
+      font-size: 12px;
+    }
+    .cat-mode button.active { background: var(--accent); color: #1a1508; border-color: var(--accent); }
+    .catalog {
+      position: relative;
+      height: 360px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #0e0d0b;
+    }
+    .cat-spacer { position: relative; }
+    .catalog > .cat-spacer > button {
+      position: absolute;
+      left: 0;
+      right: 0;
+      display: grid;
+      grid-template-columns: 40px 1fr auto;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+      background: transparent;
+      color: var(--ink);
+      text-align: left;
+      border: 0;
+      border-bottom: 1px solid #242017;
+      padding: 4px 8px;
+    }
+    .catalog button:hover { background: var(--pick); }
+    .catalog button.selected { background: #3d3420; color: var(--accent); }
+    .thumb {
+      display: block;
+      overflow: hidden;
+      background:
+        linear-gradient(45deg, #2a261c 25%, transparent 25%) 0 0 / 8px 8px,
+        linear-gradient(45deg, #0e0d0b 25%, #2a261c 0) 4px 4px / 8px 8px;
+    }
+    .thumb img, .stage-clip img {
+      display: block;
+      image-rendering: pixelated;
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+    }
+    .icon-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+      gap: 4px;
+      padding: 6px;
+    }
+    .icon-grid button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      margin: 0;
+      background: transparent;
+      color: var(--ink);
+      border: 1px solid transparent;
+      border-radius: 6px;
+      padding: 6px 4px;
+      font-size: 11px;
+    }
+    .icon-grid button.selected { border-color: var(--accent); background: #3d3420; color: var(--accent); }
+    .icon-grid img {
+      width: 48px;
+      height: 48px;
+      object-fit: contain;
+      image-rendering: pixelated;
+    }
+    .panel-icon {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .panel-icon img {
+      width: 48px;
+      height: 48px;
+      object-fit: contain;
+      image-rendering: pixelated;
+      background: #0e0d0b;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+    .stage {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 160px;
+      margin: 8px 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background:
+        linear-gradient(45deg, #2a261c 25%, transparent 25%) 0 0 / 16px 16px,
+        linear-gradient(45deg, #0e0d0b 25%, #2a261c 0) 8px 8px / 16px 16px;
+    }
+    .stage-clip { overflow: hidden; }
+    .selected-name { margin: 6px 0 0; font-weight: 700; }
+    .lua { margin-top: 16px; }
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      font: 12px/1.4 Consolas, monospace;
+      color: #e8dcb8;
+    }
+    @media (max-width: 980px) {
+      .work { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>wkLua</h1>
+    <p class="lead">Weapon editor for Worms Armageddon 3.8.1. Drop the DLL next to WA.exe, copy example packs into Mods/, or build your own below.</p>
+    <div class="bar">
+      <a class="primary" href="downloads/wkLua.dll">Download wkLua.dll</a>
+      <a href="downloads/mods.zip">Example Mods</a>
+      <a href="https://github.com/ropahektic/wkLua">GitHub</a>
+    </div>
+    <p class="lead">Build stamp <code>20260922-cmphys</code>. Needs WormKit. Stock sprite names only — this site does not host Gfx.dir art. Add your own GIF/PNG for pack sprites.</p>
+
+    <h1>Weapon creator</h1>
+
+    <div class="work">
+      <nav class="panel tree">
+        <h2>Tree</h2>
+        <div id="tree"></div>
+      </nav>
+
+      <section class="panel editor">
+        <div class="tabs" id="tabs"></div>
+        <div id="panel"></div>
+        <p class="err" id="error"></p>
+        <button class="primary" id="download" type="button">Download Mods pack</button>
+      </section>
+
+      <aside class="panel sprites">
+        <h2>Sprite <span class="count" id="sprite-count"></span></h2>
+        <div class="cat-mode">
+          <button type="button" id="mode-stock" class="active" data-catmode="stock">Stock GFX.dir</button>
+          <button type="button" id="mode-px" data-catmode="px">Your GIFs</button>
+          <button type="button" id="mode-icon" data-catmode="icon">Panel icon</button>
+        </div>
+        <button type="button" class="ghost" id="add-gifs" style="margin:8px 0 0">Add GIF/PNG</button>
+        <input id="gif-files" type="file" accept=".gif,.png,image/gif,image/png" multiple hidden />
+        <input id="filter" placeholder="filter extracted sprites…" />
+        <p class="selected-name" id="picked">none</p>
+        <div class="stage"><div class="stage-clip" id="stage-clip"><img id="sprite-img" alt="" /></div></div>
+        <div class="catalog" id="catalog"></div>
+      </aside>
+    </div>
+
+    <section class="panel lua">
+      <h2>weapons.lua</h2>
+      <pre id="preview"></pre>
+    </section>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="app.js?v=web1"></script>
+</body>
+</html>
