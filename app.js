@@ -148,7 +148,10 @@
   const packFiles = new Map();
 
   function spriteThumb(s) {
-    return s.preview || "";
+    if (s.preview) return s.preview;
+    if (s.file) return "px/" + encodeURIComponent(s.file);
+    if (s.name) return "stock/" + encodeURIComponent(s.name) + ".png";
+    return "";
   }
 
   function spriteSource() {
@@ -553,9 +556,10 @@
       $("picked").textContent = icon ? `panel icon ${icon}` : "none";
       const img = $("sprite-img");
       stopStage();
-      img.onload = () => layoutStage({ fw: 48, fh: 48, frames: 1, fps: 10 });
-      img.removeAttribute("src");
-      img.style.display = "none";
+      const next = icon && catalog.icons.find((s) => s.name === icon);
+      img.onload = () => layoutStage({ fw: (next && next.fw) || 48, fh: (next && next.fh) || 48, frames: 1, fps: 10 });
+      img.style.display = next && next.preview ? "block" : "none";
+      img.src = next && next.preview ? next.preview : "";
       return;
     }
     const sprite = catalogSelected();
@@ -568,21 +572,15 @@
     if (sprite) {
       img.style.display = "block";
       img.onload = () => {
-        if (px || info && info.preview) {
-          layoutStage({
-            fw: img.naturalWidth || 32,
-            fh: img.naturalHeight || 32,
-            frames: 1,
-            fps: 10,
-          });
-          stopStage();
-          return;
-        }
-        layoutStage(info || { fw: img.naturalWidth || 32, fh: img.naturalHeight || 32, frames: 1, fps: 10 });
+        layoutStage({
+          fw: img.naturalWidth || (info && info.fw) || 32,
+          fh: img.naturalHeight || (info && info.fh) || 32,
+          frames: 1,
+          fps: 10,
+        });
         stopStage();
-        stageRaf = requestAnimationFrame(tickStage);
       };
-      const next = (info && info.preview) || "";
+      const next = info ? spriteThumb(info) : (px ? "px/" + encodeURIComponent(pxFile(sprite)) : "stock/" + encodeURIComponent(sprite) + ".png");
       if (!next) {
         stopStage();
         img.removeAttribute("src");
@@ -605,7 +603,7 @@
     const hits = (catalog.icons || []).filter((s) => !q || s.name.includes(q));
     $("sprite-count").textContent = q ? `${hits.length} / ${catalog.icons.length}` : `${catalog.icons.length} icons`;
     $("catalog").innerHTML = `<div class="icon-grid">${hits.map((s) =>
-      `<button type="button" data-icon="${s.name}" class="${s.name === state.panel_icon ? "selected" : ""}"><span>${s.name}</span></button>`
+      `<button type="button" data-icon="${s.name}" class="${s.name === state.panel_icon ? "selected" : ""}">${s.preview ? `<img src="${s.preview}" alt="" draggable="false" />` : ""}<span>${s.name}</span></button>`
     ).join("")}</div>`;
     showPicked();
   }
@@ -644,8 +642,8 @@
     $("filter").placeholder = catalogMode === "icon"
       ? "filter panel icons…"
         : catalogMode === "px"
-        ? "filter your gifs…"
-        : "filter stock sprite names…";
+        ? "filter PX gifs…"
+        : "filter stock sprites…";
     $("catalog").dataset.win = "";
     if (catalogMode === "icon") {
       paintIcons();
@@ -802,6 +800,10 @@
     }
   });
 
+  document.addEventListener("contextmenu", (ev) => {
+    if (ev.target.closest(".catalog, .stage, .icon-grid")) ev.preventDefault();
+  });
+
   $("catalog").addEventListener("click", (ev) => {
     const icon = ev.target.closest("button[data-icon]");
     if (icon) {
@@ -877,6 +879,17 @@
         zip.file(`${folder}/${path}`, file);
       }
     }
+    const needed = new Set();
+    for (const match of lua.matchAll(/sprites\/([A-Za-z0-9._-]+\.gif)/gi)) {
+      needed.add(match[1]);
+    }
+    for (const name of needed) {
+      const path = `sprites/${name}`;
+      if (packFiles.has(path)) continue;
+      const res = await fetch("px/" + encodeURIComponent(name));
+      if (!res.ok) continue;
+      zip.file(`${folder}/${path}`, await res.blob());
+    }
     const blob = await zip.generateAsync({ type: "blob" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -910,13 +923,14 @@
   });
 
   (async () => {
-    const [sprites, meta] = await Promise.all([
+    const [sprites, meta, px] = await Promise.all([
       fetch("data/stock_sprites.json").then((r) => r.json()),
       fetch("data/catalog.json").then((r) => r.json()),
+      fetch("data/px_sprites.json").then((r) => r.json()),
     ]);
     catalog = {
-      sprites: sprites.map((s) => ({ ...s, fw: 32, fh: 32, frames: 1 })),
-      px_sprites: [],
+      sprites,
+      px_sprites: px,
       slots: meta.slots || [],
       icons: meta.icons || [],
       slot_icons: meta.slot_icons || {},

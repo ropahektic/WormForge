@@ -145,214 +145,82 @@
   },
   "icons": [
     {
-      "name": "bazooka"
+      "name": "mortar",
+      "fw": 60,
+      "fh": 60,
+      "preview": "stock/hi/mortar.png"
     },
     {
-      "name": "hmissile"
+      "name": "grenade",
+      "fw": 60,
+      "fh": 60,
+      "preview": "stock/hi/grenade.png"
     },
     {
-      "name": "mortar"
+      "name": "cluster",
+      "fw": 60,
+      "fh": 60,
+      "preview": "stock/hi/cluster.png"
     },
     {
-      "name": "pigeon"
+      "name": "banana",
+      "fw": 60,
+      "fh": 60,
+      "preview": "stock/hi/banana.png"
     },
     {
-      "name": "launch"
+      "name": "dynamite",
+      "fw": 60,
+      "fh": 60,
+      "preview": "stock/hi/dynamite.png"
     },
     {
-      "name": "grenade"
+      "name": "drill",
+      "fw": 60,
+      "fh": 60,
+      "preview": "stock/hi/drill.png"
     },
     {
-      "name": "cluster"
+      "name": "sbanana",
+      "fw": 30,
+      "fh": 30,
+      "preview": "stock/hi/sbanana.png"
     },
     {
-      "name": "banana"
+      "name": "hgrenade",
+      "fw": 60,
+      "fh": 60,
+      "preview": "stock/hi/hgrenade.png"
     },
     {
-      "name": "axe"
+      "name": "tamborin",
+      "fw": 60,
+      "fh": 60,
+      "preview": "stock/hi/tamborin.png"
     },
     {
-      "name": "quake"
+      "name": "mbbomb",
+      "fw": 100,
+      "fh": 100,
+      "preview": "stock/hi/mbbomb.png"
     },
     {
-      "name": "shotgun"
+      "name": "petrolbm",
+      "fw": 60,
+      "fh": 60,
+      "preview": "stock/hi/petrolbm.png"
     },
     {
-      "name": "handgun"
+      "name": "donkey",
+      "fw": 158,
+      "fh": 246,
+      "preview": "stock/hi/donkey.png"
     },
     {
-      "name": "uzi"
-    },
-    {
-      "name": "minigun"
-    },
-    {
-      "name": "longbow"
-    },
-    {
-      "name": "firepnch"
-    },
-    {
-      "name": "dragball"
-    },
-    {
-      "name": "kamikaze"
-    },
-    {
-      "name": "suicide"
-    },
-    {
-      "name": "prod"
-    },
-    {
-      "name": "dynamite"
-    },
-    {
-      "name": "mine"
-    },
-    {
-      "name": "sheep"
-    },
-    {
-      "name": "sprsheep"
-    },
-    {
-      "name": "aqua"
-    },
-    {
-      "name": "mole"
-    },
-    {
-      "name": "airstrke"
-    },
-    {
-      "name": "firestrk"
-    },
-    {
-      "name": "postal"
-    },
-    {
-      "name": "minestrk"
-    },
-    {
-      "name": "molestrk"
-    },
-    {
-      "name": "blwtorch"
-    },
-    {
-      "name": "drill"
-    },
-    {
-      "name": "girder"
-    },
-    {
-      "name": "baseball"
-    },
-    {
-      "name": "girders"
-    },
-    {
-      "name": "rope"
-    },
-    {
-      "name": "bungee"
-    },
-    {
-      "name": "parachut"
-    },
-    {
-      "name": "teleport"
-    },
-    {
-      "name": "scales"
-    },
-    {
-      "name": "sbanana"
-    },
-    {
-      "name": "hgrenade"
-    },
-    {
-      "name": "thrower"
-    },
-    {
-      "name": "tamborin"
-    },
-    {
-      "name": "mbbomb"
-    },
-    {
-      "name": "petrolbm"
-    },
-    {
-      "name": "skunk"
-    },
-    {
-      "name": "mingvase"
-    },
-    {
-      "name": "shpstrke"
-    },
-    {
-      "name": "carpet"
-    },
-    {
-      "name": "cow"
-    },
-    {
-      "name": "oldwoman"
-    },
-    {
-      "name": "donkey"
-    },
-    {
-      "name": "nuke"
-    },
-    {
-      "name": "armagedn"
-    },
-    {
-      "name": "skipgo"
-    },
-    {
-      "name": "surender"
-    },
-    {
-      "name": "select"
-    },
-    {
-      "name": "freeze"
-    },
-    {
-      "name": "bullet"
-    },
-    {
-      "name": "jetpack"
-    },
-    {
-      "name": "gravity"
-    },
-    {
-      "name": "speed"
-    },
-    {
-      "name": "laser"
-    },
-    {
-      "name": "invisibl"
-    },
-    {
-      "name": "damagex2"
-    },
-    {
-      "name": "cratespy"
-    },
-    {
-      "name": "clone"
-    },
-    {
-      "name": "canister"
+      "name": "bullet",
+      "fw": 60,
+      "fh": 60,
+      "preview": "stock/hi/bullet.png"
     }
   ]
 }
