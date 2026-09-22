@@ -57,23 +57,35 @@
     .bar {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
+      gap: 0 4px;
+      align-items: baseline;
       margin: 0 0 22px;
+      font-size: 14px;
     }
-    .bar a, button.ghost {
+    .bar a {
+      color: var(--ink);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      font-weight: 600;
+    }
+    .bar a:hover { color: var(--accent); }
+    .bar .sep {
+      color: var(--muted);
+      margin: 0 8px;
+      user-select: none;
+    }
+    button.ghost {
       display: inline-block;
       background: var(--panel);
       color: var(--ink);
       border: 1px solid var(--line);
       border-radius: var(--radius);
       padding: 7px 12px;
-      text-decoration: none;
       font: inherit;
       font-weight: 600;
       cursor: pointer;
     }
-    .bar a.primary, button.primary {
+    button.primary {
       background: var(--accent);
       color: var(--accent-ink);
       border-color: var(--accent);
@@ -326,8 +338,10 @@
     </div>
     <p class="lead">DLL next to WA.exe · WormKit · examples in Mods/</p>
     <div class="bar">
-      <a class="primary" href="downloads/wkLua.dll">Download wkLua.dll</a>
+      <a href="https://github.com/ropahektic/WormForge/releases/latest">wkLua.zip</a>
+      <span class="sep">·</span>
       <a href="downloads/mods.zip">Example Mods</a>
+      <span class="sep">·</span>
       <a href="https://github.com/ropahektic/WormForge">GitHub</a>
     </div>
 
@@ -366,6 +380,6 @@
     </section>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="app.js?v=web8"></script>
+  <script src="app.js?v=web9"></script>
 </body>
 </html>
