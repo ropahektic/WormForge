@@ -94,7 +94,7 @@
     draw_p: "",
     draw_u: "",
     draw_d: "",
-    aimMode: "sets",
+    aimMode: "png",
     aimHand: "mid",
     aimScale: 1,
     aimRotate: 0,
@@ -770,7 +770,7 @@
       ${row("aim_p", "Flat")}
       ${row("aim_u", "Uphill")}
       ${row("aim_d", "Downhill")}
-      <p class="meta">Bound to panel slot <b>${esc(state.slot)}</b>, not the fire path. One sheet fills slopes; draw/undraw are eaten unless you bake From PNG.</p>
+      <p class="meta">Bound to panel slot <b>${esc(state.slot)}</b>, not the fire path. One sheet fills slopes; draw/undraw are eaten unless you bake via Generate custom.</p>
     `;
     const hands = [
       ["mid", "Mid"],
@@ -797,7 +797,10 @@
         <label>Angle <input type="range" id="aim-scrub" min="0" max="31" step="1" value="${state.aimScrub}" /><span id="aim-scrub-v">${state.aimScrub}</span></label>
       </div>
       <div class="aim-preview"><canvas id="aim-preview" width="60" height="60"></canvas></div>
-      <button type="button" class="primary" id="aim-generate" ${aimBakeBusy ? "disabled" : ""}>${aimBakeBusy ? "Baking…" : "Generate"}</button>
+      <div class="aim-generate-row">
+        <button type="button" class="aim-generate" id="aim-generate" ${aimBakeBusy ? "disabled" : ""}>${aimBakeBusy ? "Baking…" : "Generate"}</button>
+        <span class="aim-generate-hint">&lt;--- Press to apply</span>
+      </div>
       <p class="meta">Writes aim + draw GIFs for Flat / Uphill / Downhill into the pack.</p>
       ${(state.aim_p || state.aim_u || state.aim_d) ? `
         <label class="field">Current</label>
@@ -809,7 +812,7 @@
     return `
       <div class="aim-mode">
         <button type="button" class="${mode === "sets" ? "active" : ""}" data-aim-mode="sets">GIF sets</button>
-        <button type="button" class="${mode === "png" ? "active" : ""}" data-aim-mode="png">From PNG</button>
+        <button type="button" class="${mode === "png" ? "active" : ""}" data-aim-mode="png">Generate custom</button>
       </div>
       ${mode === "png" ? pngBlock : setsBlock}
     `;
