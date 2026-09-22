@@ -1055,6 +1055,36 @@
     try {
       const baked = await AimBake.bakeAll(aimWeaponImg, aimBakeOpts());
       const stamp = Date.now().toString(36);
+      // Flight body must be the same art — HM lock blits a separate bank seeded
+      // from the weapon entry, so aim-only packs still swap to stock mid-air.
+      try {
+        const flightName = `flight_${stamp}.png`;
+        const flightPath = `sprites/${flightName}`;
+        const canvas = document.createElement("canvas");
+        canvas.width = aimWeaponImg.naturalWidth || aimWeaponImg.width;
+        canvas.height = aimWeaponImg.naturalHeight || aimWeaponImg.height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(aimWeaponImg, 0, 0);
+        const blob = await new Promise((res, rej) =>
+          canvas.toBlob((b) => (b ? res(b) : rej(new Error("flight png"))), "image/png")
+        );
+        const flightFile = new File([blob], flightName, { type: "image/png" });
+        packFiles.set(flightPath, flightFile);
+        const preview = URL.createObjectURL(flightFile);
+        catalog.px_sprites = catalog.px_sprites.filter((s) => s.path !== flightPath);
+        catalog.px_sprites.push({
+          name: flightName.replace(/\.png$/i, ""),
+          file: flightName,
+          path: flightPath,
+          preview,
+          fw: canvas.width,
+          fh: canvas.height,
+          frames: 1,
+        });
+        state.body.sprite = flightPath;
+      } catch (flightErr) {
+        console.warn("aim bake: flight sprite pack failed", flightErr);
+      }
       for (const slope of ["p", "u", "d"]) {
         const aimName = `aim_${slope}_${stamp}.gif`;
         const drawName = `draw_${slope}_${stamp}.gif`;
