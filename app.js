@@ -80,7 +80,8 @@
   }
 
   function aimingPick() {
-    return state.attachPick === "aim_p" || state.attachPick === "aim_u" || state.attachPick === "aim_d";
+    return tab === "aim"
+      && (state.attachPick === "aim_p" || state.attachPick === "aim_u" || state.attachPick === "aim_d");
   }
 
   function focusedBody() {
@@ -92,16 +93,19 @@
 
   function setFocus(next) {
     focus = next === "child" && state.body.cluster ? "child" : "root";
-    if (focus === "child") tab = "body";
+    if (focus === "child") {
+      tab = "body";
+      state.attachPick = "body";
+    }
     render();
   }
 
   function bodySpriteLive() {
-    return state.fire === "power" || state.fire === "drop" || (canAimHold() && (tab === "aim" || aimingPick()));
+    return state.fire === "power" || state.fire === "drop" || aimingPick();
   }
 
   function catalogSelected() {
-    if (canAimHold() && aimingPick()) {
+    if (aimingPick()) {
       if (state.attachPick === "aim_p") return state.aim_p;
       if (state.attachPick === "aim_u") return state.aim_u;
       if (state.attachPick === "aim_d") return state.aim_d;
@@ -589,6 +593,9 @@
         ${customClusterFields()}`
       : "";
     return `
+      <div class="pick-row">Sprite <b>${esc(body.sprite || "—")}</b>
+        <button type="button" class="fire ${state.attachPick === "body" ? "active" : ""}" data-attach-pick="body">Catalog</button>
+      </div>
       <div class="row">
         ${numField("damage", "Damage", body)}
         ${numField("gravity_pct", "Gravity %", body)}
@@ -928,6 +935,7 @@
     }
     const btn = ev.target.closest("[data-focus]");
     if (!btn) return;
+    if (btn.dataset.focus === "root") state.attachPick = "body";
     setFocus(btn.dataset.focus);
     renderCatalog();
   });
