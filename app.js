@@ -361,7 +361,7 @@
   function luaSource() {
     const copy = inferCopyFrom();
     const lines = [
-      `-- copy_from ${copy}. Only fields the overlay actually writes are emitted.`,
+      `-- copy_from ${copy}`,
       "",
       "wa.weapons.replace({",
       `  weapon = ${luaString(state.slot)},`,
@@ -382,7 +382,7 @@
   function renderTree() {
     const copy = inferCopyFrom();
     const bits = [];
-    bits.push(`<button type="button" class="tree-btn ${focus === "root" ? "active" : ""}" data-focus="root">${esc(state.name)}<div class="note">${state.fire} · ${copy}</div></button>`);
+    bits.push(`<button type="button" class="tree-btn ${focus === "root" ? "active" : ""}" data-focus="root">${esc(state.name)}<div class="meta">${state.fire} · ${copy}</div></button>`);
     if (state.fire === "power" && state.body.cluster && !state.body.custom_cluster) {
       const child = ensureChild(state.body);
       bits.push(`<button type="button" class="tree-btn child ${focus === "child" ? "active" : ""}" data-focus="child">↳ stock bits · ${esc(child.sprite || "clustlet")}</button>`);
@@ -414,15 +414,15 @@
 
   function firePanel() {
     const fires = [
-      ["power", "Space power", "Aim, hold Space, release."],
-      ["hitscan", "Hitscan", "Aim; first solid pixel / worm."],
-      ["drop", "Drop", "Spawn at the worm's feet."],
-      ["cursor", "Cursor click", "Click the map."],
+      ["power", "Power"],
+      ["hitscan", "Hitscan"],
+      ["drop", "Drop"],
+      ["cursor", "Cursor"],
     ];
     return `
-      <label class="field">How it fires</label>
+      <label class="field">Fire</label>
       <div class="fires">
-        ${fires.map(([id, title, note]) => `<button type="button" class="fire ${state.fire === id ? "active" : ""}" data-fire="${id}"><b>${title}</b><div class="note">${note}</div></button>`).join("")}
+        ${fires.map(([id, title]) => `<button type="button" class="fire ${state.fire === id ? "active" : ""}" data-fire="${id}">${title}</button>`).join("")}
       </div>
       <div class="row">
         <div><label class="field">Panel slot</label>
@@ -432,40 +432,40 @@
       </div>
       <label class="field">Weapon name</label>
       <input id="name" value="${state.name}" maxlength="40" />
-      <p class="note">copy_from ${inferCopyFrom()} is the stock fire path. Options below are only what the overlay writes today.</p>
+      <p class="meta">copy_from ${inferCopyFrom()}</p>
     `;
   }
 
   function customClusterFields() {
     const body = state.body;
-    const powerHint = state.fire === "power" && body.custom_site === "explode"
-      ? "Launch speed 0 = parent blast throw."
-      : state.fire === "power" && body.custom_site === "launch"
-        ? "Fan at fire. Launch speed is the bit eject speed."
-        : "Launch speed 0 = mine blast throw.";
     const homingBtns = [
-      ["off", "Off", "Fly the fan and forget."],
-      ["aim", "Aim", "Steer toward the throw cursor."],
-      ["worm", "Worm", "Steer toward the nearest other worm."],
+      ["off", "Off"],
+      ["aim", "Aim"],
+      ["worm", "Worm"],
     ]
       .map(
-        ([id, title, note]) =>
-          `<button type="button" class="fire ${body.boom_homing === id ? "active" : ""}" data-boom-homing="${id}"><b>${title}</b><div class="note">${note}</div></button>`
+        ([id, title]) =>
+          `<button type="button" class="fire ${body.boom_homing === id ? "active" : ""}" data-boom-homing="${id}">${title}</button>`
       )
       .join("");
     return `
-      <p class="note">Bit sprite: <b>${esc(body.boom_sprite)}</b> · <button type="button" class="tab ${state.attachPick === "boom" ? "active" : ""}" data-attach-pick="boom">Pick from catalog</button></p>
-      <p class="note">Smoke trail: <b>${esc(body.boom_trail)}</b> · <button type="button" class="tab ${state.attachPick === "trail" ? "active" : ""}" data-attach-pick="trail">Pick from catalog</button></p>
+      <div class="pick-row">Bit <b>${esc(body.boom_sprite)}</b>
+        <button type="button" class="fire ${state.attachPick === "boom" ? "active" : ""}" data-attach-pick="boom">Catalog</button>
+      </div>
+      <div class="pick-row">Trail <b>${esc(body.boom_trail)}</b>
+        <button type="button" class="fire ${state.attachPick === "trail" ? "active" : ""}" data-attach-pick="trail">Catalog</button>
+      </div>
       <div class="row">
         ${numField("boom_count", "Bit count", body)}
         ${numField("boom_spread", "Fan degrees", body)}
         ${numField("boom_power", "Launch speed", body)}
         ${numField("boom_damage", "Bit damage", body)}
       </div>
-      <p class="note">${powerHint}</p>
-      <label class="check"><input type="checkbox" data-flag="boom_impact" ${body.boom_impact !== false ? "checked" : ""} /><div><b>Explode on impact</b><span>Detonate when a bit lands (or finishes bouncing).</span></div></label>
-      <label class="check"><input type="checkbox" data-flag="boom_bounce" ${body.boom_bounce ? "checked" : ""} /><div><b>Bounce</b><span>Grenade-like terrain bounce. Rest still obeys impact.</span></div></label>
-      <p class="note">Homing</p>
+      <div class="mods">
+        <label class="check"><input type="checkbox" data-flag="boom_impact" ${body.boom_impact !== false ? "checked" : ""} /><b>Explode on impact</b></label>
+        <label class="check"><input type="checkbox" data-flag="boom_bounce" ${body.boom_bounce ? "checked" : ""} /><b>Bounce</b></label>
+      </div>
+      <label class="field">Homing</label>
       <div class="fires">${homingBtns}</div>
     `;
   }
@@ -479,29 +479,17 @@
     const showHoming = (powerRoot && !body.cluster && !body.custom_cluster) || bit;
     const showStock = powerRoot && body.homing === "off" && !body.custom_cluster;
     const showCustom = powerRoot && body.homing === "off" && !body.cluster;
-    const note = bit
-      ? "Stock cluster bits (WeaponEntry slab). Sprite, numbers, and lock/avoid/dodge homing."
-      : drop
-        ? (body.fuse
-          ? "Drop copies dynamite. Sprite swap works. Homing and clusters are not on this path."
-          : "Drop copies mine. Projectile sprite is the mine look. Attach hosts Custom clusters on explode.")
-        : body.custom_cluster
-          ? "Custom clusters use on_fire (LuaActor). Stock missile path is replaced."
-          : body.cluster
-            ? "Stock clusters copy cluster bomb. Edit bits under Stock clusters / tree."
-            : "Power: Homing, Stock clusters, or Custom clusters — pick one.";
     const customInline = powerRoot && body.custom_cluster
       ? `<div class="mods" style="margin-top:10px">
-          <p class="note">Site</p>
+          <label class="field">Site</label>
           <div class="fires">
-            <button type="button" class="fire ${body.custom_site === "explode" ? "active" : ""}" data-custom-site="explode"><b>On projectile explode</b><div class="note">Throwable body, then Custom cluster fan in the blast.</div></button>
-            <button type="button" class="fire ${body.custom_site === "launch" ? "active" : ""}" data-custom-site="launch"><b>At launch</b><div class="note">Fan fires immediately instead of a single missile.</div></button>
+            <button type="button" class="fire ${body.custom_site === "explode" ? "active" : ""}" data-custom-site="explode">On explode</button>
+            <button type="button" class="fire ${body.custom_site === "launch" ? "active" : ""}" data-custom-site="launch">At launch</button>
           </div>
         </div>
         ${customClusterFields()}`
       : "";
     return `
-      <p class="note">${note}</p>
       <div class="row">
         ${numField("damage", "Damage", body)}
         ${numField("gravity_pct", "Gravity %", body)}
@@ -513,13 +501,12 @@
         ${numField("fuse_ms", "Arm fuse ms", body)}
         ${numField("trigger", "Beep fuse ms", body)}
         ${numField("mask", "Detect mask", body)}
-      </div>
-      <p class="note">Empty mine fields keep stock. Negative arm fuse uses the scheme MineFuse. Mask is 1&lt;&lt;entity layer (+0x30); stock detects worms.</p>` : ""}
+      </div>` : ""}
       <div class="mods">
-        ${showFuse ? `<label class="check"><input type="checkbox" data-flag="fuse" ${body.fuse ? "checked" : ""} /><div><b>${drop ? "Dynamite fuse" : "Fuse / bounce"}</b><span>${drop ? "On: dynamite. Off: mine." : "Copies grenade instead of bazooka."}</span></div></label>` : ""}
-        ${showHoming ? `<label class="check"><input type="checkbox" data-flag="homingOn" ${body.homing !== "off" ? "checked" : ""} /><div><b>Homing</b><span>${bit ? "Writes lock/avoid/dodge onto the bits." : "Copies homing missile / pigeon / magic bullet."}</span></div></label>` : ""}
-        ${showStock ? `<label class="check"><input type="checkbox" data-flag="cluster" ${body.cluster ? "checked" : ""} /><div><b>Stock clusters</b><span>Copies cluster bomb. One generation of stock bits.</span></div></label>` : ""}
-        ${showCustom ? `<label class="check"><input type="checkbox" data-flag="custom_cluster" ${body.custom_cluster ? "checked" : ""} /><div><b>Custom clusters</b><span>LuaActor fan via on_fire. Count, spread, trail, aim/worm.</span></div></label>` : ""}
+        ${showFuse ? `<label class="check"><input type="checkbox" data-flag="fuse" ${body.fuse ? "checked" : ""} /><b>${drop ? "Dynamite" : "Fuse"}</b></label>` : ""}
+        ${showHoming ? `<label class="check"><input type="checkbox" data-flag="homingOn" ${body.homing !== "off" ? "checked" : ""} /><b>Homing</b></label>` : ""}
+        ${showStock ? `<label class="check"><input type="checkbox" data-flag="cluster" ${body.cluster ? "checked" : ""} /><b>Stock clusters</b></label>` : ""}
+        ${showCustom ? `<label class="check"><input type="checkbox" data-flag="custom_cluster" ${body.custom_cluster ? "checked" : ""} /><b>Custom clusters</b></label>` : ""}
       </div>
       ${customInline}
     `;
@@ -528,14 +515,13 @@
   function homingPanel() {
     const body = focusedBody();
     const opts = [
-      ["lock", "Lock", "Homing missile. Does not steer around dirt."],
-      ["avoid", "Avoid", "Pigeon. Tries to go around terrain."],
-      ["dodge", "Dodge", "Magic bullet. Stronger terrain dodge."],
+      ["lock", "Lock"],
+      ["avoid", "Avoid"],
+      ["dodge", "Dodge"],
     ];
     return `
-      <p class="note">${focus === "child" ? "Bit homing is written onto cluster_params. Bits steer toward the throw aim, not a click lock." : "Root homing copies a stock homing weapon. Click a target, then Space-power."}</p>
       <div class="fires">
-        ${opts.map(([id, title, note]) => `<button type="button" class="fire ${body.homing === id ? "active" : ""}" data-homing="${id}"><b>${title}</b><div class="note">${note}</div></button>`).join("")}
+        ${opts.map(([id, title]) => `<button type="button" class="fire ${body.homing === id ? "active" : ""}" data-homing="${id}">${title}</button>`).join("")}
       </div>
     `;
   }
@@ -543,7 +529,6 @@
   function clusterPanel() {
     ensureChild(state.body);
     return `
-      <p class="note">Stock clusters — one generation on the WeaponEntry slab. Nested stock cluster-in-cluster is not wired.</p>
       <button type="button" class="primary" data-open-child="child">Edit stock bits</button>
     `;
   }
@@ -551,9 +536,10 @@
   function customPanel() {
     const body = state.body;
     return `
+      <label class="field">Site</label>
       <div class="fires" style="margin-bottom:10px">
-        <button type="button" class="fire ${body.custom_site === "explode" ? "active" : ""}" data-custom-site="explode"><b>On projectile explode</b><div class="note">Body first, then fan in the blast.</div></button>
-        <button type="button" class="fire ${body.custom_site === "launch" ? "active" : ""}" data-custom-site="launch"><b>At launch</b><div class="note">Fan at fire.</div></button>
+        <button type="button" class="fire ${body.custom_site === "explode" ? "active" : ""}" data-custom-site="explode">On explode</button>
+        <button type="button" class="fire ${body.custom_site === "launch" ? "active" : ""}" data-custom-site="launch">At launch</button>
       </div>
       ${customClusterFields()}
     `;
@@ -562,21 +548,19 @@
   function attachPanel() {
     const body = state.body;
     return `
-      <p class="note">Mine hooks. Projectile owns the mine look. Custom clusters use the same fan fields as power.</p>
-      <label class="check"><input type="checkbox" data-flag="prox_on" ${body.prox_on ? "checked" : ""} /><div><b>On proximity</b><span>When the armed mine first notices a worm: invisible dirt puff (no HP).</span></div></label>
-      ${body.prox_on ? `${numField("prox_id", "Dirt puff graphic id", body)}<p class="note">Stock WA explosion shape for that puff. Damage stays 0.</p>` : ""}
-      <label class="check"><input type="checkbox" data-flag="boom_on" ${body.boom_on ? "checked" : ""} /><div><b>On explode</b><span>When this mine detonates, spawn something inside the blast.</span></div></label>
-      ${body.boom_on ? `<div class="mods" style="margin-top:10px">
-        <label class="check"><input type="checkbox" data-flag="boom_cluster" ${body.boom_cluster ? "checked" : ""} /><div><b>Custom clusters</b><span>LuaActor fan in the mine blast.</span></div></label>
+      <div class="mods">
+        <label class="check"><input type="checkbox" data-flag="prox_on" ${body.prox_on ? "checked" : ""} /><b>On proximity</b></label>
+        ${body.prox_on ? numField("prox_id", "Dirt puff id", body) : ""}
+        <label class="check"><input type="checkbox" data-flag="boom_on" ${body.boom_on ? "checked" : ""} /><b>On explode</b></label>
+        ${body.boom_on ? `<label class="check"><input type="checkbox" data-flag="boom_cluster" ${body.boom_cluster ? "checked" : ""} /><b>Custom clusters</b></label>` : ""}
       </div>
-      ${body.boom_cluster ? customClusterFields() : `<p class="note">Tick Custom clusters to configure the fan.</p>`}` : ""}
+      ${body.boom_on && body.boom_cluster ? customClusterFields() : ""}
     `;
   }
 
   function hitscanPanel() {
     const body = state.body;
     return `
-      <p class="note">Copies uzi. Damage writes the table slot. Impact flash and pellet sprites are still stock.</p>
       <div class="row">
         ${numField("damage", "Damage per hit", body)}
       </div>
@@ -585,8 +569,9 @@
 
   function cursorPanel() {
     return `
-      <p class="note">Copies air strike, or teleport if ticked. Strike bomb sprites are still stock.</p>
-      <label class="check"><input type="checkbox" data-flag="teleport" ${state.teleport ? "checked" : ""} /><div><b>Teleport instead of strike</b><span>Click is a destination, not a bombing run.</span></div></label>
+      <div class="mods">
+        <label class="check"><input type="checkbox" data-flag="teleport" ${state.teleport ? "checked" : ""} /><b>Teleport</b></label>
+      </div>
     `;
   }
 

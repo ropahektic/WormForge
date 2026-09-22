@@ -4,98 +4,139 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>WormForge — weapon editor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #12110f;
-      --panel: #1c1a16;
-      --ink: #f3ead4;
-      --muted: #b7ad96;
-      --line: #3a352c;
-      --accent: #e6c15a;
-      --pick: #2a261c;
-      --tab: #2b261c;
+      --sky: #c9dff0;
+      --dirt: #e8e0d0;
+      --panel: #f7f3ea;
+      --ink: #1a2218;
+      --muted: #5a6554;
+      --line: #8a9a7a;
+      --accent: #2f6b3a;
+      --accent-ink: #f7f3ea;
+      --pick: #dce8d4;
+      --input: #fffdf8;
+      --stage-a: #cfc6b4;
+      --stage-b: #e8e0d0;
+      --err: #a83228;
+      --radius: 2px;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font: 15px/1.45 "Segoe UI", sans-serif;
-      background: var(--bg);
+      font: 500 14px/1.4 "Chakra Petch", sans-serif;
       color: var(--ink);
+      background:
+        linear-gradient(180deg, var(--sky) 0%, var(--dirt) 42%, var(--dirt) 100%);
+      min-height: 100vh;
     }
-    .app { max-width: 1280px; margin: 0 auto; padding: 20px 16px 56px; }
+    .app { max-width: 1280px; margin: 0 auto; padding: 22px 16px 56px; }
+    .brand {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 12px 20px;
+      margin: 0 0 6px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 34px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+    p.lead {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 14px;
+      max-width: 52rem;
+    }
     .bar {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 8px;
       align-items: center;
-      margin: 0 0 18px;
+      margin: 0 0 22px;
     }
     .bar a, button.ghost {
       display: inline-block;
-      background: var(--tab);
+      background: var(--panel);
       color: var(--ink);
       border: 1px solid var(--line);
-      border-radius: 6px;
-      padding: 8px 12px;
+      border-radius: var(--radius);
+      padding: 7px 12px;
       text-decoration: none;
+      font: inherit;
       font-weight: 600;
+      cursor: pointer;
     }
-    .bar a.primary, button.primary { background: var(--accent); color: #1a1508; border: 0; }
-    button.ghost { font: inherit; cursor: pointer; }
-    h1 { margin: 0 0 4px; font-size: 26px; }
-    p.lead { margin: 0 0 18px; color: var(--muted); }
+    .bar a.primary, button.primary {
+      background: var(--accent);
+      color: var(--accent-ink);
+      border-color: var(--accent);
+    }
     .work {
       display: grid;
       grid-template-columns: 200px 1fr 320px;
-      gap: 16px;
+      gap: 12px;
       align-items: start;
     }
     .panel {
       background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 14px 16px;
+      border-radius: var(--radius);
+      padding: 12px 14px;
     }
     label.field {
       display: block;
       font-size: 11px;
-      letter-spacing: .04em;
+      letter-spacing: .06em;
       text-transform: uppercase;
       color: var(--muted);
-      margin: 10px 0 5px;
+      margin: 10px 0 4px;
     }
     input, select {
       width: 100%;
-      background: #0e0d0b;
+      background: var(--input);
       color: var(--ink);
       border: 1px solid var(--line);
-      border-radius: 6px;
-      padding: 7px 9px;
+      border-radius: var(--radius);
+      padding: 6px 8px;
       font: inherit;
     }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-    .note { color: var(--muted); font-size: 13px; margin: 8px 0 0; }
-    .err { color: #ff8d7a; min-height: 1.2em; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .meta {
+      margin: 6px 0 0;
+      font: 500 12px/1.35 "IBM Plex Mono", monospace;
+      color: var(--muted);
+    }
+    .err { color: var(--err); min-height: 1.2em; margin: 8px 0 0; }
     button.primary {
-      margin-top: 14px;
+      margin-top: 12px;
       background: var(--accent);
-      color: #1a1508;
-      border: 0;
-      border-radius: 6px;
-      padding: 10px 16px;
+      color: var(--accent-ink);
+      border: 1px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 9px 14px;
+      font: inherit;
       font-weight: 700;
       cursor: pointer;
     }
-        .tree-btn, .tab, .fire, .check, .catalog button, .cat-mode button {
+    .tree-btn, .tab, .fire, .check, .catalog button, .cat-mode button {
       cursor: pointer;
+      font: inherit;
     }
-    .tree h2, .sprites h2, .editor h2 {
-      margin: 0 0 10px;
-      font-size: 12px;
+    .tree h2, .sprites h2, .editor h2, .lua h2 {
+      margin: 0 0 8px;
+      font-size: 11px;
       letter-spacing: .08em;
       text-transform: uppercase;
       color: var(--muted);
+      font-weight: 600;
     }
     .tree-btn {
       display: block;
@@ -104,64 +145,77 @@
       background: transparent;
       color: var(--ink);
       border: 0;
-      border-radius: 6px;
-      padding: 7px 8px;
-      margin: 0 0 4px;
+      border-radius: var(--radius);
+      padding: 6px 7px;
+      margin: 0 0 2px;
     }
-    .tree-btn.child { padding-left: 18px; }
-    .tree-btn.grand { padding-left: 30px; }
-    .tree-btn.active { background: #3d3420; color: var(--accent); }
-    .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+    .tree-btn.child { padding-left: 16px; }
+    .tree-btn.grand { padding-left: 28px; }
+    .tree-btn.active { background: var(--accent); color: var(--accent-ink); }
+    .tree-btn .meta { color: inherit; opacity: .75; margin: 2px 0 0; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 0; margin-bottom: 10px; border: 1px solid var(--line); }
     .tab {
-      background: var(--tab);
+      background: transparent;
       color: var(--ink);
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 5px 11px;
+      border: 0;
+      border-right: 1px solid var(--line);
+      border-radius: 0;
+      padding: 6px 12px;
       font-size: 13px;
+      font-weight: 600;
     }
-    .tab.active { background: var(--accent); color: #1a1508; border-color: var(--accent); }
+    .tab:last-child { border-right: 0; }
+    .tab.active { background: var(--accent); color: var(--accent-ink); }
     .fires { display: flex; flex-wrap: wrap; gap: 6px; }
     .fire {
-      background: #0e0d0b;
+      background: var(--input);
       color: var(--ink);
       border: 1px solid var(--line);
-      border-radius: 6px;
-      padding: 8px 10px;
+      border-radius: var(--radius);
+      padding: 6px 10px;
+      font-weight: 600;
     }
-    .fire.active { border-color: var(--accent); color: var(--accent); }
-    .mods { display: grid; gap: 8px; margin-top: 12px; }
+    .fire.active { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+    .mods { display: grid; gap: 6px; margin-top: 10px; }
     .check {
       display: flex;
       gap: 8px;
-      align-items: flex-start;
-      background: #0e0d0b;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 8px 10px;
+      align-items: center;
+      padding: 2px 0;
     }
-    .check input { width: auto; margin-top: 3px; }
-    .check b { display: block; }
-    .check span { color: var(--muted); font-size: 13px; }
-    .count { float: right; color: var(--muted); font-size: 12px; }
-    .cat-mode { display: flex; gap: 6px; margin: 8px 0; }
+    .check input { width: auto; margin: 0; }
+    .check b { font-weight: 600; }
+    .pick-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      margin: 8px 0 0;
+      font-size: 13px;
+    }
+    .pick-row b { font-family: "IBM Plex Mono", monospace; font-weight: 500; }
+    .count { float: right; color: var(--muted); font-size: 12px; font-weight: 500; }
+    .cat-mode { display: flex; gap: 0; margin: 8px 0; border: 1px solid var(--line); }
     .cat-mode button {
       flex: 1;
-      background: var(--tab);
+      background: transparent;
       color: var(--ink);
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      padding: 6px 6px;
+      border: 0;
+      border-right: 1px solid var(--line);
+      border-radius: 0;
+      padding: 6px 4px;
       font-size: 12px;
+      font-weight: 600;
     }
-    .cat-mode button.active { background: var(--accent); color: #1a1508; border-color: var(--accent); }
+    .cat-mode button:last-child { border-right: 0; }
+    .cat-mode button.active { background: var(--accent); color: var(--accent-ink); }
     .catalog {
       position: relative;
       height: 360px;
       overflow: auto;
       border: 1px solid var(--line);
-      border-radius: 6px;
-      background: #0e0d0b;
+      border-radius: var(--radius);
+      background: var(--input);
     }
     .cat-spacer { position: relative; }
     .catalog > .cat-spacer > button {
@@ -177,18 +231,18 @@
       color: var(--ink);
       text-align: left;
       border: 0;
-      border-bottom: 1px solid #242017;
+      border-bottom: 1px solid #d5cdb8;
       padding: 4px 8px;
     }
     .catalog button:hover { background: var(--pick); }
-    .catalog button.selected { background: #3d3420; color: var(--accent); }
+    .catalog button.selected { background: var(--accent); color: var(--accent-ink); }
     .thumb {
       display: block;
       overflow: hidden;
       flex-shrink: 0;
       background:
-        linear-gradient(45deg, #2a261c 25%, transparent 25%) 0 0 / 8px 8px,
-        linear-gradient(45deg, #0e0d0b 25%, #2a261c 0) 4px 4px / 8px 8px;
+        linear-gradient(45deg, var(--stage-a) 25%, transparent 25%) 0 0 / 8px 8px,
+        linear-gradient(45deg, var(--stage-b) 25%, var(--stage-a) 0) 4px 4px / 8px 8px;
     }
     .thumb img, .stage-clip img {
       display: block;
@@ -212,31 +266,16 @@
       background: transparent;
       color: var(--ink);
       border: 1px solid transparent;
-      border-radius: 6px;
+      border-radius: var(--radius);
       padding: 6px 4px;
       font-size: 11px;
     }
-    .icon-grid button.selected { border-color: var(--accent); background: #3d3420; color: var(--accent); }
+    .icon-grid button.selected { border-color: var(--accent); background: var(--pick); color: var(--accent); }
     .icon-grid img {
       width: 48px;
       height: 48px;
       object-fit: contain;
       image-rendering: pixelated;
-    }
-    .panel-icon {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    .panel-icon img {
-      width: 48px;
-      height: 48px;
-      object-fit: contain;
-      image-rendering: pixelated;
-      background: #0e0d0b;
-      border: 1px solid var(--line);
-      border-radius: 6px;
     }
     .stage {
       display: flex;
@@ -245,10 +284,10 @@
       height: 160px;
       margin: 8px 0 10px;
       border: 1px solid var(--line);
-      border-radius: 6px;
+      border-radius: var(--radius);
       background:
-        linear-gradient(45deg, #2a261c 25%, transparent 25%) 0 0 / 16px 16px,
-        linear-gradient(45deg, #0e0d0b 25%, #2a261c 0) 8px 8px / 16px 16px;
+        linear-gradient(45deg, var(--stage-a) 25%, transparent 25%) 0 0 / 16px 16px,
+        linear-gradient(45deg, var(--stage-b) 25%, var(--stage-a) 0) 8px 8px / 16px 16px;
       overflow: hidden;
     }
     .stage-clip {
@@ -260,13 +299,20 @@
       -webkit-user-drag: none;
       user-select: none;
     }
-    .selected-name { margin: 6px 0 0; font-weight: 700; }
-    .lua { margin-top: 16px; }
+    .selected-name {
+      margin: 6px 0 0;
+      font: 500 12px/1.35 "IBM Plex Mono", monospace;
+    }
+    .lua { margin-top: 12px; }
     pre {
       margin: 0;
       white-space: pre-wrap;
-      font: 12px/1.4 Consolas, monospace;
-      color: #e8dcb8;
+      font: 12px/1.45 "IBM Plex Mono", monospace;
+      color: var(--ink);
+      background: var(--input);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 10px 12px;
     }
     @media (max-width: 980px) {
       .work { grid-template-columns: 1fr; }
@@ -275,16 +321,15 @@
 </head>
 <body>
   <div class="app">
-    <h1>WormForge</h1>
-    <p class="lead">Weapon editor for Worms Armageddon 3.8.1. Drop the DLL next to WA.exe, copy example packs into Mods/, or build your own below.</p>
+    <div class="brand">
+      <h1>WormForge</h1>
+    </div>
+    <p class="lead">DLL next to WA.exe · WormKit · examples in Mods/</p>
     <div class="bar">
       <a class="primary" href="downloads/wkLua.dll">Download wkLua.dll</a>
       <a href="downloads/mods.zip">Example Mods</a>
       <a href="https://github.com/ropahektic/WormForge">GitHub</a>
     </div>
-    <p class="lead">Build stamp <code>20260922-cmphys</code>. Needs WormKit. Previews are in-page only. Add extra GIF/PNG if you have files that are not in the PX set.</p>
-
-    <h1>Weapon creator</h1>
 
     <div class="work">
       <nav class="panel tree">
@@ -302,13 +347,13 @@
       <aside class="panel sprites">
         <h2>Sprite <span class="count" id="sprite-count"></span></h2>
         <div class="cat-mode">
-          <button type="button" id="mode-stock" class="active" data-catmode="stock">Stock GFX.dir</button>
-          <button type="button" id="mode-px" data-catmode="px">PX sprites</button>
-          <button type="button" id="mode-icon" data-catmode="icon">Panel icon</button>
+          <button type="button" id="mode-stock" class="active" data-catmode="stock">Stock</button>
+          <button type="button" id="mode-px" data-catmode="px">PX</button>
+          <button type="button" id="mode-icon" data-catmode="icon">Icon</button>
         </div>
-        <button type="button" class="ghost" id="add-gifs" style="margin:8px 0 0">Add GIF/PNG</button>
+        <button type="button" class="ghost" id="add-gifs" style="margin:8px 0 0;width:100%">Add GIF/PNG</button>
         <input id="gif-files" type="file" accept=".gif,.png,image/gif,image/png" multiple hidden />
-        <input id="filter" placeholder="filter extracted sprites…" />
+        <input id="filter" placeholder="filter…" style="margin-top:8px" />
         <p class="selected-name" id="picked">none</p>
         <div class="stage"><div class="stage-clip" id="stage-clip"><img id="sprite-img" alt="" /></div></div>
         <div class="catalog" id="catalog"></div>
@@ -321,6 +366,6 @@
     </section>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="app.js?v=web7"></script>
+  <script src="app.js?v=web8"></script>
 </body>
 </html>
