@@ -27,8 +27,8 @@
       boom_power: "",
       boom_damage: "30",
       boom_trail: "smklt25",
-      boom_impact: true,
-      boom_bounce: false,
+      // impact | bounce | donkey (persist+explode each land, like gif_donkey)
+      boom_contact: "impact",
       boom_bounces: "",
       boom_fuse: "",
       boom_proximity: "",
@@ -548,15 +548,16 @@
 
   function customClusterSpec() {
     const body = state.body;
-    const impact = body.boom_impact !== false;
-    // No impact → grenade bounce by default (engine also defaults bounce_pct=100).
-    const bounce = impact ? !!body.boom_bounce : body.boom_bounce !== false;
+    const contact = bitContact(body);
+    const impact = contact === "impact" || contact === "donkey";
+    const bounce = contact === "bounce";
     const bounces = body.boom_bounces === "" || body.boom_bounces == null ? 0 : Number(body.boom_bounces);
     const fuse = body.boom_fuse === "" || body.boom_fuse == null ? 0 : Number(body.boom_fuse);
     const proximity =
       body.boom_proximity === "" || body.boom_proximity == null ? 0 : Number(body.boom_proximity);
-    // Delayed boom (bounce/fuse/prox) still needs a blast payload.
     const damage = body.boom_damage === "" || body.boom_damage == null ? 30 : Number(body.boom_damage);
+    // Donkey = persist through blast (knock is the bounce). Prox mines also sit.
+    const persist = contact === "donkey" || (contact === "bounce" && proximity > 0);
     return {
       kind: "cluster",
       sprite: body.boom_sprite || "banana",
@@ -575,8 +576,18 @@
       hurt: true,
       gravity: true,
       collide: true,
-      persist: !impact && proximity > 0,
+      persist,
     };
+  }
+
+  function bitContact(body) {
+    if (body.boom_contact === "bounce" || body.boom_contact === "donkey" || body.boom_contact === "impact") {
+      return body.boom_contact;
+    }
+    // Migrate older checkbox fields.
+    if (body.boom_impact === false) return "bounce";
+    if (body.boom_persist) return "donkey";
+    return "impact";
   }
 
   function emitSpawnLines(spec, indent) {
@@ -806,6 +817,18 @@
 
   function customClusterFields() {
     const body = state.body;
+    const contact = bitContact(body);
+    const bouncing = contact === "bounce" || contact === "donkey";
+    const contactBtns = [
+      ["impact", "Explode once"],
+      ["bounce", "Bounce"],
+      ["donkey", "Blast each land"],
+    ]
+      .map(
+        ([id, title]) =>
+          `<button type="button" class="fire ${contact === id ? "active" : ""}" data-boom-contact="${id}">${title}</button>`
+      )
+      .join("");
     const homingBtns = [
       ["off", "Off"],
       ["aim", "Aim"],
@@ -816,6 +839,12 @@
           `<button type="button" class="fire ${body.boom_homing === id ? "active" : ""}" data-boom-homing="${id}">${title}</button>`
       )
       .join("");
+    const endHint =
+      contact === "donkey"
+        ? "Blast each land uses persist (Concrete Donkey) — knock lifts the bit. Optional N / fuse / prox ends it."
+        : contact === "bounce"
+          ? "Silent grenade bounce. Add N / fuse / prox to detonate later — or leave empty to rest as a dud."
+          : "Stock behaviour: first dirt hit detonates and removes the bit.";
     return `
       <div class="pick-row">Bit <b>${esc(body.boom_sprite)}</b>
         <button type="button" class="fire ${state.attachPick === "boom" ? "active" : ""}" data-attach-pick="boom">Catalog</button>
@@ -829,17 +858,19 @@
         ${numField("boom_power", "Launch speed", body)}
         ${numField("boom_damage", "Bit damage", body)}
       </div>
-      <div class="mods">
-        <label class="check"><input type="checkbox" data-flag="boom_impact" ${body.boom_impact !== false ? "checked" : ""} /><b>Explode on impact</b></label>
-        <label class="check"><input type="checkbox" data-flag="boom_bounce" ${
-          body.boom_impact === false ? (body.boom_bounce !== false ? "checked" : "") : body.boom_bounce ? "checked" : ""
-        } /><b>Bounce</b></label>
-      </div>
+      <label class="field">On dirt</label>
+      <div class="fires">${contactBtns}</div>
+      <p class="meta">${endHint}</p>
+      ${
+        bouncing
+          ? `<label class="field">Also detonate when</label>
       <div class="row">
-        ${numField("boom_bounces", "Bounces then boom (0=∞)", body)}
+        ${numField("boom_bounces", contact === "donkey" ? "Lands then die (0=∞)" : "Bounces then boom (0=∞)", body)}
         ${numField("boom_fuse", "Fuse ms (0=off)", body)}
-        ${numField("boom_proximity", "Proximity px (0=off)", body)}
-      </div>
+        ${numField("boom_proximity", "Worm proximity px (0=off)", body)}
+      </div>`
+          : ""
+      }
       <label class="field">Homing</label>
       <div class="fires">${homingBtns}</div>
     `;
@@ -1532,6 +1563,12 @@
       render();
       return;
     }
+    const boomContact = ev.target.closest("[data-boom-contact]");
+    if (boomContact) {
+      state.body.boom_contact = boomContact.dataset.boomContact;
+      render();
+      return;
+    }
     const open = ev.target.closest("[data-open-child]");
     if (open) {
       setFocus(open.dataset.openChild);
@@ -1600,7 +1637,7 @@
         body.custom_cluster = true;
         if (!body.custom_site) body.custom_site = "explode";
         state.attachPick = "boom";
-        tab = "custom";
+        // Tab appears in the bar; stay on Projectile.
       } else {
         body.custom_cluster = false;
         if (tab === "custom") tab = "body";
@@ -1626,12 +1663,6 @@
         state.attachPick = "boom";
       }
     }
-    if (flag === "boom_impact") {
-      body.boom_impact = ev.target.checked;
-      // Unchecking impact → grenade bounce by default.
-      if (!ev.target.checked && body.boom_bounce === false) body.boom_bounce = true;
-    }
-    if (flag === "boom_bounce") body.boom_bounce = ev.target.checked;
     render();
   });
 
