@@ -8,4 +8,4 @@ Open the site: **https://ropahektic.github.io/WormForge/**
 - **Example Mods** — unzip folders into `Mods/` next to `WA.exe`. First loaded pack owns a stock slot; do not enable two packs on the same weapon (`gif_donkey` and `gif_donkey_lua` both overlay grenade).
 - **Weapon creator** — builds a Mods zip in the browser. Stock and PX previews stay in-page (no save-as on the catalog). Attach extra GIF/PNG if needed.
 
-Engine source stays in the private [WormForge-engine](https://github.com/ropahektic/WormForge-engine) repo. This site is the public front.
+Engine repo (private): [WormForge-engine](https://github.com/ropahektic/WormForge-engine) 
