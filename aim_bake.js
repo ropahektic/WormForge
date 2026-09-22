@@ -191,11 +191,78 @@
   }
 
   function validateWeapon(img) {
-    if (!img || !img.width || !img.height) return "Could not load PNG";
+    if (!img || !img.width || !img.height) return "Could not load weapon art";
     if (img.width > SIZE || img.height > SIZE) {
-      return `Weapon PNG must be ≤${SIZE}×${SIZE} (got ${img.width}×${img.height}). Center the grip.`;
+      return `Weapon art must be ≤${SIZE}×${SIZE} (got ${img.width}×${img.height}). Center the grip.`;
     }
     return null;
+  }
+
+  /** Scale source down to fit SIZE×SIZE (never upscale). Returns a canvas. */
+  function fitWeapon(source) {
+    const sw = source.width || source.naturalWidth;
+    const sh = source.height || source.naturalHeight;
+    if (!sw || !sh) throw new Error("empty weapon frame");
+    const scale = Math.min(1, SIZE / sw, SIZE / sh);
+    const w = Math.max(1, Math.round(sw * scale));
+    const h = Math.max(1, Math.round(sh * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+    if (source instanceof ImageData) {
+      const tmp = document.createElement("canvas");
+      tmp.width = sw;
+      tmp.height = sh;
+      tmp.getContext("2d").putImageData(source, 0, 0);
+      ctx.drawImage(tmp, 0, 0, w, h);
+    } else {
+      ctx.drawImage(source, 0, 0, sw, sh, 0, 0, w, h);
+    }
+    return canvas;
+  }
+
+  /** First GIF frame only (static hold art). */
+  async function staticFromGifUrl(url) {
+    const frames = await loadGifFrames(url);
+    if (!frames.length) throw new Error("empty GIF");
+    return fitWeapon(frames[0]);
+  }
+
+  /** Crop first cell of a vertical stock strip PNG. */
+  async function staticFromStripUrl(url, fw, fh) {
+    const img = await new Promise((resolve, reject) => {
+      const el = new Image();
+      el.onload = () => resolve(el);
+      el.onerror = () => reject(new Error(`failed to load ${url}`));
+      el.src = url;
+    });
+    const w = fw || img.naturalWidth;
+    const h = fh || img.naturalHeight;
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    canvas.getContext("2d").drawImage(img, 0, 0, w, h, 0, 0, w, h);
+    return fitWeapon(canvas);
+  }
+
+  async function staticFromPngFile(file) {
+    const url = URL.createObjectURL(file);
+    try {
+      const img = await new Promise((resolve, reject) => {
+        const el = new Image();
+        el.onload = () => resolve(el);
+        el.onerror = () => reject(new Error("Could not load PNG"));
+        el.src = url;
+      });
+      if (img.width > SIZE || img.height > SIZE) {
+        throw new Error(`Weapon PNG must be ≤${SIZE}×${SIZE} (got ${img.width}×${img.height}). Center the grip.`);
+      }
+      return fitWeapon(img);
+    } finally {
+      URL.revokeObjectURL(url);
+    }
   }
 
   async function bakeSlope(slope, weaponImg, handFrame, opts) {
@@ -250,6 +317,10 @@
     DRAW_FRAMES,
     BASE,
     validateWeapon,
+    fitWeapon,
+    staticFromGifUrl,
+    staticFromStripUrl,
+    staticFromPngFile,
     bakeAll,
     previewFrame,
     loadPreviewBases,

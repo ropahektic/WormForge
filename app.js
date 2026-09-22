@@ -78,6 +78,7 @@
     aimRadius: 8,
     aimHandRadius: 10,
     aimScrub: 16,
+    aimWeaponSrc: "",
     body: makeBody("missile"),
   };
   let aimWeaponImg = null;
@@ -99,6 +100,10 @@
       && (state.attachPick === "aim_p" || state.attachPick === "aim_u" || state.attachPick === "aim_d");
   }
 
+  function aimingWeaponPick() {
+    return tab === "aim" && state.aimMode === "png";
+  }
+
   function focusedBody() {
     if (focus === "child" && state.fire === "power" && state.body.cluster) {
       return ensureChild(state.body);
@@ -116,10 +121,11 @@
   }
 
   function bodySpriteLive() {
-    return state.fire === "power" || state.fire === "drop" || aimingPick();
+    return state.fire === "power" || state.fire === "drop" || aimingPick() || aimingWeaponPick();
   }
 
   function catalogSelected() {
+    if (aimingWeaponPick()) return state.aimWeaponSrc || "";
     if (aimingPick()) {
       if (state.attachPick === "aim_p") return state.aim_p;
       if (state.attachPick === "aim_u") return state.aim_u;
@@ -615,9 +621,13 @@
       ["upper", "Upper"],
     ];
     const pngBlock = `
-      <label class="field">Weapon PNG</label>
+      <label class="field">Weapon art</label>
+      <div class="pick-row">Source <b>${esc(state.aimWeaponSrc || "—")}</b>
+        ${state.aimWeaponSrc ? `<button type="button" class="fire" data-aim-weapon-clear="1">Clear</button>` : ""}
+      </div>
+      <p class="meta">Pick any Stock or PX sprite from the list (animated → first frame only), or upload a PNG.</p>
       <input type="file" id="aim-png" accept=".png,image/png" />
-      <p class="meta">Transparent PNG ≤60×60. Grip/pivot at image center.</p>
+      <p class="meta">Upload: transparent PNG ≤60×60, grip at center. Catalog picks scale down to fit.</p>
       <label class="field">Hand</label>
       <div class="fires">
         ${hands.map(([id, title]) => `<button type="button" class="fire ${state.aimHand === id ? "active" : ""}" data-aim-hand="${id}">${title}</button>`).join("")}
@@ -851,23 +861,17 @@
       png.addEventListener("change", async () => {
         const file = png.files && png.files[0];
         if (!file) return;
-        const url = URL.createObjectURL(file);
-        const img = new Image();
-        await new Promise((resolve, reject) => {
-          img.onload = resolve;
-          img.onerror = reject;
-          img.src = url;
-        });
-        URL.revokeObjectURL(url);
-        const err = AimBake.validateWeapon(img);
-        if (err) {
-          $("error").textContent = err;
+        try {
+          aimWeaponImg = await AimBake.staticFromPngFile(file);
+          state.aimWeaponSrc = file.name;
+          $("error").textContent = "";
+          renderPanel();
+          renderCatalog();
+        } catch (err) {
+          $("error").textContent = String(err.message || err);
           aimWeaponImg = null;
-          return;
+          state.aimWeaponSrc = "";
         }
-        $("error").textContent = "";
-        aimWeaponImg = img;
-        scheduleAimPreview();
       });
     }
     const bindRange = (id, key, fmt) => {
@@ -887,6 +891,25 @@
     $("aim-generate")?.addEventListener("click", () => generateAimFromPng());
   }
 
+  async function setAimWeaponFromCatalog(value) {
+    if (typeof AimBake === "undefined") throw new Error("Aim baker failed to load");
+    const info = spriteInfo(value);
+    const px = isPxPath(value) || !!(info && info.file);
+    if (px) {
+      const url = info ? spriteThumb(info) : ("px/" + encodeURIComponent(pxFile(value)));
+      if (!url) throw new Error("no preview for " + value);
+      const asPng = /\.png$/i.test(url) || (info && info.file && /\.png$/i.test(info.file));
+      aimWeaponImg = asPng
+        ? await AimBake.staticFromStripUrl(url, info && info.fw, info && info.fh)
+        : await AimBake.staticFromGifUrl(url);
+    } else {
+      if (!info || !info.preview) throw new Error("no stock preview for " + value);
+      aimWeaponImg = await AimBake.staticFromStripUrl(info.preview, info.fw, info.fh);
+    }
+    state.aimWeaponSrc = value;
+    $("error").textContent = "";
+  }
+
   async function generateAimFromPng() {
     if (aimBakeBusy) return;
     $("error").textContent = "";
@@ -895,7 +918,7 @@
       return;
     }
     if (!aimWeaponImg) {
-      $("error").textContent = "Choose a transparent weapon PNG first";
+      $("error").textContent = "Pick a Stock/PX sprite or upload a PNG first";
       return;
     }
     const err = AimBake.validateWeapon(aimWeaponImg);
@@ -1110,6 +1133,7 @@
     $("mode-px").hidden = !pickingBody;
     if (!pickingBody && catalogMode !== "icon") catalogMode = "icon";
     if (aimingPick() && catalogMode !== "px" && catalogMode !== "icon") catalogMode = "px";
+    if (aimingWeaponPick() && catalogMode === "icon") catalogMode = "px";
     $("mode-stock").classList.toggle("active", catalogMode === "stock");
     $("mode-px").classList.toggle("active", catalogMode === "px");
     $("mode-icon").classList.toggle("active", catalogMode === "icon");
@@ -1121,9 +1145,11 @@
       ? "filter panel icons…"
       : aimingPick() && catalogMode === "px" && !pxShowAll
         ? "filter aim sets…"
-        : catalogMode === "px"
-          ? "filter PX gifs…"
-          : "filter stock sprites…";
+        : aimingWeaponPick()
+          ? (catalogMode === "px" ? "filter weapon PX gifs…" : "filter weapon stock…")
+          : catalogMode === "px"
+            ? "filter PX gifs…"
+            : "filter stock sprites…";
     $("catalog").dataset.win = "";
     if (catalogMode === "icon") {
       paintIcons();
@@ -1185,9 +1211,9 @@
     if (tab === "body") state.attachPick = "body";
     if (tab === "custom" || tab === "attach") state.attachPick = "boom";
     if (tab === "aim") {
-      state.attachPick = state.aimMode === "png" ? "boom" : "aim_p";
-      catalogMode = "px";
-      pxShowAll = false;
+      state.attachPick = state.aimMode === "png" ? "aim_weapon" : "aim_p";
+      catalogMode = state.aimMode === "png" ? (catalogMode === "stock" ? "stock" : "px") : "px";
+      pxShowAll = state.aimMode === "png" ? true : false;
     } else {
       pxShowAll = false;
     }
@@ -1230,7 +1256,9 @@
         catalogMode = "px";
         pxShowAll = false;
       } else {
-        state.attachPick = "boom";
+        state.attachPick = "aim_weapon";
+        if (catalogMode === "icon") catalogMode = "px";
+        pxShowAll = true;
       }
       render();
       renderCatalog();
@@ -1240,6 +1268,14 @@
     if (aimHand) {
       state.aimHand = aimHand.dataset.aimHand;
       renderPanel();
+      return;
+    }
+    const aimWeaponClear = ev.target.closest("[data-aim-weapon-clear]");
+    if (aimWeaponClear) {
+      state.aimWeaponSrc = "";
+      aimWeaponImg = null;
+      render();
+      renderCatalog();
       return;
     }
     const fire = ev.target.closest("[data-fire]");
@@ -1411,6 +1447,17 @@
     const btn = ev.target.closest("button[data-name]");
     if (!btn) return;
     if (!bodySpriteLive()) return;
+    if (canAimHold() && aimingWeaponPick()) {
+      setAimWeaponFromCatalog(btn.dataset.name)
+        .then(() => {
+          render();
+          renderCatalog();
+        })
+        .catch((err) => {
+          $("error").textContent = String(err.message || err);
+        });
+      return;
+    }
     if (canAimHold() && aimingPick()) {
       applyAimPick(state.attachPick, btn.dataset.name);
       render();
