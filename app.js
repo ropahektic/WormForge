@@ -595,7 +595,7 @@
       </div>
       <label class="field">Weapon name</label>
       <input id="name" value="${state.name}" maxlength="40" />
-      <p class="meta">copy_from ${inferCopyFrom()}</p>
+      <p class="meta">copy_from ${inferCopyFrom()} · replace ${state.slot}</p>
     `;
   }
 
@@ -1508,7 +1508,7 @@
       $("error").textContent = "id must look like user.my_weapon";
       return;
     }
-    const slot = inferCopyFrom();
+    const slot = state.slot || inferCopyFrom();
     const folder = (id.split(".").pop() || "weapon").replace(/[^a-z0-9_-]/g, "_") || "weapon";
     const lua = luaSource();
     const toml = [
