@@ -570,8 +570,9 @@
     if (spec.invisible) inner.push(`${indent}sprite = false,`);
     if (spec.sprite) inner.push(`${indent}sprite = ${luaString(spec.sprite)},`);
     if (spec.count != null && spec.count !== "" && Number(spec.count) > 1) inner.push(`${indent}count = ${Number(spec.count)},`);
-    if (spec.spread != null && spec.spread !== "") inner.push(`${indent}spread = ${Number(spec.spread)},`);
-    if (spec.power != null && spec.power !== "") inner.push(`${indent}power = ${Number(spec.power)},`);
+    if (spec.spread != null && spec.spread !== "" && Number(spec.spread) !== 0) inner.push(`${indent}spread = ${Number(spec.spread)},`);
+    // Omit power 0 — engine uses stock CreateClusters launch speed (upward fan).
+    if (spec.power != null && spec.power !== "" && Number(spec.power) > 0) inner.push(`${indent}power = ${Number(spec.power)},`);
     if (spec.trail) inner.push(`${indent}trail = ${luaString(spec.trail)},`);
     if (spec.impact === true) inner.push(`${indent}impact = true,`);
     if (spec.impact === false) inner.push(`${indent}impact = false,`);
