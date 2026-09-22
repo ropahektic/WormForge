@@ -815,6 +815,7 @@
       <div class="pick-row">Sprite <b>${esc(body.sprite || "—")}</b>
         <button type="button" class="fire ${state.attachPick === "body" ? "active" : ""}" data-attach-pick="body">Catalog</button>
       </div>
+      ${powerRoot && body.homing !== "off" ? `<p class="meta">One sprite covers both HM phases (throw + lock-on burn). Split flight/burn picks come later.</p>` : ""}
       <div class="row">
         ${numField("damage", "Damage", body)}
         ${numField("gravity_pct", "Gravity %", body)}
