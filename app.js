@@ -29,6 +29,9 @@
       boom_trail: "smklt25",
       boom_impact: true,
       boom_bounce: false,
+      boom_bounces: "",
+      boom_fuse: "",
+      boom_proximity: "",
       boom_homing: "off",
       prox_id: "25",
     };
@@ -545,6 +548,15 @@
 
   function customClusterSpec() {
     const body = state.body;
+    const impact = body.boom_impact !== false;
+    // No impact → grenade bounce by default (engine also defaults bounce_pct=100).
+    const bounce = impact ? !!body.boom_bounce : body.boom_bounce !== false;
+    const bounces = body.boom_bounces === "" || body.boom_bounces == null ? 0 : Number(body.boom_bounces);
+    const fuse = body.boom_fuse === "" || body.boom_fuse == null ? 0 : Number(body.boom_fuse);
+    const proximity =
+      body.boom_proximity === "" || body.boom_proximity == null ? 0 : Number(body.boom_proximity);
+    // Delayed boom (bounce/fuse/prox) still needs a blast payload.
+    const damage = body.boom_damage === "" || body.boom_damage == null ? 30 : Number(body.boom_damage);
     return {
       kind: "cluster",
       sprite: body.boom_sprite || "banana",
@@ -552,15 +564,18 @@
       spread: body.boom_spread === "" || body.boom_spread == null ? 45 : Number(body.boom_spread),
       power: body.boom_power === "" || body.boom_power == null ? 0 : Number(body.boom_power),
       trail: body.boom_trail || "smklt25",
-      impact: body.boom_impact !== false,
-      bounce: !!body.boom_bounce,
+      impact,
+      bounce,
+      bounces: bounces > 0 ? bounces : null,
+      fuse: fuse > 0 ? fuse : null,
+      proximity: proximity > 0 ? proximity : null,
       homing: body.boom_homing && body.boom_homing !== "off" ? body.boom_homing : null,
-      damage: body.boom_impact === false ? null : (body.boom_damage === "" || body.boom_damage == null ? 30 : Number(body.boom_damage)),
+      damage,
       id: 100,
-      hurt: body.boom_impact !== false,
+      hurt: true,
       gravity: true,
       collide: true,
-      persist: false,
+      persist: !impact && proximity > 0,
     };
   }
 
@@ -577,6 +592,9 @@
     if (spec.impact === true) inner.push(`${indent}impact = true,`);
     if (spec.impact === false) inner.push(`${indent}impact = false,`);
     if (spec.bounce) inner.push(`${indent}bounce = true,`);
+    if (spec.bounces) inner.push(`${indent}bounces = ${Number(spec.bounces)},`);
+    if (spec.fuse) inner.push(`${indent}fuse = ${Number(spec.fuse)},`);
+    if (spec.proximity) inner.push(`${indent}proximity = ${Number(spec.proximity)},`);
     if (spec.homing) inner.push(`${indent}homing = ${luaString(spec.homing)},`);
     if (spec.vy != null && spec.vy !== "") inner.push(`${indent}vy = ${Number(spec.vy)},`);
     if (spec.now || spec.damage != null) {
@@ -813,7 +831,14 @@
       </div>
       <div class="mods">
         <label class="check"><input type="checkbox" data-flag="boom_impact" ${body.boom_impact !== false ? "checked" : ""} /><b>Explode on impact</b></label>
-        <label class="check"><input type="checkbox" data-flag="boom_bounce" ${body.boom_bounce ? "checked" : ""} /><b>Bounce</b></label>
+        <label class="check"><input type="checkbox" data-flag="boom_bounce" ${
+          body.boom_impact === false ? (body.boom_bounce !== false ? "checked" : "") : body.boom_bounce ? "checked" : ""
+        } /><b>Bounce</b></label>
+      </div>
+      <div class="row">
+        ${numField("boom_bounces", "Bounces then boom (0=∞)", body)}
+        ${numField("boom_fuse", "Fuse ms (0=off)", body)}
+        ${numField("boom_proximity", "Proximity px (0=off)", body)}
       </div>
       <label class="field">Homing</label>
       <div class="fires">${homingBtns}</div>
@@ -1601,7 +1626,11 @@
         state.attachPick = "boom";
       }
     }
-    if (flag === "boom_impact") body.boom_impact = ev.target.checked;
+    if (flag === "boom_impact") {
+      body.boom_impact = ev.target.checked;
+      // Unchecking impact → grenade bounce by default.
+      if (!ev.target.checked && body.boom_bounce === false) body.boom_bounce = true;
+    }
     if (flag === "boom_bounce") body.boom_bounce = ev.target.checked;
     render();
   });
