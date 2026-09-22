@@ -640,7 +640,7 @@
       const s = catalogHits[i];
       const box = thumbBox(s.fw || 32, s.fh || 32);
       const value = spriteValue(s);
-      html += `<button type="button" data-name="${esc(value)}" class="${value === selected ? "selected" : ""}" style="top:${i * ROW}px;height:${ROW}px"><span class="thumb" style="width:${box.w}px;height:${box.h}px"><img src="${spriteThumb(s)}" alt="" draggable="false" /></span><span>${esc(s.name)}</span><span class="sid">${s.file ? "gif" : (s.id == null ? "—" : s.id)}</span></button>`;
+      html += `<button type="button" data-name="${esc(value)}" class="${value === selected ? "selected" : ""}" style="top:${i * ROW}px;height:${ROW}px"><span class="thumb" style="width:${box.w}px;height:${box.h}px"><img src="${spriteThumb(s)}" alt="" draggable="false" style="width:${box.w}px" /></span><span>${esc(s.name)}</span><span class="sid">${s.file ? "gif" : (s.id == null ? "—" : s.id)}</span></button>`;
     }
     html += "</div>";
     el.innerHTML = html;

@@ -185,6 +185,7 @@
     .thumb {
       display: block;
       overflow: hidden;
+      flex-shrink: 0;
       background:
         linear-gradient(45deg, #2a261c 25%, transparent 25%) 0 0 / 8px 8px,
         linear-gradient(45deg, #0e0d0b 25%, #2a261c 0) 4px 4px / 8px 8px;
@@ -192,9 +193,9 @@
     .thumb img, .stage-clip img {
       display: block;
       image-rendering: pixelated;
-      width: 100%;
+      max-width: none;
+      width: auto;
       height: auto;
-      object-fit: contain;
     }
     .icon-grid {
       display: grid;
@@ -248,6 +249,11 @@
       background:
         linear-gradient(45deg, #2a261c 25%, transparent 25%) 0 0 / 16px 16px,
         linear-gradient(45deg, #0e0d0b 25%, #2a261c 0) 8px 8px / 16px 16px;
+      overflow: hidden;
+    }
+    .stage-clip {
+      overflow: hidden;
+      flex-shrink: 0;
     }
     .catalog img, .stage img, .icon-grid img {
       pointer-events: none;
@@ -315,6 +321,6 @@
     </section>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="app.js?v=web4"></script>
+  <script src="app.js?v=web5"></script>
 </body>
 </html>
