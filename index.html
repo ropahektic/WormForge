@@ -9,8 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --sky: #5a7388;
-      --dirt: #6e675a;
+      --sky: #c9dff0;
+      --dirt: #e8e0d0;
       --panel: #f7f3ea;
       --ink: #1a2218;
       --muted: #5a6554;
@@ -23,7 +23,6 @@
       --stage-b: #e8e0d0;
       --err: #a83228;
       --radius: 2px;
-      --page-ink: #e8e4d8;
     }
     * { box-sizing: border-box; }
     body {
@@ -31,18 +30,17 @@
       font: 500 14px/1.4 "Chakra Petch", sans-serif;
       color: var(--ink);
       background:
-        linear-gradient(180deg, var(--sky) 0%, var(--dirt) 38%, #5a5448 100%);
+        linear-gradient(180deg, var(--sky) 0%, var(--dirt) 42%, var(--dirt) 100%);
       min-height: 100vh;
     }
     .app { max-width: 1280px; margin: 0 auto; padding: 22px 16px 56px; }
     .brand {
-      margin: 0 0 10px;
+      margin: 0 0 8px;
     }
     .logo {
       display: block;
-      width: min(560px, 100%);
+      width: min(420px, 100%);
       height: auto;
-      background: #000;
     }
     h1 {
       position: absolute;
@@ -55,29 +53,28 @@
       border: 0;
     }
     p.lead {
-      margin: 0 0 10px;
-      color: var(--page-ink);
+      margin: 0 0 8px;
+      color: var(--muted);
       font-size: 14px;
       max-width: 52rem;
-      opacity: 0.9;
     }
     .bar {
       display: flex;
       flex-wrap: wrap;
       gap: 0 4px;
       align-items: baseline;
-      margin: 0 0 22px;
+      margin: 0 0 18px;
       font-size: 14px;
     }
     .bar a {
-      color: var(--page-ink);
+      color: var(--ink);
       text-decoration: underline;
       text-underline-offset: 3px;
       font-weight: 600;
     }
-    .bar a:hover { color: #fff; }
+    .bar a:hover { color: var(--accent); }
     .bar .sep {
-      color: rgba(232, 228, 216, 0.55);
+      color: var(--muted);
       margin: 0 8px;
       user-select: none;
     }
@@ -100,8 +97,17 @@
     .work {
       display: grid;
       grid-template-columns: 200px 1fr 320px;
+      grid-template-rows: auto 1fr;
       gap: 12px;
       align-items: start;
+    }
+    .work > .tree { grid-column: 1; grid-row: 1; }
+    .work > .editor { grid-column: 2; grid-row: 1; }
+    .work > .lua { grid-column: 2; grid-row: 2; margin-top: 0; }
+    .work > .sprites {
+      grid-column: 3;
+      grid-row: 1 / span 2;
+      align-self: stretch;
     }
     .panel {
       background: var(--panel);
@@ -322,7 +328,7 @@
       margin: 6px 0 0;
       font: 500 12px/1.35 "IBM Plex Mono", monospace;
     }
-    .lua { margin-top: 12px; }
+    .lua { margin-top: 0; }
     pre {
       margin: 0;
       white-space: pre-wrap;
@@ -332,9 +338,21 @@
       border: 1px solid var(--line);
       border-radius: var(--radius);
       padding: 10px 12px;
+      max-height: 420px;
+      overflow: auto;
     }
     @media (max-width: 980px) {
-      .work { grid-template-columns: 1fr; }
+      .work {
+        grid-template-columns: 1fr;
+        grid-template-rows: none;
+      }
+      .work > .tree,
+      .work > .editor,
+      .work > .lua,
+      .work > .sprites {
+        grid-column: auto;
+        grid-row: auto;
+      }
     }
   </style>
 </head>
@@ -342,7 +360,7 @@
   <div class="app">
     <div class="brand">
       <h1>WormForge</h1>
-      <img class="logo" src="assets/wormforge-logo.png" width="560" height="186" alt="WormForge — a modding API for Worms Armageddon" />
+      <img class="logo" src="assets/wormforge-logo.png" width="420" height="100" alt="WormForge — a modding API for Worms Armageddon" />
     </div>
     <p class="lead">DLL next to WA.exe · WormKit · examples in Mods/</p>
     <div class="bar">
@@ -380,14 +398,14 @@
         <div class="stage"><div class="stage-clip" id="stage-clip"><img id="sprite-img" alt="" /></div></div>
         <div class="catalog" id="catalog"></div>
       </aside>
-    </div>
 
-    <section class="panel lua">
-      <h2>weapons.lua</h2>
-      <pre id="preview"></pre>
-    </section>
+      <section class="panel lua">
+        <h2>weapons.lua</h2>
+        <pre id="preview"></pre>
+      </section>
+    </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="app.js?v=web10"></script>
+  <script src="app.js?v=web11"></script>
 </body>
 </html>
