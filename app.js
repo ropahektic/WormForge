@@ -145,16 +145,27 @@
 
   const packFiles = new Map();
 
+  // Engine Display-id aliases (_2) and hash stubs are not real sprites.
+  function junkStockName(name) {
+    const n = String(name || "").toLowerCase();
+    return !n || n.includes("#") || n.endsWith("_2");
+  }
+
+  function usableStock(s) {
+    if (!s || junkStockName(s.name)) return false;
+    if (s.file) return true;
+    return !!s.preview;
+  }
+
   function spriteThumb(s) {
     if (s.preview) return s.preview;
     if (s.file) return "px/" + encodeURIComponent(s.file);
-    if (s.name) return "stock/" + encodeURIComponent(s.name) + ".png";
     return "";
   }
 
   function spriteSource() {
     if (catalogMode === "px") return catalog.px_sprites || [];
-    return catalog.sprites || [];
+    return (catalog.sprites || []).filter(usableStock);
   }
 
   function luaString(v) {
@@ -569,18 +580,25 @@
     if (sprite) {
       img.style.display = "block";
       img.onload = () => {
-        layoutStage({
-          fw: img.naturalWidth || (info && info.fw) || 32,
-          fh: img.naturalHeight || (info && info.fh) || 32,
-          frames: 1,
-          fps: 10,
-        });
+        if (px) {
+          layoutStage({
+            fw: img.naturalWidth || (info && info.fw) || 32,
+            fh: img.naturalHeight || (info && info.fh) || 32,
+            frames: 1,
+            fps: 10,
+          });
+          stopStage();
+          return;
+        }
+        layoutStage(info || { fw: img.naturalWidth || 32, fh: img.naturalHeight || 32, frames: 1, fps: 10 });
         stopStage();
+        stageRaf = requestAnimationFrame(tickStage);
       };
-      const next = info ? spriteThumb(info) : (px ? "px/" + encodeURIComponent(pxFile(sprite)) : "stock/" + encodeURIComponent(sprite) + ".png");
+      const next = info ? spriteThumb(info) : (px ? "px/" + encodeURIComponent(pxFile(sprite)) : "");
       if (!next) {
         stopStage();
         img.removeAttribute("src");
+        img.removeAttribute("data-src");
         img.style.display = "none";
       } else if (img.dataset.src !== next) {
         img.dataset.src = next;
@@ -591,6 +609,7 @@
     } else {
       stopStage();
       img.removeAttribute("src");
+      img.removeAttribute("data-src");
       img.style.display = "none";
     }
   }
@@ -932,7 +951,7 @@
       fetch("data/px_sprites.json").then((r) => r.json()),
     ]);
     catalog = {
-      sprites,
+      sprites: (sprites || []).filter(usableStock),
       px_sprites: px,
       slots: meta.slots || [],
       icons: meta.icons || [],

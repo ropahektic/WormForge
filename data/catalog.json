@@ -145,82 +145,424 @@
   },
   "icons": [
     {
-      "name": "mortar",
-      "fw": 60,
-      "fh": 60,
-      "preview": "stock/hi/mortar.png"
+      "name": "airstrke",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/airstrke.png"
     },
     {
-      "name": "grenade",
-      "fw": 60,
-      "fh": 60,
-      "preview": "stock/hi/grenade.png"
+      "name": "aqua",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/aqua.png"
     },
     {
-      "name": "cluster",
-      "fw": 60,
-      "fh": 60,
-      "preview": "stock/hi/cluster.png"
+      "name": "armagedn",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/armagedn.png"
+    },
+    {
+      "name": "axe",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/axe.png"
     },
     {
       "name": "banana",
-      "fw": 60,
-      "fh": 60,
+      "fw": 32,
+      "fh": 32,
       "preview": "stock/hi/banana.png"
     },
     {
-      "name": "dynamite",
-      "fw": 60,
-      "fh": 60,
-      "preview": "stock/hi/dynamite.png"
+      "name": "baseball",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/baseball.png"
     },
     {
-      "name": "drill",
-      "fw": 60,
-      "fh": 60,
-      "preview": "stock/hi/drill.png"
+      "name": "bazooka",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/bazooka.png"
     },
     {
-      "name": "sbanana",
-      "fw": 30,
-      "fh": 30,
-      "preview": "stock/hi/sbanana.png"
-    },
-    {
-      "name": "hgrenade",
-      "fw": 60,
-      "fh": 60,
-      "preview": "stock/hi/hgrenade.png"
-    },
-    {
-      "name": "tamborin",
-      "fw": 60,
-      "fh": 60,
-      "preview": "stock/hi/tamborin.png"
-    },
-    {
-      "name": "mbbomb",
-      "fw": 100,
-      "fh": 100,
-      "preview": "stock/hi/mbbomb.png"
-    },
-    {
-      "name": "petrolbm",
-      "fw": 60,
-      "fh": 60,
-      "preview": "stock/hi/petrolbm.png"
-    },
-    {
-      "name": "donkey",
-      "fw": 158,
-      "fh": 246,
-      "preview": "stock/hi/donkey.png"
+      "name": "blwtorch",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/blwtorch.png"
     },
     {
       "name": "bullet",
-      "fw": 60,
-      "fh": 60,
+      "fw": 32,
+      "fh": 32,
       "preview": "stock/hi/bullet.png"
+    },
+    {
+      "name": "bungee",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/bungee.png"
+    },
+    {
+      "name": "canister",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/canister.png"
+    },
+    {
+      "name": "carpet",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/carpet.png"
+    },
+    {
+      "name": "clone",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/clone.png"
+    },
+    {
+      "name": "cluster",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/cluster.png"
+    },
+    {
+      "name": "cow",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/cow.png"
+    },
+    {
+      "name": "cratespy",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/cratespy.png"
+    },
+    {
+      "name": "damagex2",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/damagex2.png"
+    },
+    {
+      "name": "donkey",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/donkey.png"
+    },
+    {
+      "name": "dragball",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/dragball.png"
+    },
+    {
+      "name": "drill",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/drill.png"
+    },
+    {
+      "name": "dynamite",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/dynamite.png"
+    },
+    {
+      "name": "firepnch",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/firepnch.png"
+    },
+    {
+      "name": "firestrk",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/firestrk.png"
+    },
+    {
+      "name": "freeze",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/freeze.png"
+    },
+    {
+      "name": "girder",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/girder.png"
+    },
+    {
+      "name": "girders",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/girders.png"
+    },
+    {
+      "name": "gravity",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/gravity.png"
+    },
+    {
+      "name": "grenade",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/grenade.png"
+    },
+    {
+      "name": "handgun",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/handgun.png"
+    },
+    {
+      "name": "hgrenade",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/hgrenade.png"
+    },
+    {
+      "name": "hmissile",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/hmissile.png"
+    },
+    {
+      "name": "invisibl",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/invisibl.png"
+    },
+    {
+      "name": "jetpack",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/jetpack.png"
+    },
+    {
+      "name": "kamikaze",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/kamikaze.png"
+    },
+    {
+      "name": "laser",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/laser.png"
+    },
+    {
+      "name": "launch",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/launch.png"
+    },
+    {
+      "name": "longbow",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/longbow.png"
+    },
+    {
+      "name": "mbbomb",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/mbbomb.png"
+    },
+    {
+      "name": "mine",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/mine.png"
+    },
+    {
+      "name": "minestrk",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/minestrk.png"
+    },
+    {
+      "name": "mingvase",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/mingvase.png"
+    },
+    {
+      "name": "minigun",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/minigun.png"
+    },
+    {
+      "name": "mole",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/mole.png"
+    },
+    {
+      "name": "molestrk",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/molestrk.png"
+    },
+    {
+      "name": "mortar",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/mortar.png"
+    },
+    {
+      "name": "nuke",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/nuke.png"
+    },
+    {
+      "name": "oldwoman",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/oldwoman.png"
+    },
+    {
+      "name": "parachut",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/parachut.png"
+    },
+    {
+      "name": "petrolbm",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/petrolbm.png"
+    },
+    {
+      "name": "pigeon",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/pigeon.png"
+    },
+    {
+      "name": "postal",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/postal.png"
+    },
+    {
+      "name": "prod",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/prod.png"
+    },
+    {
+      "name": "quake",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/quake.png"
+    },
+    {
+      "name": "rope",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/rope.png"
+    },
+    {
+      "name": "sbanana",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/sbanana.png"
+    },
+    {
+      "name": "scales",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/scales.png"
+    },
+    {
+      "name": "select",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/select.png"
+    },
+    {
+      "name": "sheep",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/sheep.png"
+    },
+    {
+      "name": "shotgun",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/shotgun.png"
+    },
+    {
+      "name": "shpstrke",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/shpstrke.png"
+    },
+    {
+      "name": "skipgo",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/skipgo.png"
+    },
+    {
+      "name": "skunk",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/skunk.png"
+    },
+    {
+      "name": "speed",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/speed.png"
+    },
+    {
+      "name": "sprsheep",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/sprsheep.png"
+    },
+    {
+      "name": "suicide",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/suicide.png"
+    },
+    {
+      "name": "surender",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/surender.png"
+    },
+    {
+      "name": "tamborin",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/tamborin.png"
+    },
+    {
+      "name": "teleport",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/teleport.png"
+    },
+    {
+      "name": "thrower",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/thrower.png"
+    },
+    {
+      "name": "uzi",
+      "fw": 32,
+      "fh": 32,
+      "preview": "stock/hi/uzi.png"
     }
   ]
 }
