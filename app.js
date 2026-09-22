@@ -358,13 +358,6 @@
       </div>
       <label class="field">Weapon name</label>
       <input id="name" value="${state.name}" maxlength="40" />
-      <div class="panel-icon">
-        <img src="/extract/hi/${esc(state.panel_icon)}.png" alt="" />
-        <div>
-          <b>${esc(state.panel_icon)}</b>
-          <p class="note">Panel graphic. Copies that stock weapon's hi/lo panel art onto this slot.</p>
-        </div>
-      </div>
       <p class="note">copy_from ${inferCopyFrom()} is the stock fire path. Options below are only what the overlay writes today.</p>
     `;
   }
