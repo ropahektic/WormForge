@@ -48,6 +48,13 @@
     }
     if (keep !== "custom") body.custom_cluster = false;
     if (keep !== "homing" && focus === "root") body.homing = "off";
+    if (keep !== "fuse" && focus === "root") body.fuse = false;
+  }
+
+  function syncBasedOnToAttributes() {
+    const req = requiredDonor();
+    if (req) adoptBasedOn(req);
+    else restoreBasedOnIfFree();
   }
 
   let catalog = { sprites: [], px_sprites: [], slots: [], icons: [], slot_icons: {} };
@@ -62,6 +69,9 @@
     id: "user.my_weapon",
     name: "My Weapon",
     slot: "bazooka",
+    based_on: "bazooka",
+    /** Prior based_on while a stock attribute temporarily needs another donor. */
+    based_on_stash: null,
     panel_icon: "bazooka",
     fire: "power",
     teleport: false,
@@ -142,29 +152,110 @@
     return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
 
-  function inferCopyFrom() {
+  /**
+   * Stock fuse / homing / cluster need that stock weapon's fire block via
+   * copy_from. Panel slot (what you replace) is never touched by attributes.
+   * Based on is sticky: attributes may adopt a required donor, then restore
+   * the previous based_on when the attribute is cleared.
+   */
+  function requiredDonor() {
     if (state.fire === "hitscan") return "uzi";
     if (state.fire === "drop") return state.body.fuse ? "dynamite" : "mine";
     if (state.fire === "cursor") return state.teleport ? "teleport" : "air_strike";
-    // Custom clusters use on_fire LuaActor; keep a plain power donor.
-    if (state.body.custom_cluster) {
-      if (state.body.fuse) return "grenade";
-      return "bazooka";
-    }
+    if (state.body.custom_cluster) return null;
     if (state.body.cluster) return "cluster_bomb";
     if (state.body.homing === "avoid") return "homing_pigeon";
     if (state.body.homing === "dodge") return "magic_bullet";
     if (state.body.homing !== "off") return "homing_missile";
     if (state.body.fuse) return "grenade";
+    return null;
+  }
+
+  function firePath() {
+    const req = requiredDonor();
+    const donor = state.based_on;
+    if (state.fire === "hitscan") {
+      return { donor, forced: true, reason: "Hitscan fire path" };
+    }
+    if (state.fire === "drop") {
+      return state.body.fuse
+        ? { donor, forced: true, reason: "Fuse drop (dynamite fire path)" }
+        : { donor, forced: true, reason: "Placeable mine fire path" };
+    }
+    if (state.fire === "cursor") {
+      return state.teleport
+        ? { donor, forced: true, reason: "Teleport select path" }
+        : { donor, forced: true, reason: "Cursor strike path" };
+    }
+    if (state.body.custom_cluster) {
+      return state.body.fuse
+        ? { donor, forced: false, reason: "Fuse body; custom clusters are Lua" }
+        : { donor, forced: false, reason: "Power body; custom clusters are Lua" };
+    }
+    if (req === "cluster_bomb") {
+      return { donor, forced: true, reason: "Stock clusters need the Cluster Bomb fire path" };
+    }
+    if (req === "homing_pigeon") {
+      return { donor, forced: true, reason: "Stock avoid-homing needs the Homing Pigeon fire path" };
+    }
+    if (req === "magic_bullet") {
+      return { donor, forced: true, reason: "Stock dodge-homing needs the Magic Bullet fire path" };
+    }
+    if (req === "homing_missile") {
+      return { donor, forced: true, reason: "Stock lock-on needs the Homing Missile fire path" };
+    }
+    if (req === "grenade") {
+      return { donor, forced: true, reason: "Fuse needs the Grenade fire path" };
+    }
+    return { donor, forced: false, reason: "Default power fire path" };
+  }
+
+  function inferCopyFrom() {
+    return state.based_on;
+  }
+
+  /** Adopt a donor required by a stock attribute — never touches panel slot. */
+  function adoptBasedOn(donor) {
+    if (!donor || state.based_on === donor) return;
+    if (state.based_on_stash == null) state.based_on_stash = state.based_on;
+    state.based_on = donor;
+  }
+
+  /** Restore stashed based_on once no attribute still requires a donor. */
+  function restoreBasedOnIfFree() {
+    if (requiredDonor()) return;
+    if (state.based_on_stash != null) {
+      state.based_on = state.based_on_stash;
+      state.based_on_stash = null;
+    }
+  }
+
+  /** Stable defaults when switching Fire type only — never for fuse/homing/etc. */
+  function defaultSlotForFire(fire) {
+    if (fire === "hitscan") return "uzi";
+    if (fire === "drop") return "mine";
+    if (fire === "cursor") return "air_strike";
     return "bazooka";
   }
 
-  function syncSlotFromTree() {
+  function defaultBasedOnForFire(fire) {
+    return defaultSlotForFire(fire);
+  }
+
+  function applyFireTypeSlot(fire) {
     const prevDefault = defaultIcon(state.slot);
-    state.slot = inferCopyFrom();
+    state.slot = defaultSlotForFire(fire);
+    state.based_on = defaultBasedOnForFire(fire);
+    state.based_on_stash = null;
     if (!state.panel_icon || state.panel_icon === prevDefault) {
       state.panel_icon = defaultIcon(state.slot);
     }
+  }
+
+  function firePathBlurb() {
+    const path = firePath();
+    const tag = path.forced ? "required" : "default";
+    return `Panel <b>${esc(state.slot)}</b> · based on <b>${esc(path.donor)}</b> (${tag}) — ${esc(path.reason)}`;
   }
 
   function visibleTabs() {
@@ -522,14 +613,14 @@
   }
 
   function luaSource() {
-    const copy = inferCopyFrom();
+    const path = firePath();
     const lines = [
-      `-- copy_from ${copy}`,
+      `-- panel ${state.slot}; based_on ${path.donor}${path.forced ? ` (${path.reason})` : ""}`,
       "",
       "wa.weapons.replace({",
       `  weapon = ${luaString(state.slot)},`,
       `  name = ${luaString(state.name)},`,
-      `  copy_from = ${luaString(copy)},`,
+      `  copy_from = ${luaString(path.donor)},`,
     ];
     if (state.fire === "cursor" && state.teleport) {
       lines.push("  on_select = { cursor = true },");
@@ -543,9 +634,9 @@
   }
 
   function renderTree() {
-    const copy = inferCopyFrom();
+    const path = firePath();
     const bits = [];
-    bits.push(`<button type="button" class="tree-btn ${focus === "root" ? "active" : ""}" data-focus="root">${esc(state.name)}<div class="meta">${state.fire} · ${copy}</div></button>`);
+    bits.push(`<button type="button" class="tree-btn ${focus === "root" ? "active" : ""}" data-focus="root">${esc(state.name)}<div class="meta">${esc(state.slot)} · based on ${esc(path.donor)}</div></button>`);
     if (state.fire === "power" && state.body.cluster && !state.body.custom_cluster) {
       const child = ensureChild(state.body);
       bits.push(`<button type="button" class="tree-btn child ${focus === "child" ? "active" : ""}" data-focus="child">↳ stock bits · ${esc(child.sprite || "clustlet")}</button>`);
@@ -582,6 +673,7 @@
       ["drop", "Drop"],
       ["cursor", "Cursor"],
     ];
+    const path = firePath();
     return `
       <label class="field">Fire</label>
       <div class="fires">
@@ -591,11 +683,20 @@
         <div><label class="field">Panel slot</label>
           <select id="slot">${catalog.slots.map((s) => `<option value="${s}" ${s === state.slot ? "selected" : ""}>${s}</option>`).join("")}</select>
         </div>
+        <div><label class="field">Based on</label>
+          <select id="based_on">${catalog.slots.map((s) => `<option value="${s}" ${s === state.based_on ? "selected" : ""}>${s}</option>`).join("")}</select>
+        </div>
+      </div>
+      <div class="row">
         <div><label class="field">Mod id</label><input id="id" value="${state.id}" /></div>
       </div>
       <label class="field">Weapon name</label>
       <input id="name" value="${state.name}" maxlength="40" />
-      <p class="meta">copy_from ${inferCopyFrom()} · replace ${state.slot}</p>
+      <div class="path-box">
+        <div class="path-row"><span>Replaces</span><b>${esc(state.slot)}</b></div>
+        <div class="path-row"><span>Based on</span><b>${esc(path.donor)}</b>${path.forced ? ' <em>attribute</em>' : ""}</div>
+        <p class="meta">${esc(path.reason)}. Panel slot, aiming, and icons stay yours. Stock fuse / homing / cluster only change Based on (and restore it when cleared).</p>
+      </div>
     `;
   }
 
@@ -613,7 +714,7 @@
       ${row("aim_p", "Flat")}
       ${row("aim_u", "Uphill")}
       ${row("aim_d", "Downhill")}
-      <p class="meta">One sheet fills all slopes. Draw/undraw are eaten unless you bake From PNG.</p>
+      <p class="meta">Bound to panel slot <b>${esc(state.slot)}</b>, not the fire path. One sheet fills slopes; draw/undraw are eaten unless you bake From PNG.</p>
     `;
     const hands = [
       ["mid", "Mid"],
@@ -727,33 +828,51 @@
         ${numField("mask", "Detect mask", body)}
       </div>` : ""}
       <div class="mods">
-        ${showFuse ? `<label class="check"><input type="checkbox" data-flag="fuse" ${body.fuse ? "checked" : ""} /><b>${drop ? "Dynamite" : "Fuse"}</b></label>` : ""}
-        ${showHoming ? `<label class="check"><input type="checkbox" data-flag="homingOn" ${body.homing !== "off" ? "checked" : ""} /><b>Homing</b></label>` : ""}
-        ${showStock ? `<label class="check"><input type="checkbox" data-flag="cluster" ${body.cluster ? "checked" : ""} /><b>Stock clusters</b></label>` : ""}
-        ${showCustom ? `<label class="check"><input type="checkbox" data-flag="custom_cluster" ${body.custom_cluster ? "checked" : ""} /><b>Custom clusters</b></label>` : ""}
+        ${showFuse ? `<label class="check"><input type="checkbox" data-flag="fuse" ${body.fuse ? "checked" : ""} /><b>${drop ? "Dynamite" : "Fuse"}</b>${!drop ? '<span class="hint">sets Based on → grenade</span>' : ""}</label>` : ""}
+        ${showHoming ? `<label class="check"><input type="checkbox" data-flag="homingOn" ${body.homing !== "off" ? "checked" : ""} /><b>Stock homing</b><span class="hint">sets Based on → HM / pigeon / MB</span></label>` : ""}
+        ${showStock ? `<label class="check"><input type="checkbox" data-flag="cluster" ${body.cluster ? "checked" : ""} /><b>Stock clusters</b><span class="hint">sets Based on → cluster bomb</span></label>` : ""}
+        ${showCustom ? `<label class="check"><input type="checkbox" data-flag="custom_cluster" ${body.custom_cluster ? "checked" : ""} /><b>Custom clusters</b><span class="hint">Lua bits; keeps Based on</span></label>` : ""}
       </div>
+      ${powerRoot ? `<p class="meta">${firePathBlurb()}</p>` : ""}
       ${customInline}
     `;
   }
 
   function homingPanel() {
     const body = focusedBody();
+    const bit = focus === "child";
     const opts = [
-      ["lock", "Lock"],
-      ["avoid", "Avoid"],
-      ["dodge", "Dodge"],
+      ["lock", "Lock", "homing_missile"],
+      ["avoid", "Avoid", "homing_pigeon"],
+      ["dodge", "Dodge", "magic_bullet"],
     ];
+    const path = firePath();
     return `
+      <p class="meta">${bit
+        ? "Bit homing patches the stock cluster bit after the Cluster Bomb fire path."
+        : "Root stock homing adopts Based on (HM / pigeon / MB). Panel slot, sprite, and aiming stay unchanged."}</p>
       <div class="fires">
-        ${opts.map(([id, title]) => `<button type="button" class="fire ${body.homing === id ? "active" : ""}" data-homing="${id}">${title}</button>`).join("")}
+        ${opts.map(([id, title, donor]) => `<button type="button" class="fire ${body.homing === id ? "active" : ""}" data-homing="${id}">${title}</button>`).join("")}
       </div>
+      ${!bit ? `<div class="path-box" style="margin-top:10px">
+        <div class="path-row"><span>Panel</span><b>${esc(state.slot)}</b></div>
+        <div class="path-row"><span>Based on</span><b>${esc(path.donor)}</b></div>
+        <p class="meta">${esc(path.reason)}</p>
+        <p class="meta">Lock → Homing Missile · Avoid → Homing Pigeon · Dodge → Magic Bullet</p>
+      </div>` : ""}
     `;
   }
 
   function clusterPanel() {
     ensureChild(state.body);
+    const path = firePath();
     return `
-      <button type="button" class="primary" data-open-child="child">Edit stock bits</button>
+      <div class="path-box">
+        <div class="path-row"><span>Panel</span><b>${esc(state.slot)}</b></div>
+        <div class="path-row"><span>Based on</span><b>${esc(path.donor)}</b></div>
+        <p class="meta">${esc(path.reason)}. Bit sprite / damage / bit-homing still edit on top of that path.</p>
+      </div>
+      <button type="button" class="primary" data-open-child="child" style="margin-top:10px">Edit stock bits</button>
     `;
   }
 
@@ -1192,6 +1311,7 @@
     const name = $("name");
     const id = $("id");
     const slot = $("slot");
+    const basedOn = $("based_on");
     if (name) name.addEventListener("input", () => { state.name = name.value; renderTree(); renderLua(); });
     if (id) id.addEventListener("input", () => { state.id = id.value.trim(); renderLua(); });
     if (slot) slot.addEventListener("change", () => {
@@ -1200,6 +1320,11 @@
       if (!state.panel_icon || state.panel_icon === prevDefault) {
         state.panel_icon = defaultIcon(state.slot);
       }
+      render();
+    });
+    if (basedOn) basedOn.addEventListener("change", () => {
+      state.based_on = basedOn.value;
+      state.based_on_stash = null;
       render();
     });
   }
@@ -1280,7 +1405,9 @@
     }
     const fire = ev.target.closest("[data-fire]");
     if (fire) {
-      state.fire = fire.dataset.fire;
+      const next = fire.dataset.fire;
+      const fireChanged = next !== state.fire;
+      state.fire = next;
       focus = "root";
       if (state.fire !== "power") {
         state.body.cluster = false;
@@ -1293,7 +1420,7 @@
       if (state.fire === "hitscan" || state.fire === "cursor") {
         catalogMode = "icon";
       }
-      syncSlotFromTree();
+      if (fireChanged) applyFireTypeSlot(state.fire);
       render();
       renderCatalog();
       return;
@@ -1307,7 +1434,7 @@
     const homing = ev.target.closest("[data-homing]");
     if (homing) {
       focusedBody().homing = homing.dataset.homing;
-      if (focus === "root") syncSlotFromTree();
+      if (focus === "root") syncBasedOnToAttributes();
       render();
       return;
     }
@@ -1351,7 +1478,13 @@
     const body = state.body;
     if (flag === "fuse") {
       body.fuse = ev.target.checked;
-      if (focus === "root") syncSlotFromTree();
+      if (ev.target.checked && state.fire === "power") clearPowerExclusive("fuse");
+      if (state.fire === "drop") {
+        state.based_on = body.fuse ? "dynamite" : "mine";
+        state.based_on_stash = null;
+      } else if (focus === "root") {
+        syncBasedOnToAttributes();
+      }
     }
     if (flag === "homingOn") {
       if (ev.target.checked) {
@@ -1360,7 +1493,7 @@
       } else {
         body.homing = "off";
       }
-      if (focus === "root") syncSlotFromTree();
+      if (focus === "root") syncBasedOnToAttributes();
     }
     if (flag === "cluster") {
       if (ev.target.checked) {
@@ -1371,7 +1504,7 @@
         body.cluster = false;
         focus = "root";
       }
-      if (focus === "root") syncSlotFromTree();
+      syncBasedOnToAttributes();
     }
     if (flag === "custom_cluster") {
       if (ev.target.checked) {
@@ -1384,11 +1517,14 @@
         body.custom_cluster = false;
         if (tab === "custom") tab = "body";
       }
-      if (focus === "root") syncSlotFromTree();
+      syncBasedOnToAttributes();
     }
     if (flag === "teleport") {
       state.teleport = ev.target.checked;
-      syncSlotFromTree();
+      if (state.fire === "cursor") {
+        state.based_on = state.teleport ? "teleport" : "air_strike";
+        state.based_on_stash = null;
+      }
     }
     if (flag === "prox_on") body.prox_on = ev.target.checked;
     if (flag === "boom_on") {

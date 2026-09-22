@@ -268,6 +268,24 @@
       font-size: 13px;
     }
     .pick-row b { font-family: "IBM Plex Mono", monospace; font-weight: 500; }
+    .path-box {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      background: var(--input);
+    }
+    .path-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: baseline;
+      font-size: 13px;
+      margin: 0 0 4px;
+    }
+    .path-row span { color: var(--muted); min-width: 72px; }
+    .path-row b { font-family: "IBM Plex Mono", monospace; font-weight: 500; }
+    .path-row em { font-style: normal; color: var(--accent); font-size: 11px; font-weight: 700; text-transform: uppercase; }
+    .check .hint { color: var(--muted); font-size: 12px; font-weight: 500; }
     .count { float: right; color: var(--muted); font-size: 12px; font-weight: 500; }
     .cat-mode { display: flex; gap: 0; margin: 8px 0; border: 1px solid var(--line); }
     .cat-mode button {
@@ -508,8 +526,8 @@
   </div>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/omggif@1.0.10/omggif.js"></script>
-  <script src="aim_bake.js?v=web22"></script>
-  <script src="app.js?v=web22"></script>
+  <script src="aim_bake.js?v=web24"></script>
+  <script src="app.js?v=web25"></script>
   <script>
     (() => {
       const root = document.documentElement;
