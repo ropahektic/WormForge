@@ -299,6 +299,36 @@
     }
     .px-more:not([hidden]) { display: block; }
     .px-more:hover { color: var(--accent); border-color: var(--accent); }
+    .aim-mode { display: flex; gap: 0; margin: 0 0 10px; border: 1px solid var(--line); }
+    .aim-mode button {
+      flex: 1;
+      background: transparent;
+      color: var(--ink);
+      border: 0;
+      border-right: 1px solid var(--line);
+      border-radius: 0;
+      padding: 6px 4px;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .aim-mode button:last-child { border-right: 0; }
+    .aim-mode button.active { background: var(--accent); color: var(--accent-ink); }
+    .aim-preview {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 10px 0;
+      padding: 12px;
+      background: var(--input);
+      border: 1px solid var(--line);
+      image-rendering: pixelated;
+    }
+    .aim-preview canvas { width: 120px; height: 120px; image-rendering: pixelated; }
+    .aim-sliders { display: grid; gap: 8px; margin: 8px 0; }
+    .aim-sliders label { display: grid; grid-template-columns: 72px 1fr 40px; gap: 8px; align-items: center; font-size: 12px; }
+    .aim-sliders input[type="range"] { width: 100%; }
     .catalog {
       position: relative;
       height: 360px;
@@ -477,7 +507,9 @@
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="app.js?v=web18"></script>
+  <script src="https://cdn.jsdelivr.net/npm/omggif@1.0.10/omggif.js"></script>
+  <script src="aim_bake.js?v=web19"></script>
+  <script src="app.js?v=web19"></script>
   <script>
     (() => {
       const root = document.documentElement;

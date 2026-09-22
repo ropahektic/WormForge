@@ -69,8 +69,20 @@
     aim_p: "",
     aim_u: "",
     aim_d: "",
+    draw_p: "",
+    draw_u: "",
+    draw_d: "",
+    aimMode: "sets",
+    aimHand: "mid",
+    aimScale: 1,
+    aimRadius: 8,
+    aimHandRadius: 10,
+    aimScrub: 16,
     body: makeBody("missile"),
   };
+  let aimWeaponImg = null;
+  let aimBakeBusy = false;
+  let aimPreviewRaf = 0;
 
   function ensureChild(body) {
     if (!body.child) body.child = makeBody("clustlet");
@@ -83,6 +95,7 @@
 
   function aimingPick() {
     return tab === "aim"
+      && state.aimMode === "sets"
       && (state.attachPick === "aim_p" || state.attachPick === "aim_u" || state.attachPick === "aim_d");
   }
 
@@ -287,6 +300,9 @@
     state.aim_p = spriteValue(family.p);
     state.aim_u = spriteValue(family.u);
     state.aim_d = spriteValue(family.d);
+    state.draw_p = "";
+    state.draw_u = "";
+    state.draw_d = "";
   }
 
   function catalogHasPath(path) {
@@ -297,6 +313,9 @@
 
   function applyAimPick(slot, value) {
     state[slot] = value;
+    state.draw_p = "";
+    state.draw_u = "";
+    state.draw_d = "";
     const fam = slopeFamily(value);
     if (!fam) return;
     const fill = (key, path) => {
@@ -325,6 +344,12 @@
     if (p) lines.push(`    weaponlnk = ${luaString(aimPackPath(p))},`);
     if (u) lines.push(`    weaponlnku = ${luaString(aimPackPath(u))},`);
     if (d) lines.push(`    weaponlnkd = ${luaString(aimPackPath(d))},`);
+    const tp = state.draw_p;
+    const tu = state.draw_u;
+    const td = state.draw_d;
+    if (tp) lines.push(`    wthrow = ${luaString(aimPackPath(tp))},`);
+    if (tu) lines.push(`    wthrowu = ${luaString(aimPackPath(tu))},`);
+    if (td) lines.push(`    wthrowd = ${luaString(aimPackPath(td))},`);
     lines.push("  },");
     return lines;
   }
@@ -569,6 +594,7 @@
   }
 
   function aimPanel() {
+    const mode = state.aimMode === "png" ? "png" : "sets";
     const row = (key, label) => {
       const val = state[key] || "—";
       return `<div class="pick-row">${label} <b>${esc(val)}</b>
@@ -576,12 +602,48 @@
         ${state[key] ? `<button type="button" class="fire" data-aim-clear="${key}">Clear</button>` : ""}
       </div>`;
     };
-    return `
+    const setsBlock = `
       <label class="field">Hold sprites</label>
       ${row("aim_p", "Flat")}
       ${row("aim_u", "Uphill")}
       ${row("aim_d", "Downhill")}
-      <p class="meta">One sheet fills all slopes. Draw/undraw are eaten.</p>
+      <p class="meta">One sheet fills all slopes. Draw/undraw are eaten unless you bake From PNG.</p>
+    `;
+    const hands = [
+      ["mid", "Mid"],
+      ["lower", "Lower"],
+      ["upper", "Upper"],
+    ];
+    const pngBlock = `
+      <label class="field">Weapon PNG</label>
+      <input type="file" id="aim-png" accept=".png,image/png" />
+      <p class="meta">Transparent PNG ≤60×60. Grip/pivot at image center.</p>
+      <label class="field">Hand</label>
+      <div class="fires">
+        ${hands.map(([id, title]) => `<button type="button" class="fire ${state.aimHand === id ? "active" : ""}" data-aim-hand="${id}">${title}</button>`).join("")}
+      </div>
+      <div class="aim-sliders">
+        <label>Scale <input type="range" id="aim-scale" min="0.4" max="1.6" step="0.05" value="${state.aimScale}" /><span id="aim-scale-v">${state.aimScale.toFixed(2)}</span></label>
+        <label>Radius <input type="range" id="aim-radius" min="0" max="20" step="1" value="${state.aimRadius}" /><span id="aim-radius-v">${state.aimRadius}</span></label>
+        <label>Hand r <input type="range" id="aim-hand-r" min="0" max="22" step="1" value="${state.aimHandRadius}" /><span id="aim-hand-r-v">${state.aimHandRadius}</span></label>
+        <label>Angle <input type="range" id="aim-scrub" min="0" max="31" step="1" value="${state.aimScrub}" /><span id="aim-scrub-v">${state.aimScrub}</span></label>
+      </div>
+      <div class="aim-preview"><canvas id="aim-preview" width="60" height="60"></canvas></div>
+      <button type="button" class="primary" id="aim-generate" ${aimBakeBusy ? "disabled" : ""}>${aimBakeBusy ? "Baking…" : "Generate"}</button>
+      <p class="meta">Writes aim + draw GIFs for Flat / Uphill / Downhill into the pack.</p>
+      ${(state.aim_p || state.aim_u || state.aim_d) ? `
+        <label class="field">Current</label>
+        ${row("aim_p", "Flat")}
+        ${row("aim_u", "Uphill")}
+        ${row("aim_d", "Downhill")}
+      ` : ""}
+    `;
+    return `
+      <div class="aim-mode">
+        <button type="button" class="${mode === "sets" ? "active" : ""}" data-aim-mode="sets">GIF sets</button>
+        <button type="button" class="${mode === "png" ? "active" : ""}" data-aim-mode="png">From PNG</button>
+      </div>
+      ${mode === "png" ? pngBlock : setsBlock}
     `;
   }
 
@@ -737,6 +799,149 @@
     else if (tab === "cursor") $("panel").innerHTML = cursorPanel();
     else if (tab === "attach") $("panel").innerHTML = attachPanel();
     else $("panel").innerHTML = bodyPanel();
+    if (tab === "aim" && state.aimMode === "png") {
+      bindAimPngControls();
+      scheduleAimPreview();
+    }
+  }
+
+  function aimBakeOpts() {
+    return {
+      hand: state.aimHand,
+      scale: state.aimScale,
+      radius: state.aimRadius,
+      handRadius: state.aimHandRadius,
+    };
+  }
+
+  function scheduleAimPreview() {
+    if (aimPreviewRaf) cancelAnimationFrame(aimPreviewRaf);
+    aimPreviewRaf = requestAnimationFrame(() => {
+      aimPreviewRaf = 0;
+      paintAimPreview();
+    });
+  }
+
+  async function paintAimPreview() {
+    const canvas = $("aim-preview");
+    if (!canvas || typeof AimBake === "undefined") return;
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, 60, 60);
+    try {
+      const bases = await AimBake.loadPreviewBases("p");
+      const hand = await AimBake.loadHandImage(state.aimHand);
+      const worm = bases[Math.min(state.aimScrub, bases.length - 1)];
+      const ang = AimBake.aimAngle(state.aimScrub, AimBake.AIM_FRAMES);
+      if (!aimWeaponImg) {
+        ctx.putImageData(worm, (60 - worm.width) / 2, (60 - worm.height) / 2);
+        return;
+      }
+      const frame = AimBake.previewFrame(aimWeaponImg, hand, worm, ang, aimBakeOpts());
+      ctx.putImageData(frame, 0, 0);
+    } catch (err) {
+      ctx.fillStyle = "#888";
+      ctx.font = "10px sans-serif";
+      ctx.fillText(String(err.message || err).slice(0, 40), 2, 30);
+    }
+  }
+
+  function bindAimPngControls() {
+    const png = $("aim-png");
+    if (png) {
+      png.addEventListener("change", async () => {
+        const file = png.files && png.files[0];
+        if (!file) return;
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
+          img.src = url;
+        });
+        URL.revokeObjectURL(url);
+        const err = AimBake.validateWeapon(img);
+        if (err) {
+          $("error").textContent = err;
+          aimWeaponImg = null;
+          return;
+        }
+        $("error").textContent = "";
+        aimWeaponImg = img;
+        scheduleAimPreview();
+      });
+    }
+    const bindRange = (id, key, fmt) => {
+      const el = $(id);
+      const lab = $(`${id}-v`);
+      if (!el) return;
+      el.addEventListener("input", () => {
+        state[key] = Number(el.value);
+        if (lab) lab.textContent = fmt ? fmt(state[key]) : String(state[key]);
+        scheduleAimPreview();
+      });
+    };
+    bindRange("aim-scale", "aimScale", (v) => v.toFixed(2));
+    bindRange("aim-radius", "aimRadius");
+    bindRange("aim-hand-r", "aimHandRadius");
+    bindRange("aim-scrub", "aimScrub");
+    $("aim-generate")?.addEventListener("click", () => generateAimFromPng());
+  }
+
+  async function generateAimFromPng() {
+    if (aimBakeBusy) return;
+    $("error").textContent = "";
+    if (typeof AimBake === "undefined") {
+      $("error").textContent = "Aim baker failed to load";
+      return;
+    }
+    if (!aimWeaponImg) {
+      $("error").textContent = "Choose a transparent weapon PNG first";
+      return;
+    }
+    const err = AimBake.validateWeapon(aimWeaponImg);
+    if (err) {
+      $("error").textContent = err;
+      return;
+    }
+    aimBakeBusy = true;
+    renderPanel();
+    try {
+      const baked = await AimBake.bakeAll(aimWeaponImg, aimBakeOpts());
+      const stamp = Date.now().toString(36);
+      for (const slope of ["p", "u", "d"]) {
+        const aimName = `aim_${slope}_${stamp}.gif`;
+        const drawName = `draw_${slope}_${stamp}.gif`;
+        const aimPath = `sprites/${aimName}`;
+        const drawPath = `sprites/${drawName}`;
+        const aimFile = new File([baked[slope].aim], aimName, { type: "image/gif" });
+        const drawFile = new File([baked[slope].draw], drawName, { type: "image/gif" });
+        packFiles.set(aimPath, aimFile);
+        packFiles.set(drawPath, drawFile);
+        const preview = URL.createObjectURL(aimFile);
+        catalog.px_sprites = catalog.px_sprites.filter((s) => s.path !== aimPath);
+        catalog.px_sprites.push({
+          name: aimName.replace(/\.gif$/i, ""),
+          file: aimName,
+          path: aimPath,
+          preview,
+          fw: 60,
+          fh: 60,
+          frames: 32,
+        });
+        state[`aim_${slope}`] = aimPath;
+        state[`draw_${slope}`] = drawPath;
+      }
+      aimFamilyCache = null;
+      render();
+      renderCatalog();
+    } catch (e) {
+      $("error").textContent = String(e.message || e);
+      aimBakeBusy = false;
+      renderPanel();
+      return;
+    }
+    aimBakeBusy = false;
+    renderPanel();
   }
 
   function spriteInfo(name) {
@@ -980,7 +1185,7 @@
     if (tab === "body") state.attachPick = "body";
     if (tab === "custom" || tab === "attach") state.attachPick = "boom";
     if (tab === "aim") {
-      state.attachPick = "aim_p";
+      state.attachPick = state.aimMode === "png" ? "boom" : "aim_p";
       catalogMode = "px";
       pxShowAll = false;
     } else {
@@ -1017,6 +1222,26 @@
   });
 
   $("panel").addEventListener("click", (ev) => {
+    const aimMode = ev.target.closest("[data-aim-mode]");
+    if (aimMode) {
+      state.aimMode = aimMode.dataset.aimMode;
+      if (state.aimMode === "sets") {
+        state.attachPick = "aim_p";
+        catalogMode = "px";
+        pxShowAll = false;
+      } else {
+        state.attachPick = "boom";
+      }
+      render();
+      renderCatalog();
+      return;
+    }
+    const aimHand = ev.target.closest("[data-aim-hand]");
+    if (aimHand) {
+      state.aimHand = aimHand.dataset.aimHand;
+      renderPanel();
+      return;
+    }
     const fire = ev.target.closest("[data-fire]");
     if (fire) {
       state.fire = fire.dataset.fire;
@@ -1065,14 +1290,21 @@
     const pick = ev.target.closest("[data-attach-pick]");
     if (pick) {
       state.attachPick = pick.dataset.attachPick;
-      if (aimingPick()) catalogMode = "px";
+      if (aimingPick()) {
+        state.aimMode = "sets";
+        catalogMode = "px";
+      }
       render();
       renderCatalog();
       return;
     }
     const aimClear = ev.target.closest("[data-aim-clear]");
     if (aimClear) {
-      state[aimClear.dataset.aimClear] = "";
+      const key = aimClear.dataset.aimClear;
+      state[key] = "";
+      if (key === "aim_p") state.draw_p = "";
+      if (key === "aim_u") state.draw_u = "";
+      if (key === "aim_d") state.draw_d = "";
       render();
       renderCatalog();
     }
