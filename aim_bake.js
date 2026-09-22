@@ -82,13 +82,13 @@
     ctx.restore();
   }
 
-  function drawWeapon(ctx, img, cx, cy, angle, radius, scale) {
+  function drawWeapon(ctx, img, cx, cy, angle, radius, scale, artRotate) {
     const x = cx - Math.sin(angle) * radius;
     const y = cy + Math.cos(angle) * radius;
     const s = Math.abs(scale) || 1;
     ctx.save();
     ctx.translate(x, y);
-    ctx.rotate(angle);
+    ctx.rotate(angle + (artRotate || 0));
     ctx.scale(-s, s);
     ctx.drawImage(img, -img.width / 2, -img.height / 2);
     ctx.restore();
@@ -111,7 +111,8 @@
       off.getContext("2d").putImageData(wormFrame, 0, 0);
       ctx.drawImage(off, wx, wy);
     }
-    drawWeapon(ctx, weaponImg, cx, cy, angle, opts.radius, opts.scale);
+    const artRot = ((Number(opts.rotate) || 0) * Math.PI) / 180;
+    drawWeapon(ctx, weaponImg, cx, cy, angle, opts.radius, opts.scale, artRot);
     drawLayer(ctx, handFrame, cx, cy, angle, opts.handRadius, opts.scale);
     return ctx.getImageData(0, 0, SIZE, SIZE);
   }
@@ -327,6 +328,7 @@
       scale: Number(opts.scale) || 1,
       radius: Number(opts.radius) || 8,
       handRadius: Number(opts.handRadius) || 10,
+      rotate: Number(opts.rotate) || 0,
     };
     const out = {};
     for (const slope of ["p", "u", "d"]) {

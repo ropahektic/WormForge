@@ -85,6 +85,7 @@
     aimMode: "sets",
     aimHand: "mid",
     aimScale: 1,
+    aimRotate: 0,
     aimRadius: 8,
     aimHandRadius: 10,
     aimScrub: 16,
@@ -735,6 +736,7 @@
       </div>
       <div class="aim-sliders">
         <label>Scale <input type="range" id="aim-scale" min="0.4" max="1.6" step="0.05" value="${state.aimScale}" /><span id="aim-scale-v">${state.aimScale.toFixed(2)}</span></label>
+        <label>Rotate <input type="range" id="aim-rotate" min="-180" max="180" step="1" value="${state.aimRotate}" /><span id="aim-rotate-v">${state.aimRotate}°</span></label>
         <label>Radius <input type="range" id="aim-radius" min="0" max="20" step="1" value="${state.aimRadius}" /><span id="aim-radius-v">${state.aimRadius}</span></label>
         <label>Hand r <input type="range" id="aim-hand-r" min="0" max="22" step="1" value="${state.aimHandRadius}" /><span id="aim-hand-r-v">${state.aimHandRadius}</span></label>
         <label>Angle <input type="range" id="aim-scrub" min="0" max="31" step="1" value="${state.aimScrub}" /><span id="aim-scrub-v">${state.aimScrub}</span></label>
@@ -939,6 +941,7 @@
     return {
       hand: state.aimHand,
       scale: state.aimScale,
+      rotate: state.aimRotate,
       radius: state.aimRadius,
       handRadius: state.aimHandRadius,
     };
@@ -1005,6 +1008,7 @@
       });
     };
     bindRange("aim-scale", "aimScale", (v) => v.toFixed(2));
+    bindRange("aim-rotate", "aimRotate", (v) => `${Math.round(v)}°`);
     bindRange("aim-radius", "aimRadius");
     bindRange("aim-hand-r", "aimHandRadius");
     bindRange("aim-scrub", "aimScrub");
