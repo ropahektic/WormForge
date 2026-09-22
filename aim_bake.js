@@ -60,7 +60,8 @@
 
   function aimAngle(i, total) {
     const t = total <= 1 ? 0 : i / (total - 1);
-    return Math.PI * (1 - t);
+    // Left-facing strip (PX TurnSide < 0): π + π*FireAngle. WA mirrors for right.
+    return Math.PI * (1 + t);
   }
 
   function drawLayer(ctx, imageData, cx, cy, angle, radius, scale) {
@@ -71,10 +72,12 @@
     off.getContext("2d").putImageData(imageData, 0, 0);
     const x = cx - Math.sin(angle) * radius;
     const y = cy + Math.cos(angle) * radius;
+    const s = Math.abs(scale) || 1;
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(angle);
-    ctx.scale(scale, scale);
+    // TransformQuad(..., Scale * TurnSide, Scale) with TurnSide < 0
+    ctx.scale(-s, s);
     ctx.drawImage(off, -imageData.width / 2, -imageData.height / 2);
     ctx.restore();
   }
@@ -82,10 +85,11 @@
   function drawWeapon(ctx, img, cx, cy, angle, radius, scale) {
     const x = cx - Math.sin(angle) * radius;
     const y = cy + Math.cos(angle) * radius;
+    const s = Math.abs(scale) || 1;
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(angle);
-    ctx.scale(scale, scale);
+    ctx.scale(-s, s);
     ctx.drawImage(img, -img.width / 2, -img.height / 2);
     ctx.restore();
   }
