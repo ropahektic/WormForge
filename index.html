@@ -9,8 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --sky: #c9dff0;
-      --dirt: #e8e0d0;
+      --sky: #5a7388;
+      --dirt: #6e675a;
       --panel: #f7f3ea;
       --ink: #1a2218;
       --muted: #5a6554;
@@ -23,6 +23,7 @@
       --stage-b: #e8e0d0;
       --err: #a83228;
       --radius: 2px;
+      --page-ink: #e8e4d8;
     }
     * { box-sizing: border-box; }
     body {
@@ -30,29 +31,35 @@
       font: 500 14px/1.4 "Chakra Petch", sans-serif;
       color: var(--ink);
       background:
-        linear-gradient(180deg, var(--sky) 0%, var(--dirt) 42%, var(--dirt) 100%);
+        linear-gradient(180deg, var(--sky) 0%, var(--dirt) 38%, #5a5448 100%);
       min-height: 100vh;
     }
     .app { max-width: 1280px; margin: 0 auto; padding: 22px 16px 56px; }
     .brand {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: baseline;
-      gap: 12px 20px;
-      margin: 0 0 6px;
+      margin: 0 0 10px;
+    }
+    .logo {
+      display: block;
+      width: min(560px, 100%);
+      height: auto;
+      background: #000;
     }
     h1 {
-      margin: 0;
-      font-size: 34px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      line-height: 1;
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
     }
     p.lead {
-      margin: 0 0 14px;
-      color: var(--muted);
+      margin: 0 0 10px;
+      color: var(--page-ink);
       font-size: 14px;
       max-width: 52rem;
+      opacity: 0.9;
     }
     .bar {
       display: flex;
@@ -63,14 +70,14 @@
       font-size: 14px;
     }
     .bar a {
-      color: var(--ink);
+      color: var(--page-ink);
       text-decoration: underline;
       text-underline-offset: 3px;
       font-weight: 600;
     }
-    .bar a:hover { color: var(--accent); }
+    .bar a:hover { color: #fff; }
     .bar .sep {
-      color: var(--muted);
+      color: rgba(232, 228, 216, 0.55);
       margin: 0 8px;
       user-select: none;
     }
@@ -335,6 +342,7 @@
   <div class="app">
     <div class="brand">
       <h1>WormForge</h1>
+      <img class="logo" src="assets/wormforge-logo.png" width="560" height="186" alt="WormForge — a modding API for Worms Armageddon" />
     </div>
     <p class="lead">DLL next to WA.exe · WormKit · examples in Mods/</p>
     <div class="bar">
@@ -380,6 +388,6 @@
     </section>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="app.js?v=web9"></script>
+  <script src="app.js?v=web10"></script>
 </body>
 </html>
