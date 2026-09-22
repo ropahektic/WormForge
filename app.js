@@ -55,6 +55,8 @@
   let focus = "root";
   let catalogMode = "stock";
   let catalogHits = [];
+  let pxShowAll = false;
+  let aimFamilyCache = null;
   let stageRaf = 0;
   let state = {
     id: "user.my_weapon",
@@ -241,6 +243,50 @@
       u: base + "u" + ext,
       d: base + "d" + ext,
     };
+  }
+
+  function pxStem(s) {
+    const raw = String((s && (s.name || s.file)) || "").replace(/\\/g, "/");
+    const file = raw.includes("/") ? raw.slice(raw.lastIndexOf("/") + 1) : raw;
+    return file.replace(/\.(gif|png)$/i, "");
+  }
+
+  function aimFamilies() {
+    if (aimFamilyCache) return aimFamilyCache;
+    const by = new Map();
+    for (const s of catalog.px_sprites || []) {
+      const stem = pxStem(s);
+      const m = stem.match(/^(.*)([pud])$/i);
+      if (!m) continue;
+      const base = m[1];
+      const slope = m[2].toLowerCase();
+      let row = by.get(base);
+      if (!row) {
+        row = {};
+        by.set(base, row);
+      }
+      row[slope] = s;
+    }
+    const out = [];
+    for (const [base, parts] of by) {
+      if (!parts.p || !parts.u || !parts.d) continue;
+      out.push({
+        base,
+        label: base.replace(/_+$/, "") || base,
+        p: parts.p,
+        u: parts.u,
+        d: parts.d,
+      });
+    }
+    out.sort((a, b) => a.label.localeCompare(b.label));
+    aimFamilyCache = out;
+    return out;
+  }
+
+  function applyAimFamily(family) {
+    state.aim_p = spriteValue(family.p);
+    state.aim_u = spriteValue(family.u);
+    state.aim_d = spriteValue(family.d);
   }
 
   function catalogHasPath(path) {
@@ -829,7 +875,7 @@
     const view = el.clientHeight || 360;
     const start = Math.max(0, Math.floor(el.scrollTop / ROW) - 4);
     const end = Math.min(catalogHits.length, start + Math.ceil(view / ROW) + 8);
-    const win = `${start}:${end}:${selected}:${catalogHits.length}:${catalogMode}`;
+    const win = `${start}:${end}:${selected}:${catalogHits.length}:${catalogMode}:${aimingPick() && !pxShowAll ? "fam" : "all"}`;
     if (el.dataset.win === win) return;
     el.dataset.win = win;
     const keep = el.scrollTop;
@@ -838,7 +884,15 @@
       const s = catalogHits[i];
       const box = thumbBox(s.fw || 32, s.fh || 32);
       const value = spriteValue(s);
-      html += `<button type="button" data-name="${esc(value)}" class="${value === selected ? "selected" : ""}" style="top:${i * ROW}px;height:${ROW}px"><span class="thumb" style="width:${box.w}px;height:${box.h}px"><img src="${spriteThumb(s)}" alt="" draggable="false" style="width:${box.w}px" /></span><span>${esc(s.name)}</span><span class="sid">${s.file ? "gif" : (s.id == null ? "—" : s.id)}</span></button>`;
+      if (s._aimFamily) {
+        const fam = s._aimFamily;
+        const sel = state.aim_p === spriteValue(fam.p)
+          && state.aim_u === spriteValue(fam.u)
+          && state.aim_d === spriteValue(fam.d);
+        html += `<button type="button" data-aim-family="${esc(fam.base)}" class="${sel ? "selected" : ""}" style="top:${i * ROW}px;height:${ROW}px"><span class="thumb" style="width:${box.w}px;height:${box.h}px"><img src="${spriteThumb(fam.p)}" alt="" draggable="false" style="width:${box.w}px" /></span><span>${esc(fam.label)}</span><span class="sid">p/u/d</span></button>`;
+      } else {
+        html += `<button type="button" data-name="${esc(value)}" class="${value === selected ? "selected" : ""}" style="top:${i * ROW}px;height:${ROW}px"><span class="thumb" style="width:${box.w}px;height:${box.h}px"><img src="${spriteThumb(s)}" alt="" draggable="false" style="width:${box.w}px" /></span><span>${esc(s.name)}</span><span class="sid">${s.file ? "gif" : (s.id == null ? "—" : s.id)}</span></button>`;
+      }
     }
     html += "</div>";
     el.innerHTML = html;
@@ -847,26 +901,46 @@
 
   function renderCatalog() {
     const pickingBody = bodySpriteLive();
-    $("mode-stock").hidden = !pickingBody;
+    $("mode-stock").hidden = !pickingBody || aimingPick();
     $("mode-px").hidden = !pickingBody;
     if (!pickingBody && catalogMode !== "icon") catalogMode = "icon";
+    if (aimingPick() && catalogMode !== "px" && catalogMode !== "icon") catalogMode = "px";
     $("mode-stock").classList.toggle("active", catalogMode === "stock");
     $("mode-px").classList.toggle("active", catalogMode === "px");
     $("mode-icon").classList.toggle("active", catalogMode === "icon");
+    const more = $("px-more");
+    const showMore = aimingPick() && catalogMode === "px";
+    more.hidden = !showMore;
+    more.classList.toggle("active", pxShowAll);
+    more.textContent = pxShowAll ? "−" : "+";
     $("filter").placeholder = catalogMode === "icon"
       ? "filter panel icons…"
+      : aimingPick() && catalogMode === "px" && !pxShowAll
+        ? "filter aim sets…"
         : catalogMode === "px"
-        ? "filter PX gifs…"
-        : "filter stock sprites…";
+          ? "filter PX gifs…"
+          : "filter stock sprites…";
     $("catalog").dataset.win = "";
     if (catalogMode === "icon") {
       paintIcons();
       return;
     }
-    const src = spriteSource();
     const q = $("filter").value.trim().toLowerCase();
-    catalogHits = src.filter((s) => !q || s.name.toLowerCase().includes(q) || String(s.id ?? "").includes(q) || (s.file && s.file.toLowerCase().includes(q)));
-    $("sprite-count").textContent = q ? `${catalogHits.length} / ${src.length}` : `${src.length} ${catalogMode === "px" ? "gifs" : "sprites"}`;
+    if (aimingPick() && catalogMode === "px" && !pxShowAll) {
+      const fams = aimFamilies().filter((f) => !q || f.label.toLowerCase().includes(q) || f.base.toLowerCase().includes(q));
+      catalogHits = fams.map((f) => ({
+        ...f.p,
+        name: f.label,
+        _aimFamily: f,
+      }));
+      $("sprite-count").textContent = q
+        ? `${catalogHits.length} / ${aimFamilies().length} aim`
+        : `${catalogHits.length} aim`;
+    } else {
+      const src = spriteSource();
+      catalogHits = src.filter((s) => !q || s.name.toLowerCase().includes(q) || String(s.id ?? "").includes(q) || (s.file && s.file.toLowerCase().includes(q)));
+      $("sprite-count").textContent = q ? `${catalogHits.length} / ${src.length}` : `${src.length} ${catalogMode === "px" ? "gifs" : "sprites"}`;
+    }
     paintCatalogWindow();
     showPicked();
   }
@@ -909,6 +983,9 @@
     if (tab === "aim") {
       state.attachPick = "aim_p";
       catalogMode = "px";
+      pxShowAll = false;
+    } else {
+      pxShowAll = false;
     }
     render();
     renderCatalog();
@@ -1090,6 +1167,16 @@
       renderCatalog();
       return;
     }
+    const famBtn = ev.target.closest("button[data-aim-family]");
+    if (famBtn) {
+      const fam = aimFamilies().find((f) => f.base === famBtn.dataset.aimFamily);
+      if (fam) {
+        applyAimFamily(fam);
+        render();
+        renderCatalog();
+      }
+      return;
+    }
     const btn = ev.target.closest("button[data-name]");
     if (!btn) return;
     if (!bodySpriteLive()) return;
@@ -1117,10 +1204,16 @@
     if (catalogMode === "stock" || catalogMode === "px") paintCatalogWindow();
   });
   $("filter").addEventListener("input", renderCatalog);
+  $("px-more").addEventListener("click", () => {
+    pxShowAll = !pxShowAll;
+    $("catalog").scrollTop = 0;
+    renderCatalog();
+  });
   document.querySelector(".cat-mode").addEventListener("click", (ev) => {
     const btn = ev.target.closest("[data-catmode]");
     if (!btn) return;
     catalogMode = btn.dataset.catmode;
+    if (catalogMode !== "px") pxShowAll = false;
     $("filter").value = "";
     $("catalog").scrollTop = 0;
     renderCatalog();
