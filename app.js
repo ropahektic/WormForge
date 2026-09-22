@@ -16,10 +16,9 @@
       fuse_ms: "",
       mask: "",
       trigger: "",
-      place_on: false,
       prox_on: false,
       boom_on: false,
-      place_sprite: "crshairb",
+      boom_cluster: false,
       boom_sprite: "banana",
       boom_count: "5",
       boom_spread: "45",
@@ -73,8 +72,7 @@
   }
 
   function catalogSelected() {
-    if (tab === "attach") {
-      if (state.attachPick === "place") return state.body.place_sprite;
+    if (tab === "attach" && state.body.boom_cluster) {
       if (state.attachPick === "trail") return state.body.boom_trail;
       return state.body.boom_sprite;
     }
@@ -212,12 +210,6 @@
       }
     }
     if (state.fire === "drop" && !state.body.fuse) {
-      lines.push(...emitStep("on_place", state.body.place_on, {
-        sprite: state.body.place_sprite,
-        persist: true,
-        gravity: false,
-        collide: false,
-      }));
       lines.push(...emitStep("on_proximity", state.body.prox_on, {
         invisible: true,
         now: true,
@@ -226,7 +218,8 @@
         hurt: false,
         dirt: true,
       }));
-      lines.push(...emitStep("on_explode", state.body.boom_on, {
+      // On explode only exports once a spawn mode is chosen (cluster today).
+      lines.push(...emitStep("on_explode", state.body.boom_on && state.body.boom_cluster, {
         kind: "cluster",
         sprite: state.body.boom_sprite || "banana",
         count: state.body.boom_count === "" || state.body.boom_count == null ? 5 : Number(state.body.boom_count),
@@ -378,7 +371,7 @@
       : drop
         ? (body.fuse
           ? "Drop copies dynamite. Sprite swap works. Homing and clusters are not on this path."
-          : "Drop copies mine. This is MineEntity: proximity, rest-arm, knock, drown. Sprite is wrapped (stock blit ignores table sprite_id). Open Attach for place / proximity / explode actors.")
+          : "Drop copies mine. Projectile sprite is the mine look. Attach adds optional FX when the mine arms / detonates — not a second mine sprite.")
         : "Power copies bazooka / grenade / a homing weapon / cluster bomb. Tick at most one of homing or clusters.";
     return `
       <p class="note">${note}</p>
@@ -438,14 +431,8 @@
           `<button type="button" class="fire ${body.boom_homing === id ? "active" : ""}" data-boom-homing="${id}"><b>${title}</b><div class="note">${note}</div></button>`
       )
       .join("");
-    return `
-      <p class="note">These spawn extra LuaActors. They do not steal the mine. <code>sprite = false</code> is invisible. <code>explode.now</code> blasts during spawn. Pick a sprite in the catalog while this tab is open to set the place marker or the boom body (tick which row below).</p>
-      <label class="check"><input type="checkbox" data-flag="place_on" ${body.place_on ? "checked" : ""} /><div><b>On place</b><span>When the mine is planted. Default: persist ${esc(body.place_sprite)} marker.</span></div></label>
-      ${body.place_on ? `<p class="note">Place sprite: <b>${esc(body.place_sprite)}</b> · <button type="button" class="tab ${state.attachPick === "place" ? "active" : ""}" data-attach-pick="place">Pick from catalog</button></p>` : ""}
-      <label class="check"><input type="checkbox" data-flag="prox_on" ${body.prox_on ? "checked" : ""} /><div><b>On proximity</b><span>First worm the armed mine sees. Default: invisible dirt puff, no HP.</span></div></label>
-      ${body.prox_on ? numField("prox_id", "Proximity explosion id", body) : ""}
-      <label class="check"><input type="checkbox" data-flag="boom_on" ${body.boom_on ? "checked" : ""} /><div><b>On explode</b><span>Spawn cluster bits in the mine blast. <code>power = 0</code> lets the explosion throw them; gravity brings them down.</span></div></label>
-      ${body.boom_on ? `<p class="note">Cluster sprite: <b>${esc(body.boom_sprite)}</b> · <button type="button" class="tab ${state.attachPick === "boom" ? "active" : ""}" data-attach-pick="boom">Pick from catalog</button></p>
+    const clusterFields = body.boom_cluster
+      ? `<p class="note">Bit sprite: <b>${esc(body.boom_sprite)}</b> · <button type="button" class="tab ${state.attachPick === "boom" ? "active" : ""}" data-attach-pick="boom">Pick from catalog</button></p>
         <p class="note">Smoke trail: <b>${esc(body.boom_trail)}</b> · <button type="button" class="tab ${state.attachPick === "trail" ? "active" : ""}" data-attach-pick="trail">Pick from catalog</button></p>
         <div class="row">
           ${numField("boom_count", "Bit count", body)}
@@ -456,7 +443,17 @@
         <label class="check"><input type="checkbox" data-flag="boom_impact" ${body.boom_impact !== false ? "checked" : ""} /><div><b>Explode on impact</b><span>Detonate when a bit lands (or finishes bouncing).</span></div></label>
         <label class="check"><input type="checkbox" data-flag="boom_bounce" ${body.boom_bounce ? "checked" : ""} /><div><b>Bounce</b><span>Grenade-like terrain bounce. Rest still obeys impact.</span></div></label>
         <p class="note">Homing</p>
-        <div class="fires">${homingBtns}</div>` : ""}
+        <div class="fires">${homingBtns}</div>`
+      : "";
+    return `
+      <p class="note">Mine-only hooks. The Projectile tab owns how the mine looks. Attach only adds extra actors on arm / detonate.</p>
+      <label class="check"><input type="checkbox" data-flag="prox_on" ${body.prox_on ? "checked" : ""} /><div><b>On proximity</b><span>When the armed mine first notices a worm: invisible dirt puff (no HP). Separate from the mine's own blast.</span></div></label>
+      ${body.prox_on ? `${numField("prox_id", "Dirt puff graphic id", body)}<p class="note">Stock WA explosion shape for that puff. Damage stays 0.</p>` : ""}
+      <label class="check"><input type="checkbox" data-flag="boom_on" ${body.boom_on ? "checked" : ""} /><div><b>On explode</b><span>When this mine detonates, spawn something inside the blast.</span></div></label>
+      ${body.boom_on ? `<div class="mods" style="margin-top:10px">
+        <label class="check"><input type="checkbox" data-flag="boom_cluster" ${body.boom_cluster ? "checked" : ""} /><div><b>Cluster bits</b><span>Fan of projectiles. <code>power = 0</code> lets the mine explosion throw them; gravity brings them down.</span></div></label>
+      </div>
+      ${clusterFields || `<p class="note">Tick a spawn mode above. Only cluster bits are wired in the editor today.</p>`}` : ""}
     `;
   }
 
@@ -775,11 +772,17 @@
       state.teleport = ev.target.checked;
       syncSlotFromTree();
     }
-    if (flag === "place_on") body.place_on = ev.target.checked;
     if (flag === "prox_on") body.prox_on = ev.target.checked;
     if (flag === "boom_on") {
       body.boom_on = ev.target.checked;
-      if (ev.target.checked) state.attachPick = "boom";
+      if (!ev.target.checked) body.boom_cluster = false;
+    }
+    if (flag === "boom_cluster") {
+      body.boom_cluster = ev.target.checked;
+      if (ev.target.checked) {
+        body.boom_on = true;
+        state.attachPick = "boom";
+      }
     }
     if (flag === "boom_impact") body.boom_impact = ev.target.checked;
     if (flag === "boom_bounce") body.boom_bounce = ev.target.checked;
@@ -816,8 +819,8 @@
     if (!btn) return;
     if (!bodySpriteLive()) return;
     if (tab === "attach") {
-      if (state.attachPick === "place") state.body.place_sprite = btn.dataset.name;
-      else if (state.attachPick === "trail") state.body.boom_trail = btn.dataset.name;
+      if (!state.body.boom_cluster) return;
+      if (state.attachPick === "trail") state.body.boom_trail = btn.dataset.name;
       else state.body.boom_sprite = btn.dataset.name;
       render();
       renderCatalog();
