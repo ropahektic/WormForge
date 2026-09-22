@@ -1313,6 +1313,7 @@
       slot_icons: meta.slot_icons || {},
       templates: [],
     };
+    aimFamilyCache = null;
     render();
     bindStateInputs();
     renderCatalog();
