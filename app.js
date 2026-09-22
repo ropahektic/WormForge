@@ -42,13 +42,22 @@
 
   function clearPowerExclusive(keep) {
     const body = state.body;
-    if (keep !== "stock") {
+    // Stock paths that fight over copy_from still clear each other.
+    // Custom clusters are additive (Lua on_explode / on_fire) — never strip stock HM.
+    if (keep === "stock") {
+      body.homing = "off";
+      body.fuse = false;
+      if (focus === "child") focus = "root";
+    } else if (keep === "homing") {
+      body.cluster = false;
+      body.fuse = false;
+      if (focus === "child") focus = "root";
+    } else if (keep === "fuse") {
+      body.homing = "off";
       body.cluster = false;
       if (focus === "child") focus = "root";
     }
-    if (keep !== "custom") body.custom_cluster = false;
-    if (keep !== "homing" && focus === "root") body.homing = "off";
-    if (keep !== "fuse" && focus === "root") body.fuse = false;
+    // keep === "custom": additive, leave stock attributes alone
   }
 
   function syncBasedOnToAttributes() {
@@ -163,7 +172,7 @@
     if (state.fire === "hitscan") return "uzi";
     if (state.fire === "drop") return state.body.fuse ? "dynamite" : "mine";
     if (state.fire === "cursor") return state.teleport ? "teleport" : "air_strike";
-    if (state.body.custom_cluster) return null;
+    // Custom clusters are Lua attachments — they do not own Based on.
     if (state.body.cluster) return "cluster_bomb";
     if (state.body.homing === "avoid") return "homing_pigeon";
     if (state.body.homing === "dodge") return "magic_bullet";
@@ -189,9 +198,19 @@
         : { donor, forced: true, reason: "Cursor strike path" };
     }
     if (state.body.custom_cluster) {
-      return state.body.fuse
-        ? { donor, forced: false, reason: "Fuse body; custom clusters are Lua" }
-        : { donor, forced: false, reason: "Power body; custom clusters are Lua" };
+      const site = state.body.custom_site === "launch" ? "at launch" : "on explode";
+      const stock = state.body.homing !== "off"
+        ? "stock homing body"
+        : state.body.fuse
+          ? "fuse body"
+          : state.body.cluster
+            ? "stock cluster body"
+            : "stock power body";
+      return {
+        donor,
+        forced: !!req,
+        reason: `${stock}; custom clusters ${site} (Lua attach)`,
+      };
     }
     if (req === "cluster_bomb") {
       return { donor, forced: true, reason: "Stock clusters need the Cluster Bomb fire path" };
@@ -274,7 +293,7 @@
     if (state.fire === "power" && focus === "root") {
       tabs.push({ id: "aim", label: "Aiming" });
     }
-    if (state.fire === "power" && focus === "root" && state.body.homing !== "off" && !state.body.custom_cluster) {
+    if (state.fire === "power" && focus === "root" && state.body.homing !== "off") {
       tabs.push({ id: "homing", label: "Homing" });
     }
     if (state.fire === "power" && focus === "child" && focusedBody().homing !== "off") {
@@ -512,7 +531,13 @@
       lines.push(...emitStep("on_explode", state.body.boom_on && state.body.boom_cluster, customClusterSpec()));
     }
     if (state.fire === "power" && state.body.custom_cluster) {
-      lines.push(...emitPowerCustomFire());
+      if (state.body.custom_site === "launch") {
+        // Replaces stock body with a Lua fan (same as before).
+        lines.push(...emitPowerCustomFire());
+      } else {
+        // Attach to stock MissileEntity — same pattern as mine on_explode.
+        lines.push(...emitStep("on_explode", true, customClusterSpec()));
+      }
     }
     lines.push(...emitWormSprites());
     return lines;
@@ -799,10 +824,11 @@
     const bit = focus === "child";
     const powerRoot = state.fire === "power" && !bit;
     const drop = state.fire === "drop";
-    const showFuse = (powerRoot && body.homing === "off" && !body.cluster && !body.custom_cluster) || drop;
-    const showHoming = (powerRoot && !body.cluster && !body.custom_cluster) || bit;
-    const showStock = powerRoot && body.homing === "off" && !body.custom_cluster;
-    const showCustom = powerRoot && body.homing === "off" && !body.cluster;
+    const showFuse = (powerRoot && body.homing === "off" && !body.cluster) || drop;
+    const showHoming = (powerRoot && !body.cluster) || bit;
+    const showStock = powerRoot && body.homing === "off" && !body.fuse;
+    // Custom clusters attach like mine on_explode — fine alongside stock HM / fuse body.
+    const showCustom = powerRoot;
     const customInline = powerRoot && body.custom_cluster
       ? `<div class="mods" style="margin-top:10px">
           <label class="field">Site</label>
@@ -810,6 +836,7 @@
             <button type="button" class="fire ${body.custom_site === "explode" ? "active" : ""}" data-custom-site="explode">On explode</button>
             <button type="button" class="fire ${body.custom_site === "launch" ? "active" : ""}" data-custom-site="launch">At launch</button>
           </div>
+          ${body.homing !== "off" && body.custom_site === "launch" ? `<p class="meta">At launch replaces the stock body with a Lua fan. Prefer On explode to keep stock homing.</p>` : ""}
         </div>
         ${customClusterFields()}`
       : "";
@@ -834,7 +861,7 @@
         ${showFuse ? `<label class="check"><input type="checkbox" data-flag="fuse" ${body.fuse ? "checked" : ""} /><b>${drop ? "Dynamite" : "Fuse"}</b>${!drop ? '<span class="hint">sets Based on → grenade</span>' : ""}</label>` : ""}
         ${showHoming ? `<label class="check"><input type="checkbox" data-flag="homingOn" ${body.homing !== "off" ? "checked" : ""} /><b>Stock homing</b><span class="hint">sets Based on → HM / pigeon / MB</span></label>` : ""}
         ${showStock ? `<label class="check"><input type="checkbox" data-flag="cluster" ${body.cluster ? "checked" : ""} /><b>Stock clusters</b><span class="hint">sets Based on → cluster bomb</span></label>` : ""}
-        ${showCustom ? `<label class="check"><input type="checkbox" data-flag="custom_cluster" ${body.custom_cluster ? "checked" : ""} /><b>Custom clusters</b><span class="hint">Lua bits; keeps Based on</span></label>` : ""}
+        ${showCustom ? `<label class="check"><input type="checkbox" data-flag="custom_cluster" ${body.custom_cluster ? "checked" : ""} /><b>Custom clusters</b><span class="hint">Lua bits on explode/launch; keeps stock body</span></label>` : ""}
       </div>
       ${powerRoot ? `<p class="meta">${firePathBlurb()}</p>` : ""}
       ${customInline}

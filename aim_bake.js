@@ -113,7 +113,8 @@
     }
     const artRot = ((Number(opts.rotate) || 0) * Math.PI) / 180;
     drawWeapon(ctx, weaponImg, cx, cy, angle, opts.radius, opts.scale, artRot);
-    drawLayer(ctx, handFrame, cx, cy, angle, opts.handRadius, opts.scale);
+    // Hand size is fixed — Scale only affects the imported weapon art.
+    drawLayer(ctx, handFrame, cx, cy, angle, opts.handRadius, 1);
     return ctx.getImageData(0, 0, SIZE, SIZE);
   }
 
