@@ -19,6 +19,8 @@
       prox_on: false,
       boom_on: false,
       boom_cluster: false,
+      custom_cluster: false,
+      custom_site: "explode",
       boom_sprite: "banana",
       boom_count: "5",
       boom_spread: "45",
@@ -30,6 +32,22 @@
       boom_homing: "off",
       prox_id: "25",
     };
+  }
+
+  function usingCustomClusters() {
+    if (state.fire === "power") return !!state.body.custom_cluster;
+    if (state.fire === "drop" && !state.body.fuse) return !!(state.body.boom_on && state.body.boom_cluster);
+    return false;
+  }
+
+  function clearPowerExclusive(keep) {
+    const body = state.body;
+    if (keep !== "stock") {
+      body.cluster = false;
+      if (focus === "child") focus = "root";
+    }
+    if (keep !== "custom") body.custom_cluster = false;
+    if (keep !== "homing" && focus === "root") body.homing = "off";
   }
 
   let catalog = { sprites: [], px_sprites: [], slots: [], icons: [], slot_icons: {} };
@@ -72,9 +90,9 @@
   }
 
   function catalogSelected() {
-    if (tab === "attach" && state.body.boom_cluster) {
+    if (usingCustomClusters() && (tab === "attach" || tab === "custom" || state.attachPick === "boom" || state.attachPick === "trail")) {
       if (state.attachPick === "trail") return state.body.boom_trail;
-      return state.body.boom_sprite;
+      if (state.attachPick === "boom") return state.body.boom_sprite;
     }
     return focusedBody().sprite;
   }
@@ -87,6 +105,11 @@
     if (state.fire === "hitscan") return "uzi";
     if (state.fire === "drop") return state.body.fuse ? "dynamite" : "mine";
     if (state.fire === "cursor") return state.teleport ? "teleport" : "air_strike";
+    // Custom clusters use on_fire LuaActor; keep a plain power donor.
+    if (state.body.custom_cluster) {
+      if (state.body.fuse) return "grenade";
+      return "bazooka";
+    }
     if (state.body.cluster) return "cluster_bomb";
     if (state.body.homing === "avoid") return "homing_pigeon";
     if (state.body.homing === "dodge") return "magic_bullet";
@@ -113,15 +136,18 @@
       tabs.push({ id: "cursor", label: "Cursor" });
       return tabs;
     }
-    tabs.push({ id: "body", label: focus === "child" ? "Cluster bit" : "Projectile" });
-    if (state.fire === "power" && focus === "root" && state.body.homing !== "off") {
+    tabs.push({ id: "body", label: focus === "child" ? "Stock bit" : "Projectile" });
+    if (state.fire === "power" && focus === "root" && state.body.homing !== "off" && !state.body.custom_cluster) {
       tabs.push({ id: "homing", label: "Homing" });
     }
     if (state.fire === "power" && focus === "child" && focusedBody().homing !== "off") {
       tabs.push({ id: "homing", label: "Bit homing" });
     }
     if (state.fire === "power" && state.body.cluster && focus === "root") {
-      tabs.push({ id: "cluster", label: "Clusters" });
+      tabs.push({ id: "cluster", label: "Stock clusters" });
+    }
+    if (state.fire === "power" && state.body.custom_cluster && focus === "root") {
+      tabs.push({ id: "custom", label: "Custom clusters" });
     }
     if (state.fire === "drop" && !state.body.fuse) {
       tabs.push({ id: "attach", label: "Attach" });
@@ -196,7 +222,7 @@
     } else if (state.fire === "hitscan" && state.body.damage !== "" && state.body.damage != null) {
       lines.push("  params = {", `    damage = ${Number(state.body.damage)},`, "  },");
     }
-    if (state.fire === "power" && state.body.cluster) {
+    if (state.fire === "power" && state.body.cluster && !state.body.custom_cluster) {
       const child = ensureChild(state.body);
       lines.push("  cluster = {");
       lines.push(...emitSpriteAndParams(child, "    "));
@@ -229,62 +255,104 @@
         hurt: false,
         dirt: true,
       }));
-      // On explode only exports once a spawn mode is chosen (cluster today).
-      lines.push(...emitStep("on_explode", state.body.boom_on && state.body.boom_cluster, {
-        kind: "cluster",
-        sprite: state.body.boom_sprite || "banana",
-        count: state.body.boom_count === "" || state.body.boom_count == null ? 5 : Number(state.body.boom_count),
-        spread: state.body.boom_spread === "" || state.body.boom_spread == null ? 45 : Number(state.body.boom_spread),
-        power: state.body.boom_power === "" || state.body.boom_power == null ? 0 : Number(state.body.boom_power),
-        trail: state.body.boom_trail || "smklt25",
-        impact: state.body.boom_impact !== false,
-        bounce: !!state.body.boom_bounce,
-        homing: state.body.boom_homing && state.body.boom_homing !== "off" ? state.body.boom_homing : null,
-        damage: state.body.boom_impact === false ? null : (state.body.boom_damage === "" || state.body.boom_damage == null ? 30 : Number(state.body.boom_damage)),
-        id: 100,
-        hurt: state.body.boom_impact !== false,
-        gravity: true,
-        collide: true,
-        persist: false,
-      }));
+      lines.push(...emitStep("on_explode", state.body.boom_on && state.body.boom_cluster, customClusterSpec()));
+    }
+    if (state.fire === "power" && state.body.custom_cluster) {
+      lines.push(...emitPowerCustomFire());
     }
     return lines;
   }
 
-  function emitStep(key, on, spec) {
-    if (!on) return [];
+  function customClusterSpec() {
+    const body = state.body;
+    return {
+      kind: "cluster",
+      sprite: body.boom_sprite || "banana",
+      count: body.boom_count === "" || body.boom_count == null ? 5 : Number(body.boom_count),
+      spread: body.boom_spread === "" || body.boom_spread == null ? 45 : Number(body.boom_spread),
+      power: body.boom_power === "" || body.boom_power == null ? 0 : Number(body.boom_power),
+      trail: body.boom_trail || "smklt25",
+      impact: body.boom_impact !== false,
+      bounce: !!body.boom_bounce,
+      homing: body.boom_homing && body.boom_homing !== "off" ? body.boom_homing : null,
+      damage: body.boom_impact === false ? null : (body.boom_damage === "" || body.boom_damage == null ? 30 : Number(body.boom_damage)),
+      id: 100,
+      hurt: body.boom_impact !== false,
+      gravity: true,
+      collide: true,
+      persist: false,
+    };
+  }
+
+  function emitSpawnLines(spec, indent) {
     const inner = [];
-    if (spec.kind) inner.push(`      kind = ${luaString(spec.kind)},`);
-    if (spec.invisible) inner.push("      sprite = false,");
-    if (spec.sprite) inner.push(`      sprite = ${luaString(spec.sprite)},`);
-    if (spec.count != null && spec.count !== "" && Number(spec.count) > 1) inner.push(`      count = ${Number(spec.count)},`);
-    if (spec.spread != null && spec.spread !== "") inner.push(`      spread = ${Number(spec.spread)},`);
-    if (spec.power != null && spec.power !== "") inner.push(`      power = ${Number(spec.power)},`);
-    if (spec.trail) inner.push(`      trail = ${luaString(spec.trail)},`);
-    if (spec.impact === true) inner.push("      impact = true,");
-    if (spec.impact === false) inner.push("      impact = false,");
-    if (spec.bounce) inner.push("      bounce = true,");
-    if (spec.homing) inner.push(`      homing = ${luaString(spec.homing)},`);
-    if (spec.vy != null && spec.vy !== "") inner.push(`      vy = ${Number(spec.vy)},`);
+    if (spec.kind) inner.push(`${indent}kind = ${luaString(spec.kind)},`);
+    if (spec.invisible) inner.push(`${indent}sprite = false,`);
+    if (spec.sprite) inner.push(`${indent}sprite = ${luaString(spec.sprite)},`);
+    if (spec.count != null && spec.count !== "" && Number(spec.count) > 1) inner.push(`${indent}count = ${Number(spec.count)},`);
+    if (spec.spread != null && spec.spread !== "") inner.push(`${indent}spread = ${Number(spec.spread)},`);
+    if (spec.power != null && spec.power !== "") inner.push(`${indent}power = ${Number(spec.power)},`);
+    if (spec.trail) inner.push(`${indent}trail = ${luaString(spec.trail)},`);
+    if (spec.impact === true) inner.push(`${indent}impact = true,`);
+    if (spec.impact === false) inner.push(`${indent}impact = false,`);
+    if (spec.bounce) inner.push(`${indent}bounce = true,`);
+    if (spec.homing) inner.push(`${indent}homing = ${luaString(spec.homing)},`);
+    if (spec.vy != null && spec.vy !== "") inner.push(`${indent}vy = ${Number(spec.vy)},`);
     if (spec.now || spec.damage != null) {
       const dmg = spec.damage == null ? 0 : Number(spec.damage);
       const id = spec.id == null ? 40 : Number(spec.id);
-      inner.push(`      explode = { damage = ${dmg}, id = ${id}${spec.now ? ", now = true" : ""} },`);
+      inner.push(`${indent}explode = { damage = ${dmg}, id = ${id}${spec.now ? ", now = true" : ""} },`);
     }
-    if (spec.hurt === false) inner.push("      damage_worms = false,");
-    if (spec.dirt === true && spec.hurt === false) inner.push("      damage_terrain = true,");
-    if (spec.dirt === false && spec.hurt === false) inner.push("      damage_terrain = false,");
-    if (spec.persist === false) inner.push("      persist = false,");
-    if (spec.persist) inner.push("      persist = true,");
-    if (spec.gravity === false) inner.push("      gravity = false,");
-    if (spec.gravity === true) inner.push("      gravity = true,");
-    if (spec.collide === false) inner.push("      collide = false,");
-    if (spec.collide === true) inner.push("      collide = true,");
-    if (spec.persist || spec.invisible) inner.push("      drown = true,");
+    if (spec.hurt === false) inner.push(`${indent}damage_worms = false,`);
+    if (spec.dirt === true && spec.hurt === false) inner.push(`${indent}damage_terrain = true,`);
+    if (spec.dirt === false && spec.hurt === false) inner.push(`${indent}damage_terrain = false,`);
+    if (spec.persist === false) inner.push(`${indent}persist = false,`);
+    if (spec.persist) inner.push(`${indent}persist = true,`);
+    if (spec.gravity === false) inner.push(`${indent}gravity = false,`);
+    if (spec.gravity === true) inner.push(`${indent}gravity = true,`);
+    if (spec.collide === false) inner.push(`${indent}collide = false,`);
+    if (spec.collide === true) inner.push(`${indent}collide = true,`);
+    if (spec.persist || spec.invisible) inner.push(`${indent}drown = true,`);
+    return inner;
+  }
+
+  function emitStep(key, on, spec) {
+    if (!on) return [];
     return [
       `  ${key} = {`,
       "    spawn = {",
-      ...inner,
+      ...emitSpawnLines(spec, "      "),
+      "    },",
+      "  },",
+    ];
+  }
+
+  function emitPowerCustomFire() {
+    const cluster = customClusterSpec();
+    if (state.body.custom_site === "launch") {
+      return [
+        "  on_fire = {",
+        "    spawn = {",
+        ...emitSpawnLines(cluster, "      "),
+        "    },",
+        "  },",
+      ];
+    }
+    const body = state.body;
+    const dmg = body.damage === "" || body.damage == null ? 50 : Number(body.damage);
+    return [
+      "  on_fire = {",
+      "    spawn = {",
+      `      sprite = ${luaString(body.sprite || "missile")},`,
+      "      impact = true,",
+      "      gravity = true,",
+      "      collide = true,",
+      `      explode = { damage = ${dmg}, id = 100 },`,
+      "      on_explode = {",
+      "        spawn = {",
+      ...emitSpawnLines(cluster, "          "),
+      "        },",
+      "      },",
       "    },",
       "  },",
     ];
@@ -315,9 +383,15 @@
     const copy = inferCopyFrom();
     const bits = [];
     bits.push(`<button type="button" class="tree-btn ${focus === "root" ? "active" : ""}" data-focus="root">${esc(state.name)}<div class="note">${state.fire} · ${copy}</div></button>`);
-    if (state.fire === "power" && state.body.cluster) {
+    if (state.fire === "power" && state.body.cluster && !state.body.custom_cluster) {
       const child = ensureChild(state.body);
-      bits.push(`<button type="button" class="tree-btn child ${focus === "child" ? "active" : ""}" data-focus="child">↳ ${esc(child.sprite || "cluster bit")}</button>`);
+      bits.push(`<button type="button" class="tree-btn child ${focus === "child" ? "active" : ""}" data-focus="child">↳ stock bits · ${esc(child.sprite || "clustlet")}</button>`);
+    }
+    if (state.fire === "power" && state.body.custom_cluster) {
+      bits.push(`<button type="button" class="tree-btn child ${tab === "custom" ? "active" : ""}" data-open-custom="1">↳ custom bits · ${esc(state.body.boom_sprite || "banana")}</button>`);
+    }
+    if (state.fire === "drop" && !state.body.fuse && state.body.boom_cluster) {
+      bits.push(`<button type="button" class="tree-btn child ${tab === "attach" ? "active" : ""}" data-open-attach="1">↳ custom bits · ${esc(state.body.boom_sprite || "banana")}</button>`);
     }
     $("tree").innerHTML = bits.join("");
   }
@@ -362,21 +436,70 @@
     `;
   }
 
+  function customClusterFields() {
+    const body = state.body;
+    const powerHint = state.fire === "power" && body.custom_site === "explode"
+      ? "Launch speed 0 = parent blast throw."
+      : state.fire === "power" && body.custom_site === "launch"
+        ? "Fan at fire. Launch speed is the bit eject speed."
+        : "Launch speed 0 = mine blast throw.";
+    const homingBtns = [
+      ["off", "Off", "Fly the fan and forget."],
+      ["aim", "Aim", "Steer toward the throw cursor."],
+      ["worm", "Worm", "Steer toward the nearest other worm."],
+    ]
+      .map(
+        ([id, title, note]) =>
+          `<button type="button" class="fire ${body.boom_homing === id ? "active" : ""}" data-boom-homing="${id}"><b>${title}</b><div class="note">${note}</div></button>`
+      )
+      .join("");
+    return `
+      <p class="note">Bit sprite: <b>${esc(body.boom_sprite)}</b> · <button type="button" class="tab ${state.attachPick === "boom" ? "active" : ""}" data-attach-pick="boom">Pick from catalog</button></p>
+      <p class="note">Smoke trail: <b>${esc(body.boom_trail)}</b> · <button type="button" class="tab ${state.attachPick === "trail" ? "active" : ""}" data-attach-pick="trail">Pick from catalog</button></p>
+      <div class="row">
+        ${numField("boom_count", "Bit count", body)}
+        ${numField("boom_spread", "Fan degrees", body)}
+        ${numField("boom_power", "Launch speed", body)}
+        ${numField("boom_damage", "Bit damage", body)}
+      </div>
+      <p class="note">${powerHint}</p>
+      <label class="check"><input type="checkbox" data-flag="boom_impact" ${body.boom_impact !== false ? "checked" : ""} /><div><b>Explode on impact</b><span>Detonate when a bit lands (or finishes bouncing).</span></div></label>
+      <label class="check"><input type="checkbox" data-flag="boom_bounce" ${body.boom_bounce ? "checked" : ""} /><div><b>Bounce</b><span>Grenade-like terrain bounce. Rest still obeys impact.</span></div></label>
+      <p class="note">Homing</p>
+      <div class="fires">${homingBtns}</div>
+    `;
+  }
+
   function bodyPanel() {
     const body = focusedBody();
     const bit = focus === "child";
     const powerRoot = state.fire === "power" && !bit;
     const drop = state.fire === "drop";
-    const showFuse = (powerRoot && body.homing === "off" && !body.cluster) || drop;
-    const showHoming = powerRoot || bit;
-    const showCluster = powerRoot;
+    const showFuse = (powerRoot && body.homing === "off" && !body.cluster && !body.custom_cluster) || drop;
+    const showHoming = (powerRoot && !body.cluster && !body.custom_cluster) || bit;
+    const showStock = powerRoot && body.homing === "off" && !body.custom_cluster;
+    const showCustom = powerRoot && body.homing === "off" && !body.cluster;
     const note = bit
-      ? "First-generation bits only. Sprite, numbers, and homing are written onto the cluster slab."
+      ? "Stock cluster bits (WeaponEntry slab). Sprite, numbers, and lock/avoid/dodge homing."
       : drop
         ? (body.fuse
           ? "Drop copies dynamite. Sprite swap works. Homing and clusters are not on this path."
-          : "Drop copies mine. Projectile sprite is the mine look. Attach adds optional FX when the mine arms / detonates — not a second mine sprite.")
-        : "Power copies bazooka / grenade / a homing weapon / cluster bomb. Tick at most one of homing or clusters.";
+          : "Drop copies mine. Projectile sprite is the mine look. Attach hosts Custom clusters on explode.")
+        : body.custom_cluster
+          ? "Custom clusters use on_fire (LuaActor). Stock missile path is replaced."
+          : body.cluster
+            ? "Stock clusters copy cluster bomb. Edit bits under Stock clusters / tree."
+            : "Power: Homing, Stock clusters, or Custom clusters — pick one.";
+    const customInline = powerRoot && body.custom_cluster
+      ? `<div class="mods" style="margin-top:10px">
+          <p class="note">Site</p>
+          <div class="fires">
+            <button type="button" class="fire ${body.custom_site === "explode" ? "active" : ""}" data-custom-site="explode"><b>On projectile explode</b><div class="note">Throwable body, then Custom cluster fan in the blast.</div></button>
+            <button type="button" class="fire ${body.custom_site === "launch" ? "active" : ""}" data-custom-site="launch"><b>At launch</b><div class="note">Fan fires immediately instead of a single missile.</div></button>
+          </div>
+        </div>
+        ${customClusterFields()}`
+      : "";
     return `
       <p class="note">${note}</p>
       <div class="row">
@@ -395,8 +518,10 @@
       <div class="mods">
         ${showFuse ? `<label class="check"><input type="checkbox" data-flag="fuse" ${body.fuse ? "checked" : ""} /><div><b>${drop ? "Dynamite fuse" : "Fuse / bounce"}</b><span>${drop ? "On: dynamite. Off: mine." : "Copies grenade instead of bazooka."}</span></div></label>` : ""}
         ${showHoming ? `<label class="check"><input type="checkbox" data-flag="homingOn" ${body.homing !== "off" ? "checked" : ""} /><div><b>Homing</b><span>${bit ? "Writes lock/avoid/dodge onto the bits." : "Copies homing missile / pigeon / magic bullet."}</span></div></label>` : ""}
-        ${showCluster ? `<label class="check"><input type="checkbox" data-flag="cluster" ${body.cluster ? "checked" : ""} /><div><b>Burst into clusters</b><span>Copies cluster bomb. One generation of bits.</span></div></label>` : ""}
+        ${showStock ? `<label class="check"><input type="checkbox" data-flag="cluster" ${body.cluster ? "checked" : ""} /><div><b>Stock clusters</b><span>Copies cluster bomb. One generation of stock bits.</span></div></label>` : ""}
+        ${showCustom ? `<label class="check"><input type="checkbox" data-flag="custom_cluster" ${body.custom_cluster ? "checked" : ""} /><div><b>Custom clusters</b><span>LuaActor fan via on_fire. Count, spread, trail, aim/worm.</span></div></label>` : ""}
       </div>
+      ${customInline}
     `;
   }
 
@@ -418,46 +543,33 @@
   function clusterPanel() {
     ensureChild(state.body);
     return `
-      <p class="note">One generation. Bits can change sprite, damage/gravity/wind/bounce, and homing. Nested cluster-in-cluster is not wired.</p>
-      <button type="button" class="primary" data-open-child="child">Edit cluster bits</button>
+      <p class="note">Stock clusters — one generation on the WeaponEntry slab. Nested stock cluster-in-cluster is not wired.</p>
+      <button type="button" class="primary" data-open-child="child">Edit stock bits</button>
+    `;
+  }
+
+  function customPanel() {
+    const body = state.body;
+    return `
+      <div class="fires" style="margin-bottom:10px">
+        <button type="button" class="fire ${body.custom_site === "explode" ? "active" : ""}" data-custom-site="explode"><b>On projectile explode</b><div class="note">Body first, then fan in the blast.</div></button>
+        <button type="button" class="fire ${body.custom_site === "launch" ? "active" : ""}" data-custom-site="launch"><b>At launch</b><div class="note">Fan at fire.</div></button>
+      </div>
+      ${customClusterFields()}
     `;
   }
 
   function attachPanel() {
     const body = state.body;
-    const homingBtns = [
-      ["off", "Off", "Fly the fan and forget."],
-      ["aim", "Aim", "Steer toward the throw cursor."],
-      ["worm", "Worm", "Steer toward the nearest other worm."],
-    ]
-      .map(
-        ([id, title, note]) =>
-          `<button type="button" class="fire ${body.boom_homing === id ? "active" : ""}" data-boom-homing="${id}"><b>${title}</b><div class="note">${note}</div></button>`
-      )
-      .join("");
-    const clusterFields = body.boom_cluster
-      ? `<p class="note">Bit sprite: <b>${esc(body.boom_sprite)}</b> · <button type="button" class="tab ${state.attachPick === "boom" ? "active" : ""}" data-attach-pick="boom">Pick from catalog</button></p>
-        <p class="note">Smoke trail: <b>${esc(body.boom_trail)}</b> · <button type="button" class="tab ${state.attachPick === "trail" ? "active" : ""}" data-attach-pick="trail">Pick from catalog</button></p>
-        <div class="row">
-          ${numField("boom_count", "Bit count", body)}
-          ${numField("boom_spread", "Fan degrees", body)}
-          ${numField("boom_power", "Launch speed (0 = mine blast)", body)}
-          ${numField("boom_damage", "Bit damage", body)}
-        </div>
-        <label class="check"><input type="checkbox" data-flag="boom_impact" ${body.boom_impact !== false ? "checked" : ""} /><div><b>Explode on impact</b><span>Detonate when a bit lands (or finishes bouncing).</span></div></label>
-        <label class="check"><input type="checkbox" data-flag="boom_bounce" ${body.boom_bounce ? "checked" : ""} /><div><b>Bounce</b><span>Grenade-like terrain bounce. Rest still obeys impact.</span></div></label>
-        <p class="note">Homing</p>
-        <div class="fires">${homingBtns}</div>`
-      : "";
     return `
-      <p class="note">Mine-only hooks. The Projectile tab owns how the mine looks. Attach only adds extra actors on arm / detonate.</p>
-      <label class="check"><input type="checkbox" data-flag="prox_on" ${body.prox_on ? "checked" : ""} /><div><b>On proximity</b><span>When the armed mine first notices a worm: invisible dirt puff (no HP). Separate from the mine's own blast.</span></div></label>
+      <p class="note">Mine hooks. Projectile owns the mine look. Custom clusters use the same fan fields as power.</p>
+      <label class="check"><input type="checkbox" data-flag="prox_on" ${body.prox_on ? "checked" : ""} /><div><b>On proximity</b><span>When the armed mine first notices a worm: invisible dirt puff (no HP).</span></div></label>
       ${body.prox_on ? `${numField("prox_id", "Dirt puff graphic id", body)}<p class="note">Stock WA explosion shape for that puff. Damage stays 0.</p>` : ""}
       <label class="check"><input type="checkbox" data-flag="boom_on" ${body.boom_on ? "checked" : ""} /><div><b>On explode</b><span>When this mine detonates, spawn something inside the blast.</span></div></label>
       ${body.boom_on ? `<div class="mods" style="margin-top:10px">
-        <label class="check"><input type="checkbox" data-flag="boom_cluster" ${body.boom_cluster ? "checked" : ""} /><div><b>Cluster bits</b><span>Fan of projectiles. <code>power = 0</code> lets the mine explosion throw them; gravity brings them down.</span></div></label>
+        <label class="check"><input type="checkbox" data-flag="boom_cluster" ${body.boom_cluster ? "checked" : ""} /><div><b>Custom clusters</b><span>LuaActor fan in the mine blast.</span></div></label>
       </div>
-      ${clusterFields || `<p class="note">Tick a spawn mode above. Only cluster bits are wired in the editor today.</p>`}` : ""}
+      ${body.boom_cluster ? customClusterFields() : `<p class="note">Tick Custom clusters to configure the fan.</p>`}` : ""}
     `;
   }
 
@@ -483,6 +595,7 @@
     else if (tab === "hitscan") $("panel").innerHTML = hitscanPanel();
     else if (tab === "homing") $("panel").innerHTML = homingPanel();
     else if (tab === "cluster") $("panel").innerHTML = clusterPanel();
+    else if (tab === "custom") $("panel").innerHTML = customPanel();
     else if (tab === "cursor") $("panel").innerHTML = cursorPanel();
     else if (tab === "attach") $("panel").innerHTML = attachPanel();
     else $("panel").innerHTML = bodyPanel();
@@ -699,10 +812,30 @@
     const btn = ev.target.closest("[data-tab]");
     if (!btn) return;
     tab = btn.dataset.tab;
+    if (tab === "body") state.attachPick = "body";
+    if (tab === "custom" || tab === "attach") state.attachPick = "boom";
     render();
   });
 
   $("tree").addEventListener("click", (ev) => {
+    const openCustom = ev.target.closest("[data-open-custom]");
+    if (openCustom) {
+      focus = "root";
+      tab = "custom";
+      state.attachPick = "boom";
+      render();
+      renderCatalog();
+      return;
+    }
+    const openAttach = ev.target.closest("[data-open-attach]");
+    if (openAttach) {
+      focus = "root";
+      tab = "attach";
+      state.attachPick = "boom";
+      render();
+      renderCatalog();
+      return;
+    }
     const btn = ev.target.closest("[data-focus]");
     if (!btn) return;
     setFocus(btn.dataset.focus);
@@ -716,6 +849,7 @@
       focus = "root";
       if (state.fire !== "power") {
         state.body.cluster = false;
+        state.body.custom_cluster = false;
         state.body.homing = "off";
       }
       if (state.fire === "drop" && (state.body.sprite === "missile" || !state.body.sprite)) {
@@ -729,6 +863,12 @@
       renderCatalog();
       return;
     }
+    const customSite = ev.target.closest("[data-custom-site]");
+    if (customSite) {
+      state.body.custom_site = customSite.dataset.customSite;
+      render();
+      return;
+    }
     const homing = ev.target.closest("[data-homing]");
     if (homing) {
       focusedBody().homing = homing.dataset.homing;
@@ -738,7 +878,7 @@
     }
     const boomHoming = ev.target.closest("[data-boom-homing]");
     if (boomHoming) {
-      focusedBody().boom_homing = boomHoming.dataset.boomHoming;
+      state.body.boom_homing = boomHoming.dataset.boomHoming;
       render();
       return;
     }
@@ -758,25 +898,41 @@
 
   $("panel").addEventListener("change", (ev) => {
     const flag = ev.target.dataset.flag;
-    const body = focusedBody();
+    const body = state.body;
     if (flag === "fuse") {
       body.fuse = ev.target.checked;
       if (focus === "root") syncSlotFromTree();
     }
     if (flag === "homingOn") {
-      body.homing = ev.target.checked ? "lock" : "off";
-      if (focus === "root" && ev.target.checked) {
-        state.body.cluster = false;
+      if (ev.target.checked) {
+        clearPowerExclusive("homing");
+        body.homing = "lock";
+      } else {
+        body.homing = "off";
       }
       if (focus === "root") syncSlotFromTree();
     }
     if (flag === "cluster") {
-      body.cluster = ev.target.checked;
-      if (body.cluster) {
+      if (ev.target.checked) {
+        clearPowerExclusive("stock");
+        body.cluster = true;
         ensureChild(body);
-        body.homing = "off";
       } else {
+        body.cluster = false;
         focus = "root";
+      }
+      if (focus === "root") syncSlotFromTree();
+    }
+    if (flag === "custom_cluster") {
+      if (ev.target.checked) {
+        clearPowerExclusive("custom");
+        body.custom_cluster = true;
+        if (!body.custom_site) body.custom_site = "explode";
+        state.attachPick = "boom";
+        tab = "custom";
+      } else {
+        body.custom_cluster = false;
+        if (tab === "custom") tab = "body";
       }
       if (focus === "root") syncSlotFromTree();
     }
@@ -804,7 +960,8 @@
   $("panel").addEventListener("input", (ev) => {
     const key = ev.target.dataset.num;
     if (key) {
-      focusedBody()[key] = ev.target.value;
+      if (key.startsWith("boom_") || key === "prox_id") state.body[key] = ev.target.value;
+      else focusedBody()[key] = ev.target.value;
       renderLua();
       return;
     }
@@ -830,10 +987,10 @@
     const btn = ev.target.closest("button[data-name]");
     if (!btn) return;
     if (!bodySpriteLive()) return;
-    if (tab === "attach") {
-      if (!state.body.boom_cluster) return;
+    if (usingCustomClusters() && (tab === "attach" || tab === "custom" || state.attachPick === "boom" || state.attachPick === "trail")) {
       if (state.attachPick === "trail") state.body.boom_trail = btn.dataset.name;
-      else state.body.boom_sprite = btn.dataset.name;
+      else if (state.attachPick === "boom") state.body.boom_sprite = btn.dataset.name;
+      else focusedBody().sprite = btn.dataset.name;
       render();
       renderCatalog();
       return;
