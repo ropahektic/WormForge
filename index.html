@@ -7,8 +7,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script>
+    (() => {
+      const t = localStorage.getItem("wf-theme");
+      document.documentElement.setAttribute("data-theme", t === "dark" ? "dark" : "light");
+    })();
+  </script>
   <style>
     :root {
+      --wash-top: #9eb8cc;
       --sky: #c9dff0;
       --dirt: #e8e0d0;
       --panel: #f7f3ea;
@@ -21,8 +28,26 @@
       --input: #fffdf8;
       --stage-a: #cfc6b4;
       --stage-b: #e8e0d0;
+      --cat-line: #d5cdb8;
       --err: #a83228;
       --radius: 2px;
+    }
+    html[data-theme="dark"] {
+      --wash-top: #2a3540;
+      --sky: #1a222a;
+      --dirt: #14181a;
+      --panel: #1c211c;
+      --ink: #e8e4d8;
+      --muted: #9aa392;
+      --line: #3d4a3c;
+      --accent: #4a9a58;
+      --accent-ink: #0e140f;
+      --pick: #273028;
+      --input: #121612;
+      --stage-a: #2a3028;
+      --stage-b: #1a1e18;
+      --cat-line: #2a3028;
+      --err: #ff8d7a;
     }
     * { box-sizing: border-box; }
     body {
@@ -30,7 +55,7 @@
       font: 500 14px/1.4 "Chakra Petch", sans-serif;
       color: var(--ink);
       background:
-        linear-gradient(180deg, #9eb8cc 0%, var(--sky) 18%, var(--dirt) 42%, var(--dirt) 100%);
+        linear-gradient(180deg, var(--wash-top) 0%, var(--sky) 18%, var(--dirt) 42%, var(--dirt) 100%);
       min-height: 100vh;
     }
     .app { max-width: 1280px; margin: 0 auto; padding: 22px 16px 56px; }
@@ -62,7 +87,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 0 4px;
-      align-items: baseline;
+      align-items: center;
       margin: 0 0 18px;
       font-size: 14px;
     }
@@ -77,6 +102,30 @@
       color: var(--muted);
       margin: 0 8px;
       user-select: none;
+    }
+    .bar .grow { flex: 1; min-width: 12px; }
+    .theme {
+      display: inline-flex;
+      gap: 2px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+    }
+    .theme button {
+      margin: 0;
+      padding: 4px 10px;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font: inherit;
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+      border-radius: var(--radius);
+    }
+    .theme button.active {
+      background: var(--accent);
+      color: var(--accent-ink);
     }
     button.ghost {
       display: inline-block;
@@ -256,7 +305,7 @@
       color: var(--ink);
       text-align: left;
       border: 0;
-      border-bottom: 1px solid #d5cdb8;
+      border-bottom: 1px solid var(--cat-line);
       padding: 4px 8px;
     }
     .catalog button:hover { background: var(--pick); }
@@ -369,6 +418,11 @@
       <a href="downloads/mods.zip">Example Mods</a>
       <span class="sep">·</span>
       <a href="https://github.com/ropahektic/WormForge">GitHub</a>
+      <span class="grow"></span>
+      <div class="theme" id="theme">
+        <button type="button" data-theme="light" class="active">☼</button>
+        <button type="button" data-theme="dark">☾</button>
+      </div>
     </div>
 
     <div class="work">
@@ -406,6 +460,25 @@
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="app.js?v=web13"></script>
+  <script src="app.js?v=web14"></script>
+  <script>
+    (() => {
+      const root = document.documentElement;
+      const box = document.getElementById("theme");
+      const sync = (theme) => {
+        root.setAttribute("data-theme", theme);
+        localStorage.setItem("wf-theme", theme);
+        box.querySelectorAll("button").forEach((b) => {
+          b.classList.toggle("active", b.dataset.theme === theme);
+        });
+      };
+      sync(root.getAttribute("data-theme") === "dark" ? "dark" : "light");
+      box.addEventListener("click", (ev) => {
+        const btn = ev.target.closest("button[data-theme]");
+        if (!btn) return;
+        sync(btn.dataset.theme);
+      });
+    })();
+  </script>
 </body>
 </html>
