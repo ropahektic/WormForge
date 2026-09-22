@@ -202,8 +202,33 @@
     return null;
   }
 
+  /** Match gfx::spr_key — WA treats these as transparent in .spr sheets. */
+  function isSprKey(r, g, b, a) {
+    return a < 16
+      || r + g + b < 12
+      || (r === 128 && g === 128 && b === 192)
+      || (r === 255 && g === 0 && b === 255);
+  }
+
+  /** Punch stock key colors to real alpha (Gfx.dir / extract PNGs bake black opaque). */
+  function punchSprKey(canvas) {
+    const ctx = canvas.getContext("2d");
+    const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const d = img.data;
+    for (let i = 0; i < d.length; i += 4) {
+      if (isSprKey(d[i], d[i + 1], d[i + 2], d[i + 3])) {
+        d[i] = 0;
+        d[i + 1] = 0;
+        d[i + 2] = 0;
+        d[i + 3] = 0;
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+    return canvas;
+  }
+
   /** Scale source down to fit SIZE×SIZE (never upscale). Returns a canvas. */
-  function fitWeapon(source) {
+  function fitWeapon(source, punchKey) {
     const sw = source.width || source.naturalWidth;
     const sh = source.height || source.naturalHeight;
     if (!sw || !sh) throw new Error("empty weapon frame");
@@ -224,6 +249,7 @@
     } else {
       ctx.drawImage(source, 0, 0, sw, sh, 0, 0, w, h);
     }
+    if (punchKey) punchSprKey(canvas);
     return canvas;
   }
 
@@ -231,7 +257,8 @@
   async function staticFromGifUrl(url) {
     const frames = await loadGifFrames(url);
     if (!frames.length) throw new Error("empty GIF");
-    return fitWeapon(frames[0]);
+    // PX sheets often use real GIF transparency; still punch leftover black keys.
+    return fitWeapon(frames[0], true);
   }
 
   /** Crop first cell of a vertical stock strip PNG. */
@@ -248,7 +275,8 @@
     canvas.width = w;
     canvas.height = h;
     canvas.getContext("2d").drawImage(img, 0, 0, w, h, 0, 0, w, h);
-    return fitWeapon(canvas);
+    punchSprKey(canvas);
+    return fitWeapon(canvas, true);
   }
 
   async function staticFromPngFile(file) {
@@ -263,7 +291,8 @@
       if (img.width > SIZE || img.height > SIZE) {
         throw new Error(`Weapon PNG must be ≤${SIZE}×${SIZE} (got ${img.width}×${img.height}). Center the grip.`);
       }
-      return fitWeapon(img);
+      // Author PNGs already have real alpha — do not punch intentional near-black pixels.
+      return fitWeapon(img, false);
     } finally {
       URL.revokeObjectURL(url);
     }
