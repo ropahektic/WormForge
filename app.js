@@ -911,8 +911,7 @@
     const more = $("px-more");
     const showMore = aimingPick() && catalogMode === "px";
     more.hidden = !showMore;
-    more.classList.toggle("active", pxShowAll);
-    more.textContent = pxShowAll ? "−" : "+";
+    more.textContent = pxShowAll ? "Show Relevant" : "Show All";
     $("filter").placeholder = catalogMode === "icon"
       ? "filter panel icons…"
       : aimingPick() && catalogMode === "px" && !pxShowAll

@@ -286,20 +286,19 @@
     .px-more {
       display: none;
       width: 100%;
-      margin: 0 0 8px;
-      padding: 4px 8px;
-      background: var(--panel);
+      margin: 8px 0 0;
+      padding: 6px 10px;
+      background: transparent;
       color: var(--ink);
       border: 1px solid var(--line);
       border-radius: var(--radius);
       font: inherit;
-      font-weight: 700;
-      font-size: 14px;
-      line-height: 1;
+      font-weight: 600;
+      font-size: 13px;
       cursor: pointer;
     }
     .px-more:not([hidden]) { display: block; }
-    .px-more.active { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+    .px-more:hover { color: var(--accent); border-color: var(--accent); }
     .catalog {
       position: relative;
       height: 360px;
@@ -462,13 +461,13 @@
           <button type="button" id="mode-px" data-catmode="px">PX</button>
           <button type="button" id="mode-icon" data-catmode="icon">Icon</button>
         </div>
-        <button type="button" class="px-more" id="px-more" hidden>+</button>
         <button type="button" class="ghost" id="add-gifs" style="margin:8px 0 0;width:100%">Add GIF/PNG</button>
         <input id="gif-files" type="file" accept=".gif,.png,image/gif,image/png" multiple hidden />
         <input id="filter" placeholder="filter…" style="margin-top:8px" />
         <p class="selected-name" id="picked">none</p>
         <div class="stage"><div class="stage-clip" id="stage-clip"><img id="sprite-img" alt="" /></div></div>
         <div class="catalog" id="catalog"></div>
+        <button type="button" class="px-more" id="px-more" hidden>Show All</button>
       </aside>
 
       <section class="panel lua">
@@ -478,7 +477,7 @@
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="app.js?v=web17"></script>
+  <script src="app.js?v=web18"></script>
   <script>
     (() => {
       const root = document.documentElement;
