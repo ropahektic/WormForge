@@ -64,12 +64,23 @@
     fire: "power",
     teleport: false,
     attachPick: "boom",
+    aim_p: "",
+    aim_u: "",
+    aim_d: "",
     body: makeBody("missile"),
   };
 
   function ensureChild(body) {
     if (!body.child) body.child = makeBody("clustlet");
     return body.child;
+  }
+
+  function canAimHold() {
+    return state.fire === "power" || state.fire === "hitscan";
+  }
+
+  function aimingPick() {
+    return state.attachPick === "aim_p" || state.attachPick === "aim_u" || state.attachPick === "aim_d";
   }
 
   function focusedBody() {
@@ -86,10 +97,15 @@
   }
 
   function bodySpriteLive() {
-    return state.fire === "power" || state.fire === "drop";
+    return state.fire === "power" || state.fire === "drop" || (canAimHold() && (tab === "aim" || aimingPick()));
   }
 
   function catalogSelected() {
+    if (canAimHold() && aimingPick()) {
+      if (state.attachPick === "aim_p") return state.aim_p;
+      if (state.attachPick === "aim_u") return state.aim_u;
+      if (state.attachPick === "aim_d") return state.aim_d;
+    }
     if (usingCustomClusters() && (tab === "attach" || tab === "custom" || state.attachPick === "boom" || state.attachPick === "trail")) {
       if (state.attachPick === "trail") return state.body.boom_trail;
       if (state.attachPick === "boom") return state.body.boom_sprite;
@@ -130,6 +146,7 @@
     const tabs = [{ id: "fire", label: "Fire" }];
     if (state.fire === "hitscan") {
       tabs.push({ id: "hitscan", label: "Hitscan" });
+      tabs.push({ id: "aim", label: "Aiming" });
       return tabs;
     }
     if (state.fire === "cursor") {
@@ -137,6 +154,9 @@
       return tabs;
     }
     tabs.push({ id: "body", label: focus === "child" ? "Stock bit" : "Projectile" });
+    if (state.fire === "power" && focus === "root") {
+      tabs.push({ id: "aim", label: "Aiming" });
+    }
     if (state.fire === "power" && focus === "root" && state.body.homing !== "off" && !state.body.custom_cluster) {
       tabs.push({ id: "homing", label: "Homing" });
     }
@@ -196,6 +216,67 @@
 
   function luaString(v) {
     return JSON.stringify(String(v));
+  }
+
+  function aimPackPath(name) {
+    if (!name) return "";
+    const n = String(name).replace(/\\/g, "/");
+    if (n.includes("/")) return n;
+    if (/\.(gif|png)$/i.test(n)) return "sprites/" + n;
+    return "sprites/" + n + ".gif";
+  }
+
+  function slopeFamily(path) {
+    const n = String(path || "").replace(/\\/g, "/");
+    const m = n.match(/^(.*?)([pud])(\.[^.]+)?$/i);
+    if (!m) return null;
+    const base = m[1];
+    const ext = m[3] || "";
+    return {
+      p: base + "p" + ext,
+      u: base + "u" + ext,
+      d: base + "d" + ext,
+    };
+  }
+
+  function catalogHasPath(path) {
+    if (!path) return false;
+    const src = [...(catalog.px_sprites || []), ...(catalog.sprites || [])];
+    return src.some((s) => spriteValue(s) === path || s.name === path || s.file === pxFile(path));
+  }
+
+  function applyAimPick(slot, value) {
+    state[slot] = value;
+    const fam = slopeFamily(value);
+    if (!fam) return;
+    const fill = (key, path) => {
+      if (state[key]) return;
+      if (catalogHasPath(path)) state[key] = path;
+    };
+    if (slot === "aim_p") {
+      fill("aim_u", fam.u);
+      fill("aim_d", fam.d);
+    } else if (slot === "aim_u") {
+      fill("aim_p", fam.p);
+      fill("aim_d", fam.d);
+    } else if (slot === "aim_d") {
+      fill("aim_p", fam.p);
+      fill("aim_u", fam.u);
+    }
+  }
+
+  function emitWormSprites() {
+    if (!canAimHold()) return [];
+    const p = state.aim_p;
+    const u = state.aim_u;
+    const d = state.aim_d;
+    if (!p && !u && !d) return [];
+    const lines = ["  worm_sprites = {"];
+    if (p) lines.push(`    weaponlnk = ${luaString(aimPackPath(p))},`);
+    if (u) lines.push(`    weaponlnku = ${luaString(aimPackPath(u))},`);
+    if (d) lines.push(`    weaponlnkd = ${luaString(aimPackPath(d))},`);
+    lines.push("  },");
+    return lines;
   }
 
   function emitParams(body, indent) {
@@ -260,6 +341,7 @@
     if (state.fire === "power" && state.body.custom_cluster) {
       lines.push(...emitPowerCustomFire());
     }
+    lines.push(...emitWormSprites());
     return lines;
   }
 
@@ -436,6 +518,23 @@
     `;
   }
 
+  function aimPanel() {
+    const row = (key, label) => {
+      const val = state[key] || "—";
+      return `<div class="pick-row">${label} <b>${esc(val)}</b>
+        <button type="button" class="fire ${state.attachPick === key ? "active" : ""}" data-attach-pick="${key}">Catalog</button>
+        ${state[key] ? `<button type="button" class="fire" data-aim-clear="${key}">Clear</button>` : ""}
+      </div>`;
+    };
+    return `
+      <label class="field">Hold sprites</label>
+      ${row("aim_p", "Flat")}
+      ${row("aim_u", "Uphill")}
+      ${row("aim_d", "Downhill")}
+      <p class="meta">One sheet fills all slopes. Draw/undraw are eaten.</p>
+    `;
+  }
+
   function customClusterFields() {
     const body = state.body;
     const homingBtns = [
@@ -578,6 +677,7 @@
   function renderPanel() {
     if (tab === "fire") $("panel").innerHTML = firePanel();
     else if (tab === "hitscan") $("panel").innerHTML = hitscanPanel();
+    else if (tab === "aim") $("panel").innerHTML = aimPanel();
     else if (tab === "homing") $("panel").innerHTML = homingPanel();
     else if (tab === "cluster") $("panel").innerHTML = clusterPanel();
     else if (tab === "custom") $("panel").innerHTML = customPanel();
@@ -799,7 +899,12 @@
     tab = btn.dataset.tab;
     if (tab === "body") state.attachPick = "body";
     if (tab === "custom" || tab === "attach") state.attachPick = "boom";
+    if (tab === "aim") {
+      state.attachPick = "aim_p";
+      catalogMode = "px";
+    }
     render();
+    renderCatalog();
   });
 
   $("tree").addEventListener("click", (ev) => {
@@ -876,6 +981,14 @@
     const pick = ev.target.closest("[data-attach-pick]");
     if (pick) {
       state.attachPick = pick.dataset.attachPick;
+      if (aimingPick()) catalogMode = "px";
+      render();
+      renderCatalog();
+      return;
+    }
+    const aimClear = ev.target.closest("[data-aim-clear]");
+    if (aimClear) {
+      state[aimClear.dataset.aimClear] = "";
       render();
       renderCatalog();
     }
@@ -972,6 +1085,12 @@
     const btn = ev.target.closest("button[data-name]");
     if (!btn) return;
     if (!bodySpriteLive()) return;
+    if (canAimHold() && aimingPick()) {
+      applyAimPick(state.attachPick, btn.dataset.name);
+      render();
+      renderCatalog();
+      return;
+    }
     if (usingCustomClusters() && (tab === "attach" || tab === "custom" || state.attachPick === "boom" || state.attachPick === "trail")) {
       if (state.attachPick === "trail") state.body.boom_trail = btn.dataset.name;
       else if (state.attachPick === "boom") state.body.boom_sprite = btn.dataset.name;
