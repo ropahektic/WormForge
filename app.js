@@ -461,7 +461,11 @@
     const u = state.aim_u;
     const d = state.aim_d;
     if (!p && !u && !d) return [];
-    const lines = ["  worm_sprites = {"];
+    const lines = [
+      "  -- worm_sprites draw truecolor (GPU atlas) by default; set",
+      "  -- params = { gpu_worm_sprites = false } to keep the 8-bit palette path.",
+      "  worm_sprites = {",
+    ];
     if (p) lines.push(`    weaponlnk = ${luaString(aimPackPath(p))},`);
     if (u) lines.push(`    weaponlnku = ${luaString(aimPackPath(u))},`);
     if (d) lines.push(`    weaponlnkd = ${luaString(aimPackPath(d))},`);
