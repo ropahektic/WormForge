@@ -4,6 +4,6 @@
 
 Site: https://ropahektic.github.io/WormForge
 
-Engine repo (private): [WormForge-engine](https://github.com/ropahektic/WormForge-engine
+Engine repo (private): https://github.com/ropahektic/WormForge-engine
 
 </div>
