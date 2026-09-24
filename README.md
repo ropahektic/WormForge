@@ -1,4 +1,4 @@
-# WormForge
+![description](https://i.imgur.com/6Yfe1p6.png)
 
 Live weapon editor for Worms Armageddon **3.8.1**, plus downloads for `wkLua.dll` and example Mods.
 
