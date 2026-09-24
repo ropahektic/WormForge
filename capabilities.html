@@ -7,50 +7,63 @@
   <meta name="description" content="Everything WormForge can do today across weapons, actors, graphics, networking, replay, and tooling." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Literata:opsz,wght@7..72,400;7..72,500;7..72,600;7..72,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #020617;
-      --panel: #0f172a;
-      --panel-2: #020617;
-      --border: #1e293b;
-      --border-hover: #334155;
-      --ink: #f1f5f9;
-      --muted: #94a3b8;
-      --dim: #64748b;
-      --emerald: #34d399;
-      --emerald-dim: rgba(52, 211, 153, 0.12);
-      --emerald-border: rgba(52, 211, 153, 0.3);
-      --blue: #60a5fa;
-      --blue-dim: rgba(96, 165, 250, 0.12);
-      --blue-border: rgba(96, 165, 250, 0.3);
-      --amber: #fbbf24;
-      --amber-dim: rgba(251, 191, 36, 0.12);
-      --amber-border: rgba(251, 191, 36, 0.3);
-      --cyan: #67e8f9;
+      --bg: #eef1f4;
+      --bg-wash: #e4e9ef;
+      --panel: #fbfcfd;
+      --panel-raised: #ffffff;
+      --border: #d5dce5;
+      --border-strong: #b8c2cf;
+      --ink: #1a2330;
+      --muted: #4d5b6b;
+      --dim: #6d7c8c;
+      --accent: #0b6e6a;
+      --accent-soft: #e6f3f2;
+      --accent-border: #9cc9c6;
+      --code-bg: #eef3f6;
+      --code-ink: #0a5552;
+      --live: #265d9c;
+      --live-soft: #e8f0f8;
+      --live-border: #9bb8d6;
+      --warn: #8a5a12;
+      --warn-soft: #f7eedd;
+      --warn-border: #d4b878;
+      --shadow: 0 1px 2px rgba(26, 35, 48, 0.04), 0 8px 24px rgba(26, 35, 48, 0.05);
+      --radius: 14px;
+      --font-ui: "Source Sans 3", "Segoe UI", sans-serif;
+      --font-body: Literata, "Iowan Old Style", "Palatino Linotype", Palatino, serif;
+      --font-mono: "IBM Plex Mono", ui-monospace, monospace;
     }
     * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
       margin: 0;
       min-height: 100vh;
-      font: 400 14px/1.45 Inter, system-ui, sans-serif;
+      font: 400 16px/1.6 var(--font-body);
       color: var(--ink);
-      background: var(--bg);
+      background:
+        radial-gradient(1200px 500px at 10% -10%, #dfe8ef 0%, transparent 55%),
+        radial-gradient(900px 420px at 100% 0%, #e7ece8 0%, transparent 50%),
+        var(--bg);
     }
     a { color: inherit; }
+    button, input { font: inherit; }
+
     .wrap {
-      max-width: 1200px;
+      max-width: 1180px;
       margin: 0 auto;
-      padding: 22px 20px 64px;
+      padding: 18px 20px 72px;
     }
+
     .bar {
       display: flex;
       flex-wrap: wrap;
       gap: 0 4px;
       align-items: center;
-      margin: 0 0 28px;
-      font-size: 14px;
-      font-weight: 500;
+      margin: 0 0 22px;
+      font: 500 14px/1.4 var(--font-ui);
       color: var(--muted);
     }
     .bar a {
@@ -59,9 +72,9 @@
       text-underline-offset: 3px;
       font-weight: 600;
     }
-    .bar a:hover { color: var(--emerald); }
+    .bar a:hover { color: var(--accent); }
     .bar a.here {
-      color: var(--emerald);
+      color: var(--accent);
       text-decoration: none;
     }
     .bar .sep {
@@ -78,42 +91,128 @@
       text-decoration: none;
       color: var(--ink);
     }
-    .brand:hover { color: var(--emerald); }
+    .brand:hover { color: var(--accent); }
     .mark {
-      width: 28px;
-      height: 28px;
-      border-radius: 8px;
-      border: 1px solid var(--emerald-border);
-      background: var(--emerald-dim);
-      color: var(--emerald);
-      font: 700 12px/28px "IBM Plex Mono", monospace;
+      width: 30px;
+      height: 30px;
+      border-radius: 9px;
+      border: 1px solid var(--accent-border);
+      background: var(--accent-soft);
+      color: var(--accent);
+      font: 700 12px/30px var(--font-mono);
       text-align: center;
     }
     .brand strong {
-      font-size: 15px;
+      font: 700 15px/1.2 var(--font-ui);
       letter-spacing: -0.02em;
     }
     .brand span {
-      font: 400 11px/1 "IBM Plex Mono", monospace;
+      font: 400 11px/1 var(--font-mono);
       color: var(--dim);
       margin-left: 2px;
     }
 
     .hero {
-      margin: 0 0 28px;
+      margin: 0 0 20px;
+      max-width: 44rem;
     }
     .hero h1 {
-      margin: 0 0 8px;
-      font-size: clamp(1.45rem, 2.4vw, 1.75rem);
-      font-weight: 700;
+      margin: 0 0 10px;
+      font: 700 clamp(1.55rem, 2.6vw, 2rem)/1.2 var(--font-ui);
       letter-spacing: -0.03em;
-      color: var(--emerald);
+      color: var(--ink);
     }
     .hero p {
       margin: 0;
-      max-width: 40rem;
       color: var(--muted);
-      font: 400 13px/1.5 "IBM Plex Mono", monospace;
+      font: 400 1.02rem/1.55 var(--font-body);
+    }
+
+    .controls {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      margin: 0 0 18px;
+      padding: 12px 0 14px;
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+    }
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .search {
+      position: relative;
+      flex: 1 1 240px;
+      max-width: 360px;
+    }
+    .search svg {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      width: 16px;
+      height: 16px;
+      transform: translateY(-50%);
+      color: var(--dim);
+      pointer-events: none;
+    }
+    .search input {
+      width: 100%;
+      padding: 10px 12px 10px 38px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--panel-raised);
+      color: var(--ink);
+      font: 500 14px/1.3 var(--font-ui);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+    }
+    .search input::placeholder { color: var(--dim); }
+    .search input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+    }
+    .meta {
+      font: 500 13px/1.3 var(--font-ui);
+      color: var(--dim);
+      white-space: nowrap;
+    }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: thin;
+    }
+    .tab {
+      flex: 0 0 auto;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--muted);
+      font: 600 13px/1.2 var(--font-ui);
+      cursor: pointer;
+      transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+    }
+    .tab:hover {
+      color: var(--ink);
+      border-color: var(--border-strong);
+      background: var(--panel-raised);
+    }
+    .tab.active {
+      color: #fff;
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .tab:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
     }
 
     .grid {
@@ -127,6 +226,9 @@
     @media (max-width: 640px) {
       .grid { grid-template-columns: 1fr; }
       .brand span { display: none; }
+      .controls-row { align-items: stretch; }
+      .search { max-width: none; }
+      .meta { white-space: normal; }
     }
 
     .card {
@@ -134,14 +236,17 @@
       flex-direction: column;
       justify-content: space-between;
       gap: 14px;
-      padding: 20px;
+      padding: 22px;
       background: var(--panel);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      box-shadow: 0 1px 0 rgba(255,255,255,0.02);
-      transition: border-color 0.15s ease;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
-    .card:hover { border-color: var(--border-hover); }
+    .card:hover {
+      border-color: var(--border-strong);
+      box-shadow: 0 2px 4px rgba(26, 35, 48, 0.05), 0 14px 28px rgba(26, 35, 48, 0.07);
+    }
 
     .card-top {
       display: flex;
@@ -151,37 +256,36 @@
     }
     .card h2 {
       margin: 0;
-      font-size: 14px;
-      font-weight: 600;
-      line-height: 1.35;
+      font: 650 1.05rem/1.35 var(--font-ui);
+      letter-spacing: -0.015em;
       color: var(--ink);
     }
     .pill {
       flex-shrink: 0;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font: 500 10px/1.5 "IBM Plex Mono", monospace;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font: 600 11px/1.4 var(--font-mono);
       border: 1px solid;
     }
     .pill.production {
-      color: var(--emerald);
-      background: var(--emerald-dim);
-      border-color: var(--emerald-border);
+      color: var(--accent);
+      background: var(--accent-soft);
+      border-color: var(--accent-border);
     }
     .pill.live {
-      color: var(--blue);
-      background: var(--blue-dim);
-      border-color: var(--blue-border);
+      color: var(--live);
+      background: var(--live-soft);
+      border-color: var(--live-border);
     }
     .pill.experimental {
-      color: var(--amber);
-      background: var(--amber-dim);
-      border-color: var(--amber-border);
+      color: var(--warn);
+      background: var(--warn-soft);
+      border-color: var(--warn-border);
     }
 
     .tagline {
       margin: 10px 0 0;
-      font-size: 12px;
+      font-size: 0.97rem;
       line-height: 1.55;
       color: var(--muted);
     }
@@ -189,13 +293,13 @@
     .tech {
       margin-top: 14px;
       padding-top: 12px;
-      border-top: 1px solid rgba(30, 41, 59, 0.9);
+      border-top: 1px solid var(--border);
     }
     .tech-label {
       display: block;
       margin-bottom: 8px;
-      font: 600 10px/1 "IBM Plex Mono", monospace;
-      letter-spacing: 0.08em;
+      font: 700 11px/1 var(--font-ui);
+      letter-spacing: 0.06em;
       text-transform: uppercase;
       color: var(--dim);
     }
@@ -205,32 +309,33 @@
       list-style: none;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 7px;
     }
     .tech li {
       display: flex;
       align-items: flex-start;
-      gap: 6px;
-      font-size: 11px;
+      gap: 7px;
+      font-size: 0.92rem;
       line-height: 1.55;
-      color: #cbd5e1;
+      color: var(--ink);
     }
     .tech li::before {
       content: "›";
-      color: var(--emerald);
+      color: var(--accent);
       flex-shrink: 0;
       font-weight: 700;
+      margin-top: 0.05em;
     }
 
     .gap {
       margin-top: 10px;
-      padding: 8px 10px;
-      border-radius: 8px;
-      border: 1px solid var(--emerald-border);
-      background: var(--emerald-dim);
-      font-size: 11px;
-      line-height: 1.45;
-      color: #a7f3d0;
+      padding: 9px 11px;
+      border-radius: 10px;
+      border: 1px solid var(--accent-border);
+      background: var(--accent-soft);
+      font-size: 0.88rem;
+      line-height: 1.5;
+      color: #144f4c;
     }
 
     .card-foot {
@@ -241,35 +346,48 @@
     .verbs {
       display: flex;
       flex-wrap: wrap;
-      gap: 4px;
+      gap: 5px;
       margin-bottom: 10px;
     }
     .verbs code {
       display: inline-block;
       max-width: 100%;
-      padding: 3px 6px;
-      border-radius: 4px;
-      border: 1px solid rgba(30, 41, 59, 0.85);
-      background: var(--panel-2);
-      color: #6ee7b7;
-      font: 400 10px/1.4 "IBM Plex Mono", monospace;
+      padding: 4px 7px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--code-bg);
+      color: var(--code-ink);
+      font: 450 11px/1.45 var(--font-mono);
       white-space: pre-wrap;
       word-break: break-word;
     }
     .example {
-      font: 400 11px/1.4 "IBM Plex Mono", monospace;
+      font: 500 12px/1.45 var(--font-mono);
       color: var(--dim);
     }
+
+    .empty {
+      display: none;
+      grid-column: 1 / -1;
+      padding: 36px 20px;
+      text-align: center;
+      border: 1px dashed var(--border-strong);
+      border-radius: var(--radius);
+      background: color-mix(in srgb, var(--panel) 70%, transparent);
+      color: var(--muted);
+      font: 500 1rem/1.5 var(--font-ui);
+    }
+    .empty.show { display: block; }
 
     .foot {
       margin-top: 36px;
       padding-top: 16px;
       border-top: 1px solid var(--border);
-      font: 400 12px/1.5 "IBM Plex Mono", monospace;
+      font: 400 13px/1.5 var(--font-ui);
       color: var(--dim);
     }
-    .foot a { color: var(--muted); }
-    .foot a:hover { color: var(--emerald); }
+    .foot a { color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
+    .foot a:hover { color: var(--accent); }
   </style>
 </head>
 <body>
@@ -294,7 +412,22 @@
       <p>Everything the engine is currently capable of across weapons, actors, graphics, and networking.</p>
     </header>
 
+    <div class="controls" id="controls">
+      <div class="controls-row">
+        <label class="search" aria-label="Search capabilities">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="M20 20l-3.5-3.5"></path>
+          </svg>
+          <input id="search" type="search" placeholder="Search capabilities, hooks, verbs…" autocomplete="off" />
+        </label>
+        <div class="meta" id="meta">Showing all capabilities</div>
+      </div>
+      <div class="tabs" id="tabs" role="tablist" aria-label="Capability categories"></div>
+    </div>
+
     <div class="grid" id="grid"></div>
+    <div class="empty" id="empty">No capabilities match this filter. Clear search or pick another category.</div>
 
     <p class="foot">
       Built for end users and mod authors ·
@@ -304,9 +437,22 @@
   </div>
 
   <script>
+    const CATEGORIES = [
+      { id: 'all', label: 'All' },
+      { id: 'weapons', label: 'Weapons & Overlays' },
+      { id: 'actors', label: 'Custom LuaActors' },
+      { id: 'graphics', label: 'Truecolor & GPU' },
+      { id: 'worms', label: 'Worm Interaction' },
+      { id: 'physics', label: 'Physics & Masks' },
+      { id: 'network', label: 'Lockstep & Sync' },
+      { id: 'replay', label: 'Replay Engine' },
+      { id: 'tools', label: 'Loader & Rules' },
+    ];
+
     const CAPABILITIES = [
       {
         id: 'weapon-overlay',
+        category: 'weapons',
         title: '71-Slot Table Overlay System',
         tagline: 'Overlay any stock Worms Armageddon weapon without stack-trampling or VFT slicing.',
         maturity: 'Production',
@@ -322,6 +468,7 @@
       },
       {
         id: 'dynamic-equipping',
+        category: 'weapons',
         title: 'Arbitrary Slot Arming & Hotkeying',
         tagline: 'Arm and fire any weapon in the game on-the-fly, bypassing scheme inventory limits.',
         maturity: 'Production',
@@ -336,6 +483,7 @@
       },
       {
         id: 'lua-actor-lifecycle',
+        category: 'actors',
         title: 'Unified Native LuaActor Architecture',
         tagline: 'Single native C++ WorldEntity type with custom vtable, eliminating unstable class hierarchies.',
         maturity: 'Production',
@@ -351,6 +499,7 @@
       },
       {
         id: 'custom-clusters',
+        category: 'actors',
         title: 'Bouquet Clusters & Sub-Munitions',
         tagline: 'Configurable secondary sprays with custom smoke trails, fuses, homing, and proximity.',
         maturity: 'Production',
@@ -367,6 +516,7 @@
       },
       {
         id: 'gpu-truecolor-renderer',
+        category: 'graphics',
         title: 'Direct3D 9 Truecolor Atlas Renderer (EdLud)',
         tagline: 'Break free from WA’s 223 sprite slot limit and 8-bit palette quantizing with modern GPU quads.',
         maturity: 'Production',
@@ -383,6 +533,7 @@
       },
       {
         id: 'screen-space-occlusion',
+        category: 'graphics',
         title: 'Render Queue Split & Dual-Band Occlusion',
         tagline: 'Accurate pixel-perfect occlusion behind terrain and HUD without sorting bugs.',
         maturity: 'Production',
@@ -397,6 +548,7 @@
       },
       {
         id: 'screen-cutins',
+        category: 'graphics',
         title: 'Fullscreen Anime Cut-Ins & Overlays',
         tagline: 'Rich presentation overlays (speed lines, character portraits) composited via GDI sections.',
         maturity: 'Production',
@@ -411,6 +563,7 @@
       },
       {
         id: 'worm-carry-throw',
+        category: 'worms',
         title: 'Worm Carry, Pinning & Throw Physics',
         tagline: 'Pick up worms, freeze turn timers, carry them with cursor motion, and toss them across the map.',
         maturity: 'Production',
@@ -425,6 +578,7 @@
       },
       {
         id: 'hurt-layer',
+        category: 'worms',
         title: 'Lockstep Hurt Hook & Direct Damage',
         tagline: 'Intercept all damage messages (blast, hit, axe percent, poison) and deal direct damage.',
         maturity: 'Production',
@@ -439,6 +593,7 @@
       },
       {
         id: 'custom-aim-sprites',
+        category: 'worms',
         title: 'Per-Slot Worm Pose Remapping (worm_sprites)',
         tagline: 'Give any custom weapon custom aiming angles and equip animations for all ground slopes.',
         maturity: 'Production',
@@ -453,6 +608,7 @@
       },
       {
         id: 'mask-collision',
+        category: 'physics',
         title: 'Animated Opaque Mask Collision',
         tagline: 'Stamp custom sprite silhouettes directly into WA’s landscape bitgrid.',
         maturity: 'Experimental',
@@ -467,6 +623,7 @@
       },
       {
         id: 'raycast-landscape',
+        category: 'physics',
         title: 'Fast Bitgrid Raycasting & Terrain Tracing',
         tagline: 'Pixel-level hitscan line-of-sight checks against destructible terrain and worms.',
         maturity: 'Production',
@@ -481,6 +638,7 @@
       },
       {
         id: 'lockstep-sync',
+        category: 'network',
         title: 'Network Input Sync & Checkpoint Hashing',
         tagline: 'Synchronize Lua keys and cursor coordinates across all multiplayer peers in lockstep.',
         maturity: 'Live-Accepted',
@@ -497,6 +655,7 @@
       },
       {
         id: 'deterministic-primitives',
+        category: 'network',
         title: 'Shared LCG RNG & Deterministic Iteration',
         tagline: 'Prevent multiplayer desyncs with shared engine randomness and deterministic sorting.',
         maturity: 'Production',
@@ -512,6 +671,7 @@
       },
       {
         id: 'replay-container',
+        category: 'replay',
         title: '.WF_WAgame Lossless Replay System',
         tagline: 'Self-contained replays packaging the byte-exact WAgame, compressed mods, and input logs.',
         maturity: 'Live-Accepted',
@@ -527,6 +687,7 @@
       },
       {
         id: 'mod-loader-gui',
+        category: 'tools',
         title: 'Win32 Companion Mod Loader Window',
         tagline: 'In-game UI to toggle packs, detect weapon slot conflicts, and download new mods from the web.',
         maturity: 'Production',
@@ -542,6 +703,7 @@
       },
       {
         id: 'gameplay-rules-packs',
+        category: 'tools',
         title: 'Gameplay / Rules Packs (Highlander)',
         tagline: 'Change match rules without overlaying a weapon slot — deal hands, steal on kill, scheme-agnostic.',
         maturity: 'Production',
@@ -557,6 +719,7 @@
       },
       {
         id: 'absolute-ammo-api',
+        category: 'tools',
         title: 'Absolute Ammo Writes & Team Arena Fix',
         tagline: 'Set or clear ammo for any team correctly — including overwriting infinite — like PX SetWeaponEx.',
         maturity: 'Production',
@@ -571,6 +734,7 @@
       },
       {
         id: 'virtual-worm-inventories',
+        category: 'tools',
         title: 'Per-Worm Virtual Inventories',
         tagline: 'Build classes, specialist worms, loot systems, and personal arsenals above WA’s team ammo row.',
         maturity: 'Production',
@@ -586,6 +750,7 @@
       },
       {
         id: 'rule-lifecycle-events',
+        category: 'tools',
         title: 'Turn, Death & Combat Attribution Events',
         tagline: 'React once at rule-level lifecycle points and choose targets from proven combat context.',
         maturity: 'Production',
@@ -615,15 +780,48 @@
       return 'experimental';
     }
 
+    function haystack(cap) {
+      return [
+        cap.title,
+        cap.tagline,
+        cap.maturity,
+        cap.exampleMod,
+        cap.solvedGap || '',
+        ...(cap.details || []),
+        ...(cap.luaVerbs || []),
+      ].join('\n').toLowerCase();
+    }
+
+    let activeCategory = 'all';
+    let query = '';
+
+    const tabsEl = document.getElementById('tabs');
     const grid = document.getElementById('grid');
-    grid.innerHTML = CAPABILITIES.map((cap) => {
+    const empty = document.getElementById('empty');
+    const meta = document.getElementById('meta');
+    const search = document.getElementById('search');
+
+    tabsEl.innerHTML = CATEGORIES.map((cat) =>
+      `<button type="button" class="tab${cat.id === 'all' ? ' active' : ''}" role="tab" data-id="${esc(cat.id)}" aria-selected="${cat.id === 'all'}">${esc(cat.label)}</button>`
+    ).join('');
+
+    function filtered() {
+      const q = query.trim().toLowerCase();
+      return CAPABILITIES.filter((cap) => {
+        const catOk = activeCategory === 'all' || cap.category === activeCategory;
+        const searchOk = !q || haystack(cap).includes(q);
+        return catOk && searchOk;
+      });
+    }
+
+    function renderCard(cap) {
       const verbs = cap.luaVerbs.map((v) => `<code>${esc(v)}</code>`).join('');
       const details = cap.details.map((d) => `<li>${esc(d)}</li>`).join('');
       const gap = cap.solvedGap
         ? `<div class="gap">${esc(cap.solvedGap)}</div>`
         : '';
       return `
-        <article class="card">
+        <article class="card" data-id="${esc(cap.id)}">
           <div>
             <div class="card-top">
               <h2>${esc(cap.title)}</h2>
@@ -641,7 +839,37 @@
             <div class="example">Example: ${esc(cap.exampleMod)}</div>
           </div>
         </article>`;
-    }).join('');
+    }
+
+    function render() {
+      const list = filtered();
+      grid.innerHTML = list.map(renderCard).join('');
+      empty.classList.toggle('show', list.length === 0);
+      if (list.length === CAPABILITIES.length && !query && activeCategory === 'all') {
+        meta.textContent = `Showing all ${list.length} capabilities`;
+      } else {
+        meta.textContent = `Showing ${list.length} of ${CAPABILITIES.length}`;
+      }
+    }
+
+    tabsEl.addEventListener('click', (event) => {
+      const btn = event.target.closest('.tab');
+      if (!btn) return;
+      activeCategory = btn.dataset.id;
+      tabsEl.querySelectorAll('.tab').forEach((el) => {
+        const on = el === btn;
+        el.classList.toggle('active', on);
+        el.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      render();
+    });
+
+    search.addEventListener('input', () => {
+      query = search.value;
+      render();
+    });
+
+    render();
   </script>
 </body>
 </html>
