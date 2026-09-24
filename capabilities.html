@@ -552,10 +552,10 @@
           'Highlander ports PX Highlander 0rang3 rules on stock WA weapons: three pools, one shot each per turn.',
           'Killing a worm steals its hand for the active worm (including friendly kills), usable immediately.',
           'Cavern maps ban air strikes via wa.world.cavern(); utilities / skip / surrender stay with the scheme.',
-          'All dealing and grants run in wa.on.worm_message with wa.random() — lockstep and replay safe.'
+          'Ships in two educational editions: explicit pure-Lua bookkeeping and the concise inventory/event-verb implementation.'
         ],
-        luaVerbs: ['wa.on.worm_message(...)', 'worm:ammo(name, { set = n })', 'wa.world.cavern()', 'wa.random()'],
-        exampleMod: 'highlander',
+        luaVerbs: ['wa.inventory.create(...)', 'wa.on.turn_start(...)', 'wa.on.death(...)', 'wa.random()'],
+        exampleMod: 'highlander / highlander_pure_lua',
       },
       {
         id: 'absolute-ammo-api',
@@ -570,6 +570,36 @@
         ],
         luaVerbs: ['worm:ammo("bazooka", { set = 1 })', 'worm:ammo("bazooka", { set = 0 })', 'worm:ammo("rope", 1)'],
         exampleMod: 'highlander / q_bazooka',
+      },
+      {
+        id: 'virtual-worm-inventories',
+        title: 'Per-Worm Virtual Inventories',
+        tagline: 'Build classes, specialist worms, loot systems, and personal arsenals above WA’s team ammo row.',
+        maturity: 'Production',
+        details: [
+          'wa.inventory.create({ id, slots }) creates a pack-scoped store keyed by stable worm identity.',
+          'get / set / add / remove / clear / list compose ownership without touching the live weapon panel.',
+          'deal draws deterministically through WA’s shared RNG; transfer moves or copies all, selected, or counted weapons between arbitrary worms.',
+          'apply materializes one worm’s virtual inventory into WA’s alliance-scoped ammo only when gameplay needs it.',
+          'Explicit source and target handles let normal Lua conditions implement steal-on-hit, steal-on-kill, classes, shops, and drafting.'
+        ],
+        luaVerbs: ['wa.inventory.create({ id, slots })', 'inventory:deal(worm, pool, count)', 'inventory:transfer(from, to, opts)', 'inventory:apply(worm, opts)'],
+        exampleMod: 'highlander (compare with highlander_pure_lua)',
+      },
+      {
+        id: 'rule-lifecycle-events',
+        title: 'Turn, Death & Combat Attribution Events',
+        tagline: 'React once at rule-level lifecycle points and choose targets from proven combat context.',
+        maturity: 'Production',
+        details: [
+          'wa.on.turn_start receives the active worm directly from WA’s lockstep START_TURN message.',
+          'wa.on.death emits exactly once per death with victim and current active worm.',
+          'Death and hurt events expose optional attacker, attacker_team, weapon, slot, and damage kind when provenance is proven.',
+          'Unknown or delayed provenance stays nil instead of guessing, preventing rules from crediting the wrong worm or weapon.',
+          'Existing wa.on.hurt pre/post rewriting remains compatible and gains the same optional attribution fields.'
+        ],
+        luaVerbs: ['wa.on.turn_start(function(event) ... end)', 'wa.on.death(function(event) ... end)', 'event.victim', 'event.attacker', 'event.weapon'],
+        exampleMod: 'highlander / damage-conditioned loot rules',
       },
     ];
 
