@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WormForge — Capabilities Matrix</title>
+  <meta name="description" content="Everything WormForge can do today across weapons, actors, graphics, networking, replay, and tooling." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #020617;
+      --panel: #0f172a;
+      --panel-2: #020617;
+      --border: #1e293b;
+      --border-hover: #334155;
+      --ink: #f1f5f9;
+      --muted: #94a3b8;
+      --dim: #64748b;
+      --emerald: #34d399;
+      --emerald-dim: rgba(52, 211, 153, 0.12);
+      --emerald-border: rgba(52, 211, 153, 0.3);
+      --blue: #60a5fa;
+      --blue-dim: rgba(96, 165, 250, 0.12);
+      --blue-border: rgba(96, 165, 250, 0.3);
+      --amber: #fbbf24;
+      --amber-dim: rgba(251, 191, 36, 0.12);
+      --amber-border: rgba(251, 191, 36, 0.3);
+      --cyan: #67e8f9;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font: 400 14px/1.45 Inter, system-ui, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+    }
+    a { color: inherit; }
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 22px 20px 64px;
+    }
+    .bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0 4px;
+      align-items: center;
+      margin: 0 0 28px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--muted);
+    }
+    .bar a {
+      color: var(--ink);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      font-weight: 600;
+    }
+    .bar a:hover { color: var(--emerald); }
+    .bar a.here {
+      color: var(--emerald);
+      text-decoration: none;
+    }
+    .bar .sep {
+      color: var(--dim);
+      margin: 0 8px;
+      user-select: none;
+    }
+    .bar .grow { flex: 1; min-width: 12px; }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-right: 16px;
+      text-decoration: none;
+      color: var(--ink);
+    }
+    .brand:hover { color: var(--emerald); }
+    .mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      border: 1px solid var(--emerald-border);
+      background: var(--emerald-dim);
+      color: var(--emerald);
+      font: 700 12px/28px "IBM Plex Mono", monospace;
+      text-align: center;
+    }
+    .brand strong {
+      font-size: 15px;
+      letter-spacing: -0.02em;
+    }
+    .brand span {
+      font: 400 11px/1 "IBM Plex Mono", monospace;
+      color: var(--dim);
+      margin-left: 2px;
+    }
+
+    .hero {
+      margin: 0 0 28px;
+    }
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.45rem, 2.4vw, 1.75rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--emerald);
+    }
+    .hero p {
+      margin: 0;
+      max-width: 40rem;
+      color: var(--muted);
+      font: 400 13px/1.5 "IBM Plex Mono", monospace;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+    @media (max-width: 980px) {
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 640px) {
+      .grid { grid-template-columns: 1fr; }
+      .brand span { display: none; }
+    }
+
+    .card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 20px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.02);
+      transition: border-color 0.15s ease;
+    }
+    .card:hover { border-color: var(--border-hover); }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .card h2 {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.35;
+      color: var(--ink);
+    }
+    .pill {
+      flex-shrink: 0;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font: 500 10px/1.5 "IBM Plex Mono", monospace;
+      border: 1px solid;
+    }
+    .pill.production {
+      color: var(--emerald);
+      background: var(--emerald-dim);
+      border-color: var(--emerald-border);
+    }
+    .pill.live {
+      color: var(--blue);
+      background: var(--blue-dim);
+      border-color: var(--blue-border);
+    }
+    .pill.experimental {
+      color: var(--amber);
+      background: var(--amber-dim);
+      border-color: var(--amber-border);
+    }
+
+    .tagline {
+      margin: 10px 0 0;
+      font-size: 12px;
+      line-height: 1.55;
+      color: var(--muted);
+    }
+
+    .tech {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(30, 41, 59, 0.9);
+    }
+    .tech-label {
+      display: block;
+      margin-bottom: 8px;
+      font: 600 10px/1 "IBM Plex Mono", monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--dim);
+    }
+    .tech ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .tech li {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      font-size: 11px;
+      line-height: 1.55;
+      color: #cbd5e1;
+    }
+    .tech li::before {
+      content: "›";
+      color: var(--emerald);
+      flex-shrink: 0;
+      font-weight: 700;
+    }
+
+    .gap {
+      margin-top: 10px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--emerald-border);
+      background: var(--emerald-dim);
+      font-size: 11px;
+      line-height: 1.45;
+      color: #a7f3d0;
+    }
+
+    .card-foot {
+      margin-top: auto;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+    .verbs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 10px;
+    }
+    .verbs code {
+      display: inline-block;
+      max-width: 100%;
+      padding: 3px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(30, 41, 59, 0.85);
+      background: var(--panel-2);
+      color: #6ee7b7;
+      font: 400 10px/1.4 "IBM Plex Mono", monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .example {
+      font: 400 11px/1.4 "IBM Plex Mono", monospace;
+      color: var(--dim);
+    }
+
+    .foot {
+      margin-top: 36px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      font: 400 12px/1.5 "IBM Plex Mono", monospace;
+      color: var(--dim);
+    }
+    .foot a { color: var(--muted); }
+    .foot a:hover { color: var(--emerald); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="bar">
+      <a class="brand" href="./">
+        <span class="mark">WF</span>
+        <strong>WormForge</strong>
+        <span>WA 3.8.1 Lua Engine</span>
+      </a>
+      <a href="https://github.com/ropahektic/WormForge/releases/latest">wkLua.zip</a>
+      <span class="sep">·</span>
+      <a href="downloads/mods.zip">Example Mods</a>
+      <span class="sep">·</span>
+      <a class="here" href="capabilities.html">Capabilities</a>
+      <span class="sep">·</span>
+      <a href="https://github.com/ropahektic/WormForge">GitHub</a>
+      <span class="grow"></span>
+      <a href="https://github.com/ropahektic/WormForge-engine">Engine source</a>
+    </div>
+
+    <header class="hero">
+      <h1>Comprehensive Capabilities Matrix</h1>
+      <p>Everything the engine is currently capable of across weapons, actors, graphics, and networking.</p>
+    </header>
+
+    <div class="grid" id="grid"></div>
+
+    <p class="foot">
+      Built for end users and mod authors ·
+      <a href="./">Weapon editor</a> ·
+      <a href="https://github.com/ropahektic/WormForge-engine/releases">Engine releases</a>
+    </p>
+  </div>
+
+  <script>
+    const CAPABILITIES = [
+      {
+        id: 'weapon-overlay',
+        title: '71-Slot Table Overlay System',
+        tagline: 'Overlay any stock Worms Armageddon weapon without stack-trampling or VFT slicing.',
+        maturity: 'Production',
+        details: [
+          'Non-destructive overlay onto the stock 71-slot WeaponTable at GameWorld+0x510.',
+          'First loaded mod ID wins a contested slot; conflicting claims are gracefully skipped and logged.',
+          'Full parameter control: custom damage, bounce_pct, gravity_pct, wind_pct, blast radius.',
+          'Seamless fire-method borrowing via copy_from (e.g. mine placement, bazooka power bar, cluster explosions, air strikes).',
+          'Custom panel icons mapped directly to WA’s hi/lo icon sprite pointers.'
+        ],
+        luaVerbs: ['wa.weapons.replace({ ... })', 'wa.weapons.register({ ... })'],
+        exampleMod: 'circle_bazooka / turret',
+      },
+      {
+        id: 'dynamic-equipping',
+        title: 'Arbitrary Slot Arming & Hotkeying',
+        tagline: 'Arm and fire any weapon in the game on-the-fly, bypassing scheme inventory limits.',
+        maturity: 'Production',
+        details: [
+          'Call worm:equip(slot) from any key hook (e.g. Q key in q_bazooka) to arm weapons dynamically.',
+          'Gifts 1 ammo if the team has 0 ammo, unlocks the weapon in the table, and resets delay.',
+          'Native Space hold-to-charge power bar pump (StartFiring / ReleaseWeapon) works seamlessly.',
+          'Auto-reclaims temporary gifted ammunition once fired to preserve game balance.'
+        ],
+        luaVerbs: ['worm:equip("bazooka")', 'worm:ammo("bazooka", delta)', 'wa.world.keys().q'],
+        exampleMod: 'q_bazooka',
+      },
+      {
+        id: 'lua-actor-lifecycle',
+        title: 'Unified Native LuaActor Architecture',
+        tagline: 'Single native C++ WorldEntity type with custom vtable, eliminating unstable class hierarchies.',
+        maturity: 'Production',
+        details: [
+          'All custom game entities share ONE native type (LUA_ACTOR_SIZE = 0x154) registered in CollisionManager.',
+          'Eliminates dangerous virtual method table (VFT) stacking over stock CWorm or CGObject.',
+          'Supports custom state machines, brains, and event loops ticked on stock MSG_FRAME_FINISH.',
+          'Custom orientation, 16.16 fixed-point velocities, and automatic water drowning detection.'
+        ],
+        luaVerbs: ['wa.actors.spawn({ ... })', 'a:move({ terrain = true })', 'a:gravity()', 'a:explode({ ... })', 'a:despawn()'],
+        solvedGap: 'Gap 6: Actor IDs are stable spawn-order sequences (ACTOR_SEQ) rather than raw heap addresses.',
+        exampleMod: 'gif_donkey_lua / turret',
+      },
+      {
+        id: 'custom-clusters',
+        title: 'Bouquet Clusters & Sub-Munitions',
+        tagline: 'Configurable secondary sprays with custom smoke trails, fuses, homing, and proximity.',
+        maturity: 'Production',
+        details: [
+          'Native cluster fan generation replacing or extending stock CreateClusters.',
+          'Configurable sub-pellet count (1–16), angular spread, and launch velocity.',
+          'Sub-munitions can bounce with grenade-like restitution or detonate on impact.',
+          'Proximity mine triggers (detonates when enemy worms enter radius) or timed fuses.',
+          'Individual bit homing towards aim cursor or nearest enemy worm.',
+          'Automatic puff smoke trail emitters (sprites/smklt25 or custom animated PNG/GIFs).'
+        ],
+        luaVerbs: ['on_explode = { spawn = { kind = "cluster", count = 5, trail = "smklt25", ... } }'],
+        exampleMod: 'mine_emit',
+      },
+      {
+        id: 'gpu-truecolor-renderer',
+        title: 'Direct3D 9 Truecolor Atlas Renderer (EdLud)',
+        tagline: 'Break free from WA’s 223 sprite slot limit and 8-bit palette quantizing with modern GPU quads.',
+        maturity: 'Production',
+        details: [
+          'Packs arbitrary 32-bit RGBA PNG and GIF sheets into a high-capacity 4096×4096 GPU texture atlas.',
+          'Uses 0 stock WA sprite slots (solves the 223 slot bottleneck that used to cap total mod size).',
+          'Hardware rotation (a:angle(deg)) and scaling (a:scale(factor)) baked directly into vertex coordinates.',
+          'Per-vertex team tinting (a:tint(0xRRGGBB)) allows 1 greyscale sheet to serve all 6 teams.',
+          'Additive blending (a:blend("add")) via premultiplied alpha 0 under D3DBLEND_ONE / INVSRCALPHA.',
+          'Draws in a clean second BeginScene/EndScene block before Present at 0.15ms per 500 quads (296x faster than UP).'
+        ],
+        luaVerbs: ['a:gfx({ angle = 37, scale = 1.2, tint = 0xFF8000, blend = "add", depth = 0x10000 })', 'a:angle(deg)', 'a:scale(s)'],
+        exampleMod: 'sentry_gun',
+      },
+      {
+        id: 'screen-space-occlusion',
+        title: 'Render Queue Split & Dual-Band Occlusion',
+        tagline: 'Accurate pixel-perfect occlusion behind terrain and HUD without sorting bugs.',
+        maturity: 'Production',
+        details: [
+          'Splits WA’s native RenderQueue dispatch to generate an exact screen-space coverage mask.',
+          'HUD diffing: Framebuffer differences around the HUD command identify HUD boundaries exactly.',
+          'Terrain vs Soil: Checks collision mask so sprites draw under solid terrain but over crater dirt.',
+          'Two occlusion bands: Behind terrain (tripod sunk in dirt) vs In front of terrain (gun turret and flare).'
+        ],
+        luaVerbs: ['params = { depth = 0x190000, depth_prefix = "sprites/turret_" }'],
+        exampleMod: 'sentry_gun',
+      },
+      {
+        id: 'screen-cutins',
+        title: 'Fullscreen Anime Cut-Ins & Overlays',
+        tagline: 'Rich presentation overlays (speed lines, character portraits) composited via GDI sections.',
+        maturity: 'Production',
+        details: [
+          'Support for screen = "fill" (full window background) and screen = "front" (centered hero cutout).',
+          'Automatic edge-connected black letterbox punch-out for crisp character silhouettes.',
+          'Composited off-screen into a DIBSection with GdiAlphaBlend before presentation.',
+          'Perfect for dramatic super-attacks and spell animations.'
+        ],
+        luaVerbs: ['wa.actors.spawn({ sprite = "sprites/shader", screen = "fill", ... })'],
+        exampleMod: 'wormcraft',
+      },
+      {
+        id: 'worm-carry-throw',
+        title: 'Worm Carry, Pinning & Throw Physics',
+        tagline: 'Pick up worms, freeze turn timers, carry them with cursor motion, and toss them across the map.',
+        maturity: 'Production',
+        details: [
+          'worm:carry(x, y) latches worm coordinates to custom trajectory or cursor.',
+          'Freezes WA turn clock (HUD timer display & active worm state) while held, like a grenade in flight.',
+          'worm:drop() releases the worm into state 0x7E (airborne) with preserved velocity vectors.',
+          'worm.facing reading/writing and worm.visible toggle for possession mechanics.'
+        ],
+        luaVerbs: ['worm:carry(x, y)', 'worm:drop()', 'worm.facing', 'worm.visible = false'],
+        exampleMod: 'worm_toss / pooz',
+      },
+      {
+        id: 'hurt-layer',
+        title: 'Lockstep Hurt Hook & Direct Damage',
+        tagline: 'Intercept all damage messages (blast, hit, axe percent, poison) and deal direct damage.',
+        maturity: 'Production',
+        details: [
+          'Intercepts MSG_EXPLOSION (0x1C), MSG_HIT (0x4B), MSG_NONLETHAL (0x3B), MSG_POISON (0x3E).',
+          'Pre-phase: Inspect incoming damage, scale amount, or return "eat" to negate the hit entirely.',
+          'Post-phase: Report actual lost HP after WA calculations commit.',
+          'worm:hurt(amount) posts stock SpecialImpact (0x4B) with no impulse knockback for precise combat systems.'
+        ],
+        luaVerbs: ['wa.on.hurt(function(hit) ... end)', 'worm:hurt(10)'],
+        exampleMod: 'hurt_lab / turret',
+      },
+      {
+        id: 'custom-aim-sprites',
+        title: 'Per-Slot Worm Pose Remapping (worm_sprites)',
+        tagline: 'Give any custom weapon custom aiming angles and equip animations for all ground slopes.',
+        maturity: 'Production',
+        details: [
+          'Replaces aim hold sheets (weaponlnk, weaponlnku, weaponlnkd) and draw sheets (wthrow, wthrowu, wthrowd).',
+          'Respects ground slope direction (flat, uphill, downhill) calculated by stock WormEntity__calc_sprite.',
+          'Dual modes: Aim wizard angle tracking (phase represents 180° elevation) or frame-by-frame animation (worm_sprites_animate = true).',
+          'Bypasses palette degradation by routing worm_sprites to the truecolor GPU atlas by default.'
+        ],
+        luaVerbs: ['worm_sprites = { weaponlnk = "sprites/equip", wthrow = "sprites/unequip", ... }'],
+        exampleMod: 'sentry_gun / turret',
+      },
+      {
+        id: 'mask-collision',
+        title: 'Animated Opaque Mask Collision',
+        tagline: 'Stamp custom sprite silhouettes directly into WA’s landscape bitgrid.',
+        maturity: 'Experimental',
+        details: [
+          'Converts opaque pixel boundaries of PNGs or GIF frames into solid walk-grid terrain.',
+          'Worms can walk, jump, and stand on the top surface of custom sprites.',
+          'Multi-frame GIFs restamp the walk mask dynamically on each FRAME_FINISH to track moving outlines.',
+          'Selective filtering: mask_worms, mask_land, mask_weapons, mask_actors.'
+        ],
+        luaVerbs: ['spawn = { mask = true, mask_worms = true, mask_land = true, ... }'],
+        exampleMod: 'mask_lab (experimental)',
+      },
+      {
+        id: 'raycast-landscape',
+        title: 'Fast Bitgrid Raycasting & Terrain Tracing',
+        tagline: 'Pixel-level hitscan line-of-sight checks against destructible terrain and worms.',
+        maturity: 'Production',
+        details: [
+          'wa.land.trace(x0, y0, x1, y1) runs Bresenham raycasting through the landscape bitgrid.',
+          'Detects line-of-sight obstruction for AI sentries and hitscan bullet paths.',
+          'wa.land.solid(x, y) tests individual 16.16 fixed coordinates for dirt or air.',
+          'wa.world.size() returns exact map boundaries in pixels.'
+        ],
+        luaVerbs: ['wa.land.trace(x0, y0, x1, y1)', 'wa.land.solid(x, y)'],
+        exampleMod: 'sentry_gun / turret / pooz',
+      },
+      {
+        id: 'lockstep-sync',
+        title: 'Network Input Sync & Checkpoint Hashing',
+        tagline: 'Synchronize Lua keys and cursor coordinates across all multiplayer peers in lockstep.',
+        maturity: 'Live-Accepted',
+        details: [
+          'Private 12-byte carrier opcode 0x80 integrated into WA 3.8.1 compact network packet stream.',
+          'Transmits key bitmask (A, D, W, S, Shift, Q, Space) and 16-bit signed world pointer coordinates.',
+          'Event-driven: Sends immediately on key edge changes, throttled during pointer drag, with 1s heartbeat.',
+          'Component checkpoint verification every 50 frames: Hashes game_rng, net_rng, worms, and actors.',
+          'Zeroes uninitialized stack locals in stock SpriteAnimation__play_1 (Empty Sprite Info fix).'
+        ],
+        luaVerbs: ['wa.world.keys()', 'wa.world.pointer()', 'wa.world.networked()'],
+        solvedGap: 'Gap 1 & 2: Async local input converted to synchronized lockstep network stream.',
+        exampleMod: 'pooz / q_bazooka / worm_toss',
+      },
+      {
+        id: 'deterministic-primitives',
+        title: 'Shared LCG RNG & Deterministic Iteration',
+        tagline: 'Prevent multiplayer desyncs with shared engine randomness and deterministic sorting.',
+        maturity: 'Production',
+        details: [
+          'wa.random(min, max) directly calls WA’s internal 3.8.1 RNG at GameWorld+0x45EC.',
+          'Advances the single shared LCG across both peers and replays identically.',
+          'Strictly forbids math.random and math.randomseed (which vary per process).',
+          'wa.sorted(table) provides deterministic key ordering across Lua 5.4 randomized string hash seeds.'
+        ],
+        luaVerbs: ['wa.random(min, max)', 'wa.sorted(table)'],
+        solvedGap: 'Gap 4 & 5: Routed RNG to engine LCG and provided wa.sorted for string tables.',
+        exampleMod: 'sentry_gun',
+      },
+      {
+        id: 'replay-container',
+        title: '.WF_WAgame Lossless Replay System',
+        tagline: 'Self-contained replays packaging the byte-exact WAgame, compressed mods, and input logs.',
+        maturity: 'Live-Accepted',
+        details: [
+          'Unified container with magic "WFRP", format versioning, and section directory [hdr, pack, wa, wf, chk].',
+          'Embeds the exact loaded mod files (mod.toml, scripts, sprites, sounds) in a compressed gzip archive.',
+          'Extracts the byte-identical stock .WAgame for vanilla compatibility (verifiable via SHA-256).',
+          'Replay playback hooks ReplayLoader (0x00462DF0), spins up an isolated sandbox, and replays inputs frame-by-frame.',
+          'Verifies sync checkpoints during playback, halting immediately if a simulation difference occurs.'
+        ],
+        luaVerbs: ['wf-replay inspect FILE.WF_WAgame', 'wf-replay extract FILE.WF_WAgame OUTPUT.WAgame'],
+        exampleMod: 'Full system feature across all mods',
+      },
+      {
+        id: 'mod-loader-gui',
+        title: 'Win32 Companion Mod Loader Window',
+        tagline: 'In-game UI to toggle packs, detect weapon slot conflicts, and download new mods from the web.',
+        maturity: 'Production',
+        details: [
+          'Native Win32 list view window running on a background thread alongside WA.',
+          'Enables/disables mods via Mods/wormforge.toml without moving files.',
+          'Instant slot conflict detection (identifies which packs contest the same weapon slot).',
+          'Built-in WinHTTP downloader: Fetches index.toml, verifies SHA-256 hashes, and unzips packs directly into Mods/.'
+        ],
+        luaVerbs: ['Automatic loader integration'],
+        exampleMod: 'Modloader GUI',
+      },
+    ];
+
+    function esc(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function pillClass(m) {
+      if (m === 'Production') return 'production';
+      if (m === 'Live-Accepted') return 'live';
+      return 'experimental';
+    }
+
+    const grid = document.getElementById('grid');
+    grid.innerHTML = CAPABILITIES.map((cap) => {
+      const verbs = cap.luaVerbs.map((v) => `<code>${esc(v)}</code>`).join('');
+      const details = cap.details.map((d) => `<li>${esc(d)}</li>`).join('');
+      const gap = cap.solvedGap
+        ? `<div class="gap">${esc(cap.solvedGap)}</div>`
+        : '';
+      return `
+        <article class="card">
+          <div>
+            <div class="card-top">
+              <h2>${esc(cap.title)}</h2>
+              <span class="pill ${pillClass(cap.maturity)}">${esc(cap.maturity)}</span>
+            </div>
+            <p class="tagline">${esc(cap.tagline)}</p>
+            <div class="tech">
+              <span class="tech-label">Technical Realization</span>
+              <ul>${details}</ul>
+              ${gap}
+            </div>
+          </div>
+          <div class="card-foot">
+            <div class="verbs">${verbs}</div>
+            <div class="example">Example: ${esc(cap.exampleMod)}</div>
+          </div>
+        </article>`;
+    }).join('');
+  </script>
+</body>
+</html>
