@@ -317,14 +317,32 @@
       gap: 7px;
       font-size: 0.92rem;
       line-height: 1.55;
-      color: var(--ink);
+      color: var(--muted);
     }
+    .tech li > span { min-width: 0; }
     .tech li::before {
       content: "›";
       color: var(--accent);
       flex-shrink: 0;
       font-weight: 700;
       margin-top: 0.05em;
+    }
+    .tech code,
+    .gap code,
+    .tagline code {
+      font: 550 0.9em/1.45 var(--font-mono);
+      color: var(--code-ink);
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.08em 0.35em;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .gap code {
+      background: color-mix(in srgb, #fff 55%, var(--accent-soft));
+      border-color: var(--accent-border);
+      color: #0a5552;
     }
 
     .gap {
@@ -774,6 +792,38 @@
         .replace(/"/g, '&quot;');
     }
 
+    // Highlight API / symbol tokens inside prose (same role as original emerald chips).
+    const CODE_TOKEN = new RegExp([
+      String.raw`\b(?:wa|math)\.[\w.]+(?:\([^)]*\))?`,
+      String.raw`\b(?:worm|a|inventory|self):[\w]+(?:\([^)]*\))?`,
+      String.raw`\bworm\.(?:facing|visible)\b`,
+      String.raw`\bevent\.(?:victim|attacker|attacker_team|weapon|slot)\b`,
+      String.raw`\b(?:get|set|add|remove|clear|list|deal|transfer|apply)(?:\s*\/\s*(?:get|set|add|remove|clear|list|deal|transfer|apply))+`,
+      String.raw`\bMSG_[A-Z0-9_]+\b`,
+      String.raw`\b0x[0-9A-Fa-f]+\b`,
+      String.raw`\b[A-Z][A-Za-z0-9]*(?:__[A-Za-z0-9]+)+\b`,
+      String.raw`\b(?:GameWorld|WeaponTable|CollisionManager|RenderQueue|ReplayLoader|SpecialImpact|TeamEntity|LuaActor|WorldEntity|CreateClusters|ClusterHoming|SpriteAnimation|START_TURN|FRAME_FINISH|ACTOR_SEQ|LUA_ACTOR_SIZE|D3DBLEND_ONE|INVSRCALPHA|BeginScene|EndScene|Present|WinHTTP|Wine|SHA-256|WAgame|WF_WAgame|WFRP|EdLud|Direct3D|GdiAlphaBlend|DIBSection|Win32|nil)\b`,
+      String.raw`\b[a-z][a-z0-9]*(?:_[a-z0-9]+)+\b`,
+      String.raw`\b(?:kind|screen|sprite|trail|depth|blend|tint|scale|angle|gravity|terrain|mask|cursor|copy_from|panel_state|bounce_pct|gravity_pct|wind_pct)\s*=\s*"(?:\\.|[^"\\])*"`,
+      String.raw`"(?:\\.|[^"\\])+"`,
+      String.raw`\[[^\]]+\]`,
+    ].join('|'), 'g');
+
+    function decorate(text) {
+      const raw = String(text);
+      let out = '';
+      let last = 0;
+      CODE_TOKEN.lastIndex = 0;
+      let m;
+      while ((m = CODE_TOKEN.exec(raw)) !== null) {
+        out += esc(raw.slice(last, m.index));
+        out += `<code>${esc(m[0])}</code>`;
+        last = m.index + m[0].length;
+      }
+      out += esc(raw.slice(last));
+      return out;
+    }
+
     function pillClass(m) {
       if (m === 'Production') return 'production';
       if (m === 'Live-Accepted') return 'live';
@@ -816,9 +866,9 @@
 
     function renderCard(cap) {
       const verbs = cap.luaVerbs.map((v) => `<code>${esc(v)}</code>`).join('');
-      const details = cap.details.map((d) => `<li>${esc(d)}</li>`).join('');
+      const details = cap.details.map((d) => `<li><span>${decorate(d)}</span></li>`).join('');
       const gap = cap.solvedGap
-        ? `<div class="gap">${esc(cap.solvedGap)}</div>`
+        ? `<div class="gap">${decorate(cap.solvedGap)}</div>`
         : '';
       return `
         <article class="card" data-id="${esc(cap.id)}">
@@ -827,7 +877,7 @@
               <h2>${esc(cap.title)}</h2>
               <span class="pill ${pillClass(cap.maturity)}">${esc(cap.maturity)}</span>
             </div>
-            <p class="tagline">${esc(cap.tagline)}</p>
+            <p class="tagline">${decorate(cap.tagline)}</p>
             <div class="tech">
               <span class="tech-label">Technical Realization</span>
               <ul>${details}</ul>
