@@ -1,9 +1,9 @@
-![description](https://i.imgur.com/6Yfe1p6.png)
-
 <div align="center">
 
-https://ropahektic.github.io/WormForge
+![description](https://i.imgur.com/6Yfe1p6.png)
 
-Engine repo (private): [WormForge-engine](https://github.com/ropahektic/WormForge-engine))
+Site: https://ropahektic.github.io/WormForge
+
+Engine repo (private): [WormForge-engine](https://github.com/ropahektic/WormForge-engine
 
 </div>
