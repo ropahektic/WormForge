@@ -2,8 +2,11 @@
 
 ![description](https://i.imgur.com/6Yfe1p6.png)
 
-Site: https://ropahektic.github.io/WormForge
+<a href="https://ropahektic.github.io/WormForge">Website</a>
 
-Engine repo (private): https://github.com/ropahektic/WormForge-engine
+<a href="https://github.com/ropahektic/WormForge/releases">Download</a>
+
+<a href="https://github.com/ropahektic/WormForge-engine">Engine Repo (Private)</a>
+
 
 </div>
