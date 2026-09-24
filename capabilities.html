@@ -479,7 +479,8 @@
           'First loaded mod ID wins a contested slot; conflicting claims are gracefully skipped and logged.',
           'Full parameter control: custom damage, bounce_pct, gravity_pct, wind_pct, blast radius.',
           'Seamless fire-method borrowing via copy_from (e.g. mine placement, bazooka power bar, cluster explosions, air strikes).',
-          'Custom panel icons mapped directly to WA’s hi/lo icon sprite pointers.'
+          'Custom panel icons mapped directly to WA’s hi/lo icon sprite pointers.',
+          'Copied panel_icon pairs are restored before GameEngine::Shutdown, so WA deletes each image once instead of crashing (EIP 0) at match end.'
         ],
         luaVerbs: ['wa.weapons.replace({ ... })', 'wa.weapons.register({ ... })'],
         exampleMod: 'circle_bazooka / turret',
@@ -690,18 +691,64 @@
       {
         id: 'replay-container',
         category: 'replay',
-        title: '.WF_WAgame Lossless Replay System',
-        tagline: 'Self-contained replays packaging the byte-exact WAgame, compressed mods, and input logs.',
+        title: 'Trailer Replays on WA’s Own .WAgame',
+        tagline: 'One file per game: WA’s replay bytes stay untouched, and WormForge appends a trailer WA never reads.',
         maturity: 'Live-Accepted',
         details: [
-          'Unified container with magic "WFRP", format versioning, and section directory [hdr, pack, wa, wf, chk].',
-          'Embeds the exact loaded mod files (mod.toml, scripts, sprites, sounds) in a compressed gzip archive.',
-          'Extracts the byte-identical stock .WAgame for vanilla compatibility (verifiable via SHA-256).',
-          'Replay playback hooks ReplayLoader (0x00462DF0), spins up an isolated sandbox, and replays inputs frame-by-frame.',
-          'Verifies sync checkpoints during playback, halting immediately if a simulation difference occurs.'
+          'The .WAgame is WA’s own bytes plus trailer sections [hdr, pack, wf, chk] and a 32-byte "WFTR" footer (format, lengths, CRC32).',
+          'No footer means a vanilla replay and is left to WA. A recognised footer that fails its checks is refused, never played as a different match.',
+          'mod.toml and Lua are always embedded. Other pack files are Raw, or Asset(sha256) when WormForge.WFAssets holds those exact bytes.',
+          'Recording streams into replay-pending/ and atomically replaces the .WAgame at match end. A crash leftover is finalised at the next start; one that cannot be finalised stays a vanilla replay.',
+          'Playback hooks ReplayLoader (0x00462DF0), resolves collection assets (re-hashed on every read), loads the archived packs, and lets WA read the file itself.',
+          'Verifies sync checkpoints during playback, halting immediately if a simulation difference occurs.',
+          'Older .WF_WAgame sidecars are ignored. Their .WAgame still plays as vanilla; watching the recorded match needs the build that wrote them.'
         ],
-        luaVerbs: ['wf-replay inspect FILE.WF_WAgame', 'wf-replay extract FILE.WF_WAgame OUTPUT.WAgame'],
+        luaVerbs: ['wf-replay inspect FILE.WAgame', 'wf-replay extract FILE.WAgame OUTPUT.WAgame'],
         exampleMod: 'Full system feature across all mods',
+      },
+      {
+        id: 'wfassets-collection',
+        category: 'replay',
+        title: '.WFAssets Content-Addressed Collection',
+        tagline: 'Ship shared PNG and WAV bytes once, and store a 32-byte SHA-256 in the replay instead of a copy.',
+        maturity: 'Production',
+        details: [
+          'WormForge.WFAssets sits next to wkLua.dll. Release 1 holds 3,322 unique PX PNG/WAV blobs (150.6 MB). The file is a release asset, not part of the DLL zip.',
+          'Without the collection, replays embed every asset and stay playable. A replay that references a missing or edited blob is refused, naming every hash and the release it was recorded with.',
+          'Dedup matches exact bytes. Copy PX files as they are; re-saving a PNG, even unchanged, embeds the whole file in every replay.',
+          'The collection is append-only. assets/wfassets.lock records every shipped hash, and wf-assets build refuses a collection that drops a locked hash or does not raise the release number.',
+          'Opening reads the index up front. Every blob is re-hashed on every fetch, so a tampered blob counts as missing.'
+        ],
+        luaVerbs: ['wf-assets build', 'wf-assets verify', 'wf-assets check COLLECTION PACK_DIR'],
+        exampleMod: 'sentry_gun sounds (PX bytes) vs baked sprite sheets (embedded)',
+      },
+      {
+        id: 'worm-roster',
+        category: 'worms',
+        title: 'Full 6×8 Worm Roster',
+        tagline: 'wa.worms.all() and wa.worms.nearest() see team 6 and every team’s 8th worm.',
+        maturity: 'Production',
+        details: [
+          'WA numbers teams and worms from 1. Walking 0..6 and 0..8 skipped cyan and the last worm of every team.',
+          'Stable ids of a two-team match are 17–24 and 33–40 (team * 16 + worm). Team 6 and worm 8 are included.',
+          'Sentries and turrets can target those worms. Highlander can take scheme weapons from cyan and hand stolen weapons to an 8th worm.'
+        ],
+        luaVerbs: ['wa.worms.all()', 'wa.worms.nearest(a.id)'],
+        exampleMod: 'highlander / sentry_gun / turret',
+      },
+      {
+        id: 'homing-missile-sprites',
+        category: 'weapons',
+        title: 'Stock Homing & Super Sheep Sprites',
+        tagline: 'Homing body remaps stay on homing missiles, and each missile’s remembered body dies with it.',
+        maturity: 'Production',
+        details: [
+          'remap_homing_body_sprites returns unless missile_type at MissileEntity+0x1C4 is homing (1). Other missiles are not rewritten.',
+          'That gate restores the stock super sheep cape at take-off. With any packs loaded, the walking sheep was being written into the empty cape slot.',
+          'HM_CUSTOM and HM_LOGGED are keyed by missile address. MissileEntity__Free (0x508330) drops both entries before WA reuses the memory, and clear_homing() empties them at match start.'
+        ],
+        luaVerbs: ['stock super sheep / homing missile (no pack verb)'],
+        exampleMod: 'Any loaded pack; stock super sheep and homing missile',
       },
       {
         id: 'mod-loader-gui',
@@ -802,7 +849,7 @@
       String.raw`\bMSG_[A-Z0-9_]+\b`,
       String.raw`\b0x[0-9A-Fa-f]+\b`,
       String.raw`\b[A-Z][A-Za-z0-9]*(?:__[A-Za-z0-9]+)+\b`,
-      String.raw`\b(?:GameWorld|WeaponTable|CollisionManager|RenderQueue|ReplayLoader|SpecialImpact|TeamEntity|LuaActor|WorldEntity|CreateClusters|ClusterHoming|SpriteAnimation|START_TURN|FRAME_FINISH|ACTOR_SEQ|LUA_ACTOR_SIZE|D3DBLEND_ONE|INVSRCALPHA|BeginScene|EndScene|Present|WinHTTP|Wine|SHA-256|WAgame|WF_WAgame|WFRP|EdLud|Direct3D|GdiAlphaBlend|DIBSection|Win32|nil)\b`,
+      String.raw`\b(?:GameWorld|WeaponTable|CollisionManager|RenderQueue|ReplayLoader|SpecialImpact|TeamEntity|LuaActor|WorldEntity|CreateClusters|ClusterHoming|SpriteAnimation|MissileEntity|GameEngine|START_TURN|FRAME_FINISH|ACTOR_SEQ|LUA_ACTOR_SIZE|D3DBLEND_ONE|INVSRCALPHA|BeginScene|EndScene|Present|WinHTTP|Wine|SHA-256|WAgame|WF_WAgame|WFAssets|WFTR|WFRP|EdLud|Direct3D|GdiAlphaBlend|DIBSection|Win32|nil|EIP)\b`,
       String.raw`\b[a-z][a-z0-9]*(?:_[a-z0-9]+)+\b`,
       String.raw`\b(?:kind|screen|sprite|trail|depth|blend|tint|scale|angle|gravity|terrain|mask|cursor|copy_from|panel_state|bounce_pct|gravity_pct|wind_pct)\s*=\s*"(?:\\.|[^"\\])*"`,
       String.raw`"(?:\\.|[^"\\])+"`,
