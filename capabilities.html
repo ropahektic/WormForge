@@ -534,12 +534,42 @@
         maturity: 'Production',
         details: [
           'Native Win32 list view window running on a background thread alongside WA.',
-          'Enables/disables mods via Mods/wormforge.toml without moving files.',
-          'Instant slot conflict detection (identifies which packs contest the same weapon slot).',
-          'Built-in WinHTTP downloader: Fetches index.toml, verifies SHA-256 hashes, and unzips packs directly into Mods/.'
+          'All / Weapons / Gameplay tabs: kind = "gameplay" (or empty weapon claims) rule packs sit apart from slot overlays.',
+          'Enables/disables mods via Mods/wormforge.toml without moving files; Wine-safe atomic overwrite.',
+          'Instant slot conflict detection (names every pack contesting the same weapon slot).',
+          'Built-in WinHTTP downloader: Fetches downloads/packs/index.toml, verifies SHA-256, installs one zip per pack.'
         ],
-        luaVerbs: ['Automatic loader integration'],
-        exampleMod: 'Modloader GUI',
+        luaVerbs: ['kind = "gameplay"', 'Mods/wormforge.toml', 'Check online → Install'],
+        exampleMod: 'Modloader GUI / highlander',
+      },
+      {
+        id: 'gameplay-rules-packs',
+        title: 'Gameplay / Rules Packs (Highlander)',
+        tagline: 'Change match rules without overlaying a weapon slot — deal hands, steal on kill, scheme-agnostic.',
+        maturity: 'Production',
+        details: [
+          'Packs may claim zero replace/overlay slots and still load; the loader tags them as Gameplay.',
+          'Highlander ports PX Highlander 0rang3 rules on stock WA weapons: three pools, one shot each per turn.',
+          'Killing a worm steals its hand for the active worm (including friendly kills), usable immediately.',
+          'Cavern maps ban air strikes via wa.world.cavern(); utilities / skip / surrender stay with the scheme.',
+          'All dealing and grants run in wa.on.worm_message with wa.random() — lockstep and replay safe.'
+        ],
+        luaVerbs: ['wa.on.worm_message(...)', 'worm:ammo(name, { set = n })', 'wa.world.cavern()', 'wa.random()'],
+        exampleMod: 'highlander',
+      },
+      {
+        id: 'absolute-ammo-api',
+        title: 'Absolute Ammo Writes & Team Arena Fix',
+        tagline: 'Set or clear ammo for any team correctly — including overwriting infinite — like PX SetWeaponEx.',
+        maturity: 'Production',
+        details: [
+          'worm:ammo(name, { set = n }) sets ammo outright; plain worm:ammo(name, n) still adds and leaves infinite alone.',
+          'Fixed team ammo rows: writes now follow WA’s alliance lookup so team 2–6 no longer spill into team 1’s row.',
+          'enable_slot no longer forces panel_state = 1 on stock weapons (stops shoving grants into the F1 row).',
+          'Required for gameplay packs that zero and re-deal scheme weapons every turn.'
+        ],
+        luaVerbs: ['worm:ammo("bazooka", { set = 1 })', 'worm:ammo("bazooka", { set = 0 })', 'worm:ammo("rope", 1)'],
+        exampleMod: 'highlander / q_bazooka',
       },
     ];
 
