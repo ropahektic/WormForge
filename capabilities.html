@@ -318,14 +318,15 @@
 
     .card-meta {
       display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 8px;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
       margin: 8px 0 0;
     }
     .since {
       display: inline-flex;
       align-items: center;
+      flex-wrap: wrap;
       gap: 6px;
       padding: 2px 8px;
       border-radius: 999px;
@@ -333,7 +334,7 @@
       background: var(--panel-raised);
       color: var(--dim);
       font: 500 11px/1.4 var(--font-mono);
-      white-space: nowrap;
+      max-width: 100%;
     }
     .since time { color: var(--muted); }
     .since .rel {
@@ -1210,15 +1211,24 @@
 
     function sinceLabel(cap) {
       if (!cap.since && !cap.release && !cap.updated) return '';
-      const bits = [];
-      if (cap.release) bits.push(`<span class="rel">${esc(cap.release)}</span>`);
-      if (cap.since) bits.push(`<time datetime="${esc(cap.since)}">since ${formatSince(cap.since)}</time>`);
-      if (cap.updated && cap.updated.slice(0, 10) !== (cap.since || '').slice(0, 10)) {
-        bits.push(`<time datetime="${esc(cap.updated)}">updated ${formatSince(cap.updated)}</time>`);
-      } else if (cap.updated && /T/.test(cap.updated)) {
-        bits.push(`<time datetime="${esc(cap.updated)}">updated ${formatSince(cap.updated)}</time>`);
+      const line1 = [];
+      if (cap.release) line1.push(`<span class="rel">${esc(cap.release)}</span>`);
+      if (cap.since) {
+        line1.push(`<time datetime="${esc(cap.since)}">since ${formatSince(cap.since)}</time>`);
       }
-      return `<div class="card-meta"><span class="since">${bits.join(' · ')}</span></div>`;
+      const showUpdated =
+        !!cap.updated
+        && (cap.updated.slice(0, 10) !== (cap.since || '').slice(0, 10) || /T/.test(cap.updated));
+      const rows = [];
+      if (line1.length) {
+        rows.push(`<span class="since">${line1.join(' · ')}</span>`);
+      }
+      if (showUpdated) {
+        rows.push(
+          `<span class="since"><time datetime="${esc(cap.updated)}">updated ${formatSince(cap.updated)}</time></span>`
+        );
+      }
+      return `<div class="card-meta">${rows.join('')}</div>`;
     }
 
     function renderCard(cap) {
