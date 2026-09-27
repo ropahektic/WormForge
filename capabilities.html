@@ -283,6 +283,31 @@
       border-color: var(--warn-border);
     }
 
+    .card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin: 8px 0 0;
+    }
+    .since {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--panel-raised);
+      color: var(--dim);
+      font: 500 11px/1.4 var(--font-mono);
+      white-space: nowrap;
+    }
+    .since time { color: var(--muted); }
+    .since .rel {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
     .tagline {
       margin: 10px 0 0;
       font-size: 0.97rem;
@@ -414,7 +439,7 @@
       <a class="brand" href="./">
         <span class="mark">WF</span>
         <strong>WormForge</strong>
-        <span>WA 3.8.1 Lua Engine</span>
+        <span>0.8 · WA 3.8.1</span>
       </a>
       <a href="https://github.com/ropahektic/WormForge/releases/latest">wkLua.zip</a>
       <span class="sep">·</span>
@@ -427,7 +452,7 @@
 
     <header class="hero">
       <h1>Comprehensive Capabilities Matrix</h1>
-      <p>Everything the engine is currently capable of across weapons, actors, graphics, and networking.</p>
+      <p>Everything the engine can do today across weapons, actors, graphics, networking, and tooling. Each card shows when the capability landed (and which release, when known).</p>
     </header>
 
     <div class="controls" id="controls">
@@ -470,6 +495,9 @@
     const CAPABILITIES = [
       {
         id: 'weapon-overlay',
+        since: '2026-09-22',
+        updated: '2026-09-27',
+        release: '0.8',
         category: 'weapons',
         title: '71-Slot Table Overlay System',
         tagline: 'Overlay any stock Worms Armageddon weapon without stack-trampling or VFT slicing.',
@@ -478,15 +506,19 @@
           'Non-destructive overlay onto the stock 71-slot WeaponTable at GameWorld+0x510.',
           'First loaded mod ID wins a contested slot; conflicting claims are gracefully skipped and logged.',
           'Full parameter control: custom damage, bounce_pct, gravity_pct, wind_pct, blast radius.',
-          'Seamless fire-method borrowing via copy_from (e.g. mine placement, bazooka power bar, cluster explosions, air strikes).',
+          'Seamless fire-method borrowing via copy_from, or a Project X .wep file via wep = "file.wep".',
+          'sprite_overrides remap stock sprite ids/names onto pack GPU sheets for trails, bodies, and FX.',
+          'on_select = { cursor = true } enters land-cursor mode; eat_fire eats the lockstep click for custom on_click.',
           'Custom panel icons mapped directly to WA’s hi/lo icon sprite pointers.',
           'Copied panel_icon pairs are restored before GameEngine::Shutdown, so WA deletes each image once instead of crashing (EIP 0) at match end.'
         ],
-        luaVerbs: ['wa.weapons.replace({ ... })', 'wa.weapons.register({ ... })'],
-        exampleMod: 'circle_bazooka / turret',
+        luaVerbs: ['wa.weapons.replace({ ... })', 'wa.weapons.register({ ... })', 'wep = "hellish.wep"', 'sprite_overrides = { ... }', 'eat_fire = true'],
+        exampleMod: 'circle_bazooka / worm_toss / hellish_grenade',
       },
       {
         id: 'dynamic-equipping',
+        since: '2026-09-22',
+        release: '0.3',
         category: 'weapons',
         title: 'Arbitrary Slot Arming & Hotkeying',
         tagline: 'Arm and fire any weapon in the game on-the-fly, bypassing scheme inventory limits.',
@@ -502,6 +534,8 @@
       },
       {
         id: 'lua-actor-lifecycle',
+        since: '2026-09-22',
+        release: '0.3',
         category: 'actors',
         title: 'Unified Native LuaActor Architecture',
         tagline: 'Single native C++ WorldEntity type with custom vtable, eliminating unstable class hierarchies.',
@@ -518,6 +552,8 @@
       },
       {
         id: 'custom-clusters',
+        since: '2026-09-22',
+        release: '0.3',
         category: 'actors',
         title: 'Bouquet Clusters & Sub-Munitions',
         tagline: 'Configurable secondary sprays with custom smoke trails, fuses, homing, and proximity.',
@@ -535,6 +571,9 @@
       },
       {
         id: 'gpu-truecolor-renderer',
+        since: '2026-09-22',
+        updated: '2026-09-27',
+        release: '0.8',
         category: 'graphics',
         title: 'Direct3D 9 Truecolor Atlas Renderer (EdLud)',
         tagline: 'Break free from WA’s 223 sprite slot limit and 8-bit palette quantizing with modern GPU quads.',
@@ -545,6 +584,7 @@
           'Hardware rotation (a:angle(deg)) and scaling (a:scale(factor)) baked directly into vertex coordinates.',
           'Per-vertex team tinting (a:tint(0xRRGGBB)) allows 1 greyscale sheet to serve all 6 teams.',
           'Additive blending (a:blend("add")) via premultiplied alpha 0 under D3DBLEND_ONE / INVSRCALPHA.',
+          'sheet_id + gpu_alias resolve mirrored / reverse blit flags so virtual worm sheets and sprite_overrides keep drawing.',
           'Draws in a clean second BeginScene/EndScene block before Present at 0.15ms per 500 quads (296x faster than UP).'
         ],
         luaVerbs: ['a:gfx({ angle = 37, scale = 1.2, tint = 0xFF8000, blend = "add", depth = 0x10000 })', 'a:angle(deg)', 'a:scale(s)'],
@@ -552,6 +592,8 @@
       },
       {
         id: 'screen-space-occlusion',
+        since: '2026-09-22',
+        release: '0.5',
         category: 'graphics',
         title: 'Render Queue Split & Dual-Band Occlusion',
         tagline: 'Accurate pixel-perfect occlusion behind terrain and HUD without sorting bugs.',
@@ -567,6 +609,8 @@
       },
       {
         id: 'screen-cutins',
+        since: '2026-09-22',
+        release: '0.5',
         category: 'graphics',
         title: 'Fullscreen Anime Cut-Ins & Overlays',
         tagline: 'Rich presentation overlays (speed lines, character portraits) composited via GDI sections.',
@@ -582,21 +626,28 @@
       },
       {
         id: 'worm-carry-throw',
+        since: '2026-09-22',
+        updated: '2026-09-27',
+        release: '0.8',
         category: 'worms',
         title: 'Worm Carry, Pinning & Throw Physics',
         tagline: 'Pick up worms, freeze turn timers, carry them with cursor motion, and toss them across the map.',
         maturity: 'Production',
         details: [
+          'Requires land-cursor mode (on_select.cursor): camera-mode mouse always maps to screen centre, not a free world point.',
           'worm:carry(x, y) latches worm coordinates to custom trajectory or cursor.',
           'Freezes WA turn clock (HUD timer display & active worm state) while held, like a grenade in flight.',
           'worm:drop() releases the worm into state 0x7E (airborne) with preserved velocity vectors.',
+          'Pair with eat_fire + wa.cursor.spawn so the pack owns the click and draws one cursor actor.',
           'worm.facing reading/writing and worm.visible toggle for possession mechanics.'
         ],
-        luaVerbs: ['worm:carry(x, y)', 'worm:drop()', 'worm.facing', 'worm.visible = false'],
-        exampleMod: 'worm_toss / pooz',
+        luaVerbs: ['on_select = { cursor = true }', 'eat_fire = true', 'wa.cursor.spawn({ ... })', 'worm:carry(x, y)', 'worm:drop()'],
+        exampleMod: 'worm_toss',
       },
       {
         id: 'hurt-layer',
+        since: '2026-09-22',
+        release: '0.3',
         category: 'worms',
         title: 'Lockstep Hurt Hook & Direct Damage',
         tagline: 'Intercept all damage messages (blast, hit, axe percent, poison) and deal direct damage.',
@@ -612,6 +663,9 @@
       },
       {
         id: 'custom-aim-sprites',
+        since: '2026-09-22',
+        updated: '2026-09-27',
+        release: '0.8',
         category: 'worms',
         title: 'Per-Slot Worm Pose Remapping (worm_sprites)',
         tagline: 'Give any custom weapon custom aiming angles and equip animations for all ground slopes.',
@@ -620,13 +674,15 @@
           'Replaces aim hold sheets (weaponlnk, weaponlnku, weaponlnkd) and draw sheets (wthrow, wthrowu, wthrowd).',
           'Respects ground slope direction (flat, uphill, downhill) calculated by stock WormEntity__calc_sprite.',
           'Dual modes: Aim wizard angle tracking (phase represents 180° elevation) or frame-by-frame animation (worm_sprites_animate = true).',
-          'Bypasses palette degradation by routing worm_sprites to the truecolor GPU atlas by default.'
+          'Routes worm_sprites to the truecolor GPU atlas by default; params.gpu_worm_sprites = false opts out to palette slots.',
+          'GPU interception matches sheet_id (mirror / reverse bits stripped) so mirrored aim frames still draw; put-away can shrink until the worm aims again.'
         ],
         luaVerbs: ['worm_sprites = { weaponlnk = "sprites/equip", wthrow = "sprites/unequip", ... }'],
-        exampleMod: 'sentry_gun / turret',
+        exampleMod: 'sentry_gun / turret / highlander',
       },
       {
         id: 'mask-collision',
+        since: '2026-09-22',
         category: 'physics',
         title: 'Animated Opaque Mask Collision',
         tagline: 'Stamp custom sprite silhouettes directly into WA’s landscape bitgrid.',
@@ -642,6 +698,8 @@
       },
       {
         id: 'raycast-landscape',
+        since: '2026-09-22',
+        release: '0.3',
         category: 'physics',
         title: 'Fast Bitgrid Raycasting & Terrain Tracing',
         tagline: 'Pixel-level hitscan line-of-sight checks against destructible terrain and worms.',
@@ -657,6 +715,8 @@
       },
       {
         id: 'lockstep-sync',
+        since: '2026-09-22',
+        release: '0.4',
         category: 'network',
         title: 'Network Input Sync & Checkpoint Hashing',
         tagline: 'Synchronize Lua keys and cursor coordinates across all multiplayer peers in lockstep.',
@@ -674,6 +734,8 @@
       },
       {
         id: 'deterministic-primitives',
+        since: '2026-09-22',
+        release: '0.4',
         category: 'network',
         title: 'Shared LCG RNG & Deterministic Iteration',
         tagline: 'Prevent multiplayer desyncs with shared engine randomness and deterministic sorting.',
@@ -690,6 +752,8 @@
       },
       {
         id: 'replay-container',
+        since: '2026-09-23',
+        release: '0.6',
         category: 'replay',
         title: 'Trailer Replays on WA’s Own .WAgame',
         tagline: 'One file per game: WA’s replay bytes stay untouched, and WormForge appends a trailer WA never reads.',
@@ -708,6 +772,8 @@
       },
       {
         id: 'wfassets-collection',
+        since: '2026-09-23',
+        release: '0.6',
         category: 'replay',
         title: '.WFAssets Content-Addressed Collection',
         tagline: 'Ship shared PNG and WAV bytes once, and store a 32-byte SHA-256 in the replay instead of a copy.',
@@ -724,6 +790,8 @@
       },
       {
         id: 'worm-roster',
+        since: '2026-09-24',
+        release: '0.7',
         category: 'worms',
         title: 'Full 6×8 Worm Roster',
         tagline: 'wa.worms.all() and wa.worms.nearest() see team 6 and every team’s 8th worm.',
@@ -738,6 +806,8 @@
       },
       {
         id: 'homing-missile-sprites',
+        since: '2026-09-24',
+        release: '0.7',
         category: 'weapons',
         title: 'Stock Homing & Super Sheep Sprites',
         tagline: 'Homing body remaps stay on homing missiles, and each missile’s remembered body dies with it.',
@@ -752,6 +822,9 @@
       },
       {
         id: 'mod-loader-gui',
+        since: '2026-09-24',
+        updated: '2026-09-27',
+        release: '0.7',
         category: 'tools',
         title: 'Win32 Companion Mod Loader Window',
         tagline: 'In-game UI to toggle packs, detect weapon slot conflicts, and download new mods from the web.',
@@ -761,13 +834,17 @@
           'All / Weapons / Gameplay tabs: kind = "gameplay" (or empty weapon claims) rule packs sit apart from slot overlays.',
           'Enables/disables mods via Mods/wormforge.toml without moving files; Wine-safe atomic overwrite.',
           'Instant slot conflict detection (names every pack contesting the same weapon slot).',
-          'Built-in WinHTTP downloader: Fetches downloads/packs/index.toml, verifies SHA-256, installs one zip per pack.'
+          'Built-in WinHTTP downloader: Fetches the public github.io downloads/packs/index.toml, verifies SHA-256, installs one zip per pack.',
+          'Online catalogue is always the github.io index — not the private engine repo.'
         ],
         luaVerbs: ['kind = "gameplay"', 'Mods/wormforge.toml', 'Check online → Install'],
         exampleMod: 'Modloader GUI / highlander',
       },
       {
         id: 'gameplay-rules-packs',
+        since: '2026-09-24',
+        updated: '2026-09-27',
+        release: '0.8',
         category: 'tools',
         title: 'Gameplay / Rules Packs (Highlander)',
         tagline: 'Change match rules without overlaying a weapon slot — deal hands, steal on kill, scheme-agnostic.',
@@ -777,6 +854,7 @@
           'Highlander ports PX Highlander 0rang3 rules on stock WA weapons: three pools, one shot each per turn.',
           'Killing a worm steals its hand for the active worm (including friendly kills), usable immediately.',
           'Cavern maps ban air strikes via wa.world.cavern(); utilities / skip / surrender stay with the scheme.',
+          '0.8 pack wave: scripted strikes, vehicles, sniper/heli/balloon, igniter flight holds, and dozens of art ports.',
           'Ships in two educational editions: explicit pure-Lua bookkeeping and the concise inventory/event-verb implementation.'
         ],
         luaVerbs: ['wa.inventory.create(...)', 'wa.on.turn_start(...)', 'wa.on.death(...)', 'wa.random()'],
@@ -784,6 +862,8 @@
       },
       {
         id: 'absolute-ammo-api',
+        since: '2026-09-24',
+        release: '0.7',
         category: 'tools',
         title: 'Absolute Ammo Writes & Team Arena Fix',
         tagline: 'Set or clear ammo for any team correctly — including overwriting infinite — like PX SetWeaponEx.',
@@ -799,6 +879,8 @@
       },
       {
         id: 'virtual-worm-inventories',
+        since: '2026-09-24',
+        release: '0.7.1',
         category: 'tools',
         title: 'Per-Worm Virtual Inventories',
         tagline: 'Build classes, specialist worms, loot systems, and personal arsenals above WA’s team ammo row.',
@@ -815,6 +897,8 @@
       },
       {
         id: 'rule-lifecycle-events',
+        since: '2026-09-24',
+        release: '0.7.1',
         category: 'tools',
         title: 'Turn, Death & Combat Attribution Events',
         tagline: 'React once at rule-level lifecycle points and choose targets from proven combat context.',
@@ -829,6 +913,146 @@
         luaVerbs: ['wa.on.turn_start(function(event) ... end)', 'wa.on.death(function(event) ... end)', 'event.victim', 'event.attacker', 'event.weapon'],
         exampleMod: 'highlander / damage-conditioned loot rules',
       },
+      {
+        id: 'px-wep-import',
+        since: '2026-09-27',
+        release: '0.8',
+        category: 'weapons',
+        title: 'Project X .wep Table Import',
+        tagline: 'Drop a PX weapon file into the pack and fire it through a stock slot without retyping the 0x1D0 record by hand.',
+        maturity: 'Production',
+        details: [
+          'wep = "file.wep" parses the PX 4-byte tag plus WA’s own weapon table entry and installs that firing path on the claimed slot.',
+          'Mutually exclusive with copy_from: each sets how the weapon fires.',
+          'Sprite id fields inside the .wep (flight body and siblings) can still be redirected with sprite_overrides or retarget.',
+          'Name defaults to the .wep’s embedded display name when the Lua claim omits name.'
+        ],
+        luaVerbs: ['wep = "hellish.wep"', 'wa.weapons.replace({ wep = "...", ... })'],
+        exampleMod: 'hellish_grenade / highlander ports',
+      },
+      {
+        id: 'sprite-overrides',
+        since: '2026-09-27',
+        release: '0.8',
+        category: 'weapons',
+        title: 'Stock Sprite → GPU Sheet Overrides',
+        tagline: 'Point any stock blit id at a pack PNG/GIF so trails, bodies, and FX draw truecolor without burning WA sprite slots.',
+        maturity: 'Production',
+        details: [
+          'sprite_overrides = { wsvbd = "sprites/trail", [466] = "sprites/x" } accepts stock names or ids 1–799.',
+          'Resolved once the GPU atlas assigns sheet ids; gpu_alias remaps every subsequent blit of that stock id.',
+          'Works with .wep imports, copy_from overlays, and wa.weapons.retarget for flight / cluster banks.',
+          'Mirror and reverse flags stay on the blit; sheet_id strips them before the alias lookup.'
+        ],
+        luaVerbs: ['sprite_overrides = { wsvbd = "sprites/trail" }', 'wa.weapons.retarget({ weapon, sprite })'],
+        exampleMod: 'random_sprites / highlander strikes',
+      },
+      {
+        id: 'weapon-retarget',
+        since: '2026-09-25',
+        release: '0.7.4',
+        updated: '2026-09-27',
+        category: 'weapons',
+        title: 'Runtime Flight Sprite Retarget',
+        tagline: 'Swap a slot’s in-flight (and optional cluster) body graphic after the weapon table is live.',
+        maturity: 'Production',
+        details: [
+          'wa.weapons.retarget({ weapon = "bazooka", sprite = "banana" }) rewrites the flight sprite fields the slot already owns.',
+          'Optional cluster bank for weapons that fan secondary bits.',
+          'Pair with sprite_overrides when the replacement art lives only on the GPU atlas.',
+          'Example pack random_sprites demonstrates per-shot body swaps.'
+        ],
+        luaVerbs: ['wa.weapons.retarget({ weapon = "bazooka", sprite = "banana" })'],
+        exampleMod: 'random_sprites',
+      },
+      {
+        id: 'land-cursor-eat-fire',
+        since: '2026-09-27',
+        release: '0.8',
+        category: 'weapons',
+        title: 'Land-Cursor Mode & Eaten Lockstep Clicks',
+        tagline: 'Teleport-style world cursor input, with the team click eaten so packs own on_click without a planted X or launch anim.',
+        maturity: 'Production',
+        details: [
+          'Camera mode (default) parks the OS mouse at screen centre — screen→world math always returns camera centre. Land-cursor mode is required for free placement.',
+          'on_select = { cursor = true } enters land-cursor via TeamEntity msg 0x33 (parks on the worm, MOVE=1).',
+          'eat_fire = true eats team msg 0x32 at the TeamEntity handler: no planted X, no reset_cursor, no FireWeapon launch.',
+          'wa.cursor.spawn{ owner, x, y, on } creates an ACTOR_FLAG_CURSOR actor; default sprite = "cursor" uses stock team-coloured cursorr..cursorc.',
+          'WA’s own cursor RQ layers are skipped while an eat_fire slot is selected so only the pack cursor draws.'
+        ],
+        luaVerbs: ['on_select = { cursor = true, on = ... }', 'eat_fire = true', 'wa.cursor.spawn({ owner, x, y, on })', 'wa.world.pointer().down'],
+        exampleMod: 'worm_toss',
+      },
+      {
+        id: 'freeform-draw-quads',
+        since: '2026-09-27',
+        release: '0.8',
+        category: 'graphics',
+        title: 'Freeform Draw Pass (wa.on.draw)',
+        tagline: 'Issue arbitrary world-space GPU quads each rendered frame — beams, ribbons, UI chrome — without spawning actors.',
+        maturity: 'Production',
+        details: [
+          'wa.on.draw handlers run once per Present, after the sim frame; wa.draw.quad is illegal outside them.',
+          'Each quad takes four { x, y } corners in 16.16 world pixels, optional sprite/frame, color or per-vertex colors, blend, and depth.',
+          'wa.random is forbidden inside the draw pass so multiplayer peers cannot diverge from render-only code.',
+          'Composites through the same D3D9 atlas path as actor gfx.'
+        ],
+        luaVerbs: ['wa.on.draw(function() ... end)', 'wa.draw.quad({ points, color, sprite, blend, depth })'],
+        exampleMod: 'scripted beams / editor previews',
+      },
+      {
+        id: 'worm-aim-reads',
+        since: '2026-09-27',
+        release: '0.8',
+        category: 'worms',
+        title: 'Live Aim Fraction & Aiming Flag',
+        tagline: 'Read the crosshair elevation and whether the worm currently has its weapon out — for scripted draw, not for baking sheets.',
+        maturity: 'Production',
+        details: [
+          'worm.aim is 0 straight down → 0.5 level → 1 straight up across the 180° sweep; worm.facing picks the side (PX FireAngle).',
+          'worm.aiming is true while WA is in standing-with-weapon or charge states (WS_AIMING / WS_SETPOWER).',
+          'Distinct from the editor Aiming tab / aim_bake → worm_sprites GIFs: those bake hold/aim sheets for WA to draw.',
+          'Use these reads when a pack draws its own weapon or beam from Lua instead of shipping worm_sprites.'
+        ],
+        luaVerbs: ['worm.aim', 'worm.aiming', 'worm.facing'],
+        exampleMod: 'scripted weapons that draw their own aim',
+      },
+      {
+        id: 'worm-flight-contact',
+        since: '2026-09-27',
+        release: '0.8',
+        category: 'worms',
+        title: 'Worm Contact & Flight Callbacks',
+        tagline: 'See every worm↔entity contact after the sim frame, with the impact velocity WA measured.',
+        maturity: 'Production',
+        details: [
+          'wa.on.contact(function(worm, other, c) ... end) fires once per contact WA reports.',
+          'c.vx / c.vy are the worm’s speed before impact (16.16); c.flags carry WA’s contact bits.',
+          'Supports bounce pads, sticky latch, vehicle boarding, and igniter-style “stay in hand through flight” rules.',
+          'Simulation callback — safe for lockstep when decisions go through wa.random / shared state.'
+        ],
+        luaVerbs: ['wa.on.contact(function(worm, other, c) ... end)', 'c.vx', 'c.vy', 'c.flags'],
+        exampleMod: 'highlander igniter / vehicles',
+      },
+      {
+        id: 'network-asset-sync',
+        since: '2026-09-27',
+        release: '0.8',
+        category: 'network',
+        title: 'Lobby Pack Freeze & Peer Asset Sync',
+        tagline: 'Host ready-bulb freezes enabled packs; peers pull missing blobs; Start stays gated until the match set matches.',
+        maturity: 'Live-Accepted',
+        details: [
+          'Lighting the host ready bulb freezes the enabled pack set into %LOCALAPPDATA%\\WormForge\\sync\\… with a manifest of paths, sizes, and SHA-256.',
+          'Peers verify against installed Mods/, .WFAssets, and the last session; only missing blobs are fetched over the lobby chat carrier.',
+          'Start is blocked until every connected client reports the manifest digest and a compatible WormForge build.',
+          'Network rounds load from the frozen session copy, not live Mods/. Offline play and replay playback are unchanged.',
+          'Session copies are not permanent installs; installing into Mods/ for later offline use is a follow-up for the ModLoader.'
+        ],
+        luaVerbs: ['(automatic on host ready bulb)', 'wa.world.networked()'],
+        exampleMod: 'Any enabled pack set in an online lobby',
+      },
+
     ];
 
     function esc(s) {
@@ -884,6 +1108,9 @@
         cap.maturity,
         cap.exampleMod,
         cap.solvedGap || '',
+        cap.since || '',
+        cap.updated || '',
+        cap.release || '',
         ...(cap.details || []),
         ...(cap.luaVerbs || []),
       ].join('\n').toLowerCase();
@@ -911,6 +1138,24 @@
       });
     }
 
+    function formatSince(iso) {
+      if (!iso) return '';
+      const d = new Date(iso + 'T00:00:00Z');
+      if (Number.isNaN(d.getTime())) return esc(iso);
+      return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+    }
+
+    function sinceLabel(cap) {
+      if (!cap.since && !cap.release && !cap.updated) return '';
+      const bits = [];
+      if (cap.release) bits.push(`<span class="rel">${esc(cap.release)}</span>`);
+      if (cap.since) bits.push(`<time datetime="${esc(cap.since)}">since ${formatSince(cap.since)}</time>`);
+      if (cap.updated && cap.updated !== cap.since) {
+        bits.push(`<time datetime="${esc(cap.updated)}">updated ${formatSince(cap.updated)}</time>`);
+      }
+      return `<div class="card-meta"><span class="since">${bits.join(' · ')}</span></div>`;
+    }
+
     function renderCard(cap) {
       const verbs = cap.luaVerbs.map((v) => `<code>${esc(v)}</code>`).join('');
       const details = cap.details.map((d) => `<li><span>${decorate(d)}</span></li>`).join('');
@@ -924,6 +1169,7 @@
               <h2>${esc(cap.title)}</h2>
               <span class="pill ${pillClass(cap.maturity)}">${esc(cap.maturity)}</span>
             </div>
+            ${sinceLabel(cap)}
             <p class="tagline">${decorate(cap.tagline)}</p>
             <div class="tech">
               <span class="tech-label">Technical Realization</span>
