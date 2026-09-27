@@ -498,7 +498,7 @@
             </svg>
             <input id="search" type="search" placeholder="Search capabilities, hooks, verbs…" autocomplete="off" />
           </label>
-          <button type="button" class="sort-toggle" id="sort-latest" aria-pressed="true" title="Sort by date: newest first when on, oldest first when off">Latest</button>
+          <button type="button" class="sort-toggle" id="sort-latest" aria-pressed="true" title="Sort by last change: newest first when on, oldest first when off (uses updated, then since; same-day ties follow edit order in this file)">Latest</button>
         </div>
         <div class="meta" id="meta">Showing all capabilities</div>
       </div>
@@ -528,6 +528,8 @@
       { id: 'tools', label: 'Loader & Rules' },
     ];
 
+    // Cards: set `since` when introduced. On every edit, bump `updated` to an ISO
+    // datetime (…T…Z). Latest sort uses updated||since, then array order.
     const CAPABILITIES = [
       {
         id: 'weapon-overlay',
@@ -1073,7 +1075,7 @@
       {
         id: 'network-asset-sync',
         since: '2026-09-27',
-        updated: '2026-09-27',
+        updated: '2026-09-27T16:29:00Z',
         release: '0.8',
         category: 'network',
         title: 'Lobby Pack Freeze & Peer Asset Sync',
@@ -1167,33 +1169,43 @@
       `<button type="button" class="tab${cat.id === 'all' ? ' active' : ''}" role="tab" data-id="${esc(cat.id)}" aria-selected="${cat.id === 'all'}">${esc(cat.label)}</button>`
     ).join('');
 
-    function sortDate(cap) {
-      const a = cap.updated || '';
-      const b = cap.since || '';
-      return a > b ? a : b;
+    function parseStamp(raw) {
+      if (!raw) return 0;
+      const iso = /T/.test(raw) ? raw : `${raw}T00:00:00Z`;
+      const t = Date.parse(iso);
+      return Number.isNaN(t) ? 0 : t;
+    }
+
+    /** Last changed: prefer `updated`, else `since`. Index breaks same-day ties (later in CAPABILITIES = newer). */
+    function changedAt(cap, index) {
+      return parseStamp(cap.updated || cap.since) * 1000 + (index + 1);
     }
 
     function filtered() {
       const q = query.trim().toLowerCase();
-      const list = CAPABILITIES.filter((cap) => {
+      const list = CAPABILITIES.map((cap, index) => ({ cap, index })).filter(({ cap }) => {
         const catOk = activeCategory === 'all' || cap.category === activeCategory;
         const searchOk = !q || haystack(cap).includes(q);
         return catOk && searchOk;
       });
-      const dir = latestFirst ? -1 : 1;
-      return list.slice().sort((a, b) => {
-        const da = sortDate(a);
-        const db = sortDate(b);
-        if (da !== db) return da < db ? -dir : dir;
-        return a.title.localeCompare(b.title);
+      list.sort((a, b) => {
+        const da = changedAt(a.cap, a.index);
+        const db = changedAt(b.cap, b.index);
+        if (da !== db) return latestFirst ? db - da : da - db;
+        return a.cap.title.localeCompare(b.cap.title);
       });
+      return list.map(({ cap }) => cap);
     }
 
     function formatSince(iso) {
       if (!iso) return '';
-      const d = new Date(iso + 'T00:00:00Z');
+      const raw = /T/.test(iso) ? iso : `${iso}T00:00:00Z`;
+      const d = new Date(raw);
       if (Number.isNaN(d.getTime())) return esc(iso);
-      return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+      const date = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+      if (!/T/.test(iso)) return date;
+      const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC', hour12: false });
+      return `${date}, ${time} UTC`;
     }
 
     function sinceLabel(cap) {
@@ -1201,7 +1213,9 @@
       const bits = [];
       if (cap.release) bits.push(`<span class="rel">${esc(cap.release)}</span>`);
       if (cap.since) bits.push(`<time datetime="${esc(cap.since)}">since ${formatSince(cap.since)}</time>`);
-      if (cap.updated && cap.updated !== cap.since) {
+      if (cap.updated && cap.updated.slice(0, 10) !== (cap.since || '').slice(0, 10)) {
+        bits.push(`<time datetime="${esc(cap.updated)}">updated ${formatSince(cap.updated)}</time>`);
+      } else if (cap.updated && /T/.test(cap.updated)) {
         bits.push(`<time datetime="${esc(cap.updated)}">updated ${formatSince(cap.updated)}</time>`);
       }
       return `<div class="card-meta"><span class="since">${bits.join(' · ')}</span></div>`;
