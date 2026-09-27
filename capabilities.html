@@ -1073,6 +1073,7 @@
       {
         id: 'network-asset-sync',
         since: '2026-09-27',
+        updated: '2026-09-27',
         release: '0.8',
         category: 'network',
         title: 'Lobby Pack Freeze & Peer Asset Sync',
@@ -1080,15 +1081,14 @@
         maturity: 'Live-Accepted',
         details: [
           'Lighting the host ready bulb freezes the enabled pack set into %LOCALAPPDATA%\\WormForge\\sync\\… with a manifest of paths, sizes, and SHA-256.',
-          'Peers verify against installed Mods/, .WFAssets, and the last session; only missing blobs are fetched over the lobby chat carrier.',
+          'Peers verify against installed Mods/ (including disabled packs), .WFAssets, and the last session; only missing blobs are fetched over the lobby chat carrier.',
           'Start is blocked until every connected client reports the manifest digest and a compatible WormForge build.',
           'Network rounds load from the frozen session copy, not live Mods/. Offline play and replay playback are unchanged.',
-          'Session copies are not permanent installs; installing into Mods/ for later offline use is a follow-up for the ModLoader.'
+          'When a peer finishes sync, each new pack is also copied into Mods/<id>/ and listed in the ModLoader disabled by default so it can be used later offline or as host; packs already present are left alone if identical, or updated in place without changing their on/off toggle.'
         ],
-        luaVerbs: ['(automatic on host ready bulb)', 'wa.world.networked()'],
+        luaVerbs: ['(automatic on host ready bulb)', 'wa.world.networked()', 'Mods/wormforge.toml'],
         exampleMod: 'Any enabled pack set in an online lobby',
       },
-
     ];
 
     function esc(s) {
