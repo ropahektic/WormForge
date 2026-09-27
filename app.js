@@ -95,6 +95,7 @@
     const wep = W.parseWep(bytes);
     state.baseSlot = "upload";
     state.baseName = wep.name || name;
+    state.uploadBytes = bytes.slice();
     state.record = wep.record.slice();
     state.baseRecord = wep.record.slice();
     state.tail = wep.tail.slice();
@@ -147,7 +148,8 @@
   function groupLabel(group) {
     const hit = [["fire", "Fire mode"], ["handling", "Handling"], ["flight", "Flight"], ["explosion", "Explosion"],
       ["clusters", "Clusters / payload"], ["homing", "Homing"], ["strike", "Strike run"], ["hitscan", "Gun"],
-      ["arrow", "Arrow"], ["spray", "Spray"], ["mine", "Mine brain"], ["special", "Special parameters"]].find(([g]) => g === group);
+      ["arrow", "Arrow"], ["spray", "Spray"], ["mine", "Mine brain"], ["special", "Special parameters"],
+      ["other", "Other fields"]].find(([g]) => g === group);
     return hit ? hit[1] : group;
   }
 
@@ -585,18 +587,95 @@
     return bits.join(", ");
   }
 
+  /** The record the pack starts from: the stock base, or the uploaded .wep. */
+  function referenceRecord() {
+    if (state.baseSlot !== "upload") {
+      const s = stock.get(state.baseSlot);
+      if (s) return s.record;
+    }
+    return state.baseRecord;
+  }
+
+  function hex(off) {
+    return "0x" + off.toString(16).toUpperCase().padStart(2, "0");
+  }
+
+  function luaNumber(f, v) {
+    // 16.16 fixed point and sprite/flag words read better in hex; the rest as-is.
+    if (f && f.type === "fixed" && v > 0xffff) return "0x" + (v >>> 0).toString(16).toUpperCase();
+    return String(v);
+  }
+
+  function describeValue(f, v) {
+    if (!f) return "";
+    if (f.type === "enum") {
+      const o = (f.options || []).find(([n]) => n === v);
+      return o ? o[1] : "";
+    }
+    if (f.type === "fixed") return `${(v / 65536).toFixed(2)}`;
+    if (f.type === "bool") return v ? "on" : "off";
+    if (f.type === "ms") return `${v} ms`;
+    if (f.type === "sprite") return stockNameForSprite(v);
+    return "";
+  }
+
+  /** Every patchable dword that differs from the reference, with its label. */
+  function patchList() {
+    const ref = referenceRecord();
+    const known = new Map();
+    for (const f of W.fields(state.record)) if (!known.has(f.abs)) known.set(f.abs, f);
+    const out = [];
+    for (let off = 0x0c; off < W.ENTRY_SIZE; off += 4) {
+      if (!W.patchable(off)) continue;
+      const v = rd(off);
+      const was = W.rd(ref, off);
+      if (v === was) continue;
+      const f = known.get(off);
+      out.push({ off, v, was, f });
+    }
+    return out;
+  }
+
+  function emitPatch() {
+    const order = ["fire", "handling", "flight", "explosion", "homing", "clusters", "strike", "hitscan", "arrow", "spray", "mine", "special"];
+    const rank = (e) => { const i = order.indexOf(e.f ? e.f.group : "other"); return i < 0 ? order.length : i; };
+    const list = patchList().sort((a, b) => rank(a) - rank(b) || a.off - b.off);
+    if (!list.length) return [];
+    const width = Math.max(...list.map((e) => `[${hex(e.off)}] = ${luaNumber(e.f, e.v)},`.length));
+    const lines = ["  patch = {"];
+    let lastGroup = null;
+    for (const e of list) {
+      const group = e.f ? e.f.group : "other";
+      if (group !== lastGroup) {
+        lines.push(`    -- ${groupLabel(group)}`);
+        lastGroup = group;
+      }
+      const cell = `[${hex(e.off)}] = ${luaNumber(e.f, e.v)},`.padEnd(width);
+      const label = e.f ? e.f.label : "raw field";
+      const meaning = describeValue(e.f, e.v);
+      const was = describeValue(e.f, e.was) || luaNumber(e.f, e.was);
+      lines.push(`    ${cell}  -- ${label}${meaning ? `: ${meaning}` : ""} (was ${was})`);
+    }
+    lines.push("  },");
+    return lines;
+  }
+
   function luaSource() {
+    const upload = state.baseSlot === "upload";
     const wepName = `${packFolder()}.wep`;
-    const lines = [
-      `-- ${state.name}: ${mixSummary()}.`,
-      `-- ${wepName} is WA's weapon table entry for it; WormForge imports how it`,
-      `-- fires onto the ${stockName(state.slot)} slot and swaps in the art below.`,
-      "",
-      "wa.weapons.replace({",
-      `  weapon = ${luaString(state.slot)},`,
-      `  wep = ${luaString(wepName)},`,
-      `  name = ${luaString(state.name)},`,
-    ];
+    const lines = [`-- ${state.name}: ${mixSummary()}.`];
+    if (upload) {
+      lines.push(`-- ${wepName} is the weapon table entry this started from; patch lists`);
+      lines.push("-- the fields changed on top of it, by WA weapon entry offset.");
+    } else {
+      lines.push(`-- copy_from lays down the stock ${state.baseName}; patch lists every field`);
+      lines.push("-- changed on top of it, by WA weapon entry offset. Edit the numbers freely.");
+    }
+    lines.push("", "wa.weapons.replace({", `  weapon = ${luaString(state.slot)},`);
+    if (upload) lines.push(`  wep = ${luaString(wepName)},`);
+    else lines.push(`  copy_from = ${luaString(state.baseSlot)},`);
+    lines.push(`  name = ${luaString(state.name)},`);
+    lines.push(...emitPatch());
     if (state.panel_icon) lines.push(`  panel_icon = ${luaString(state.panel_icon)},`);
     const body = spriteLuaValue(state.sprites.body);
     if (body) lines.push(`  sprite = ${luaString(body)},`);
@@ -662,7 +741,8 @@
     const zip = new JSZip();
     zip.file(`${folder}/mod.toml`, toml);
     zip.file(`${folder}/weapons.lua`, lua);
-    zip.file(`${folder}/${folder}.wep`, wepBytes());
+    // A stock base is all Lua; only an uploaded .wep ships as a file.
+    if (state.baseSlot === "upload") zip.file(`${folder}/${folder}.wep`, state.uploadBytes || wepBytes());
     for (const [path, file] of packFiles) {
       if (lua.includes(path) || lua.includes(file.name)) zip.file(`${folder}/${path}`, file);
     }

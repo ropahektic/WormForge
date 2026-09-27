@@ -535,8 +535,8 @@
       {
         id: 'weapon-overlay',
         since: '2026-09-22',
-        updated: '2026-09-27',
-        release: '0.8',
+        updated: '2026-09-27T20:30:00Z',
+        release: '0.8.1',
         category: 'weapons',
         title: '71-Slot Table Overlay System',
         tagline: 'Overlay any stock Worms Armageddon weapon without stack-trampling or VFT slicing.',
@@ -545,13 +545,13 @@
           'Non-destructive overlay onto the stock 71-slot WeaponTable at GameWorld+0x510.',
           'First loaded mod ID wins a contested slot; conflicting claims are gracefully skipped and logged.',
           'Full parameter control: custom damage, bounce_pct, gravity_pct, wind_pct, blast radius.',
-          'Seamless fire-method borrowing via copy_from, or a Project X .wep file via wep = "file.wep".',
+          'Seamless fire-method borrowing via copy_from, a Project X .wep via wep = "file.wep", or a readable patch = { [0x50] = 70 } diff on top of either.',
           'sprite_overrides remap stock sprite ids/names onto pack GPU sheets for trails, bodies, and FX.',
           'on_select = { cursor = true } enters land-cursor mode; eat_fire eats the lockstep click for custom on_click.',
           'Custom panel icons mapped directly to WA’s hi/lo icon sprite pointers.',
           'Copied panel_icon pairs are restored before GameEngine::Shutdown, so WA deletes each image once instead of crashing (EIP 0) at match end.'
         ],
-        luaVerbs: ['wa.weapons.replace({ ... })', 'wa.weapons.register({ ... })', 'wep = "hellish.wep"', 'sprite_overrides = { ... }', 'eat_fire = true'],
+        luaVerbs: ['wa.weapons.replace({ ... })', 'wa.weapons.register({ ... })', 'wep = "hellish.wep"', 'patch = { [0x50] = 70 }', 'sprite_overrides = { ... }', 'eat_fire = true'],
         exampleMod: 'circle_bazooka / worm_toss / hellish_grenade',
       },
       {
@@ -955,7 +955,8 @@
       {
         id: 'px-wep-import',
         since: '2026-09-27',
-        release: '0.8',
+        updated: '2026-09-27T20:30:00Z',
+        release: '0.8.1',
         category: 'weapons',
         title: 'Project X .wep Table Import',
         tagline: 'Drop a PX weapon file into the pack and fire it through a stock slot without retyping the 0x1D0 record by hand.',
@@ -963,11 +964,32 @@
         details: [
           'wep = "file.wep" parses the PX 4-byte tag plus WA’s own weapon table entry and installs that firing path on the claimed slot.',
           'Mutually exclusive with copy_from: each sets how the weapon fires.',
+          'patch = { [0x50] = 70, [0xF0] = 1 } writes single weapon-table dwords after copy_from / wep — the web editor’s readable, hand-editable diff.',
+          'Offsets are the entry’s (0x0C, 0x14–0x20, 0x30–0x1CC); fire type must stay 0–4; PX sprite ids keep the slot’s stock art as with wep.',
           'Sprite id fields inside the .wep (flight body and siblings) can still be redirected with sprite_overrides or retarget.',
           'Name defaults to the .wep’s embedded display name when the Lua claim omits name.'
         ],
-        luaVerbs: ['wep = "hellish.wep"', 'wa.weapons.replace({ wep = "...", ... })'],
-        exampleMod: 'hellish_grenade / highlander ports',
+        luaVerbs: ['wep = "hellish.wep"', 'copy_from = "bazooka"', 'patch = { [0x50] = 70, [0xF0] = 1 }', 'wa.weapons.replace({ wep = "...", ... })'],
+        exampleMod: 'hellish_grenade / highlander ports / web weapon mixer',
+      },
+      {
+        id: 'web-weapon-mixer',
+        since: '2026-09-27',
+        updated: '2026-09-27T20:30:00Z',
+        release: '0.8.1',
+        category: 'tools',
+        title: 'Web Weapon Mixer (.wep → Lua patch)',
+        tagline: 'Start from any stock weapon, borrow clusters / homing / flight from another, tune fields, re-skin — download a Mods pack whose weapons.lua is fully readable.',
+        maturity: 'Production',
+        details: [
+          'Fiddler-style mixer on ropahektic.github.io/WormForge: base is a stock WA table entry (or Load .wep…), mix groups borrow behaviour from other stock weapons.',
+          'Downloaded pack is mod.toml + weapons.lua (+ sprites). copy_from lays the base; patch lists every changed dword with labels — edit the numbers in any text editor.',
+          'Keeps sprite swap (stock / PX / uploaded) and the aim pose generator (worm_sprites GIF sets).',
+          'Optional Export .wep for Fiddler / PX interop; packs that started from an uploaded .wep still ship that file under wep =.',
+          'Needs WormForge 0.8.1+ for patch=; older builds only accept wep= / copy_from / params.'
+        ],
+        luaVerbs: ['copy_from = "bazooka"', 'patch = { [0x50] = 70 }', 'cluster = { sprite = "banana" }', 'worm_sprites = { ... }'],
+        exampleMod: 'weapon editor on github.io/WormForge',
       },
       {
         id: 'sprite-overrides',

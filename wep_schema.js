@@ -244,6 +244,12 @@ window.WepSchema = (() => {
 
   const NOT_IMPORTED = new Set([0x00, 0x04, 0x08, 0x10, 0x24, 0x28, 0x2c]);
 
+  /** Offsets `patch = { [off] = v }` may set: what copy_from / wep import copy
+   *  (the engine's `weapons::wep::patchable`). */
+  function patchable(off) {
+    return off % 4 === 0 && off >= 0x0c && off < ENTRY_SIZE && !NOT_IMPORTED.has(off) && !(off >= 0x10 && off < 0x14) && !(off >= 0x24 && off < 0x30);
+  }
+
   // ---- record helpers -------------------------------------------------------
   function rd(rec, off) {
     return new DataView(rec.buffer, rec.byteOffset, rec.byteLength).getInt32(off, true);
@@ -468,6 +474,7 @@ window.WepSchema = (() => {
     PX_SPRITE_BASE,
     LAST_STOCK_SPRITE,
     NOT_IMPORTED,
+    patchable,
     HEADER,
     MISSILE,
     HITSCAN,

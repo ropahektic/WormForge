@@ -222,7 +222,7 @@
       <h1>WormForge</h1>
       <img class="logo" src="https://i.imgur.com/6Yfe1p6.png" alt="WormForge — a modding API for Worms Armageddon" />
     </div>
-    <p class="lead">Weapon mixer. Start from any stock weapon's table entry, take clusters, homing, flight or a whole payload from another, tune every number, re-skin it — download a Mods pack with the <code>.wep</code> and <code>weapons.lua</code>.</p>
+    <p class="lead">Weapon mixer. Start from any stock weapon's table entry, take clusters, homing, flight or a whole payload from another, tune every number, re-skin it — download a Mods pack whose <code>weapons.lua</code> lists every change as a readable, editable <code>patch</code>. Needs WormForge 0.8.1+.</p>
     <div class="bar">
       <a href="https://github.com/ropahektic/WormForge/releases/latest">wkLua.zip</a>
       <span class="sep">·</span>
@@ -250,7 +250,7 @@
         <p class="err" id="error"></p>
         <div class="actions">
           <button class="primary" id="download" type="button">Download Mods pack</button>
-          <button class="ghost" id="download-wep" type="button">Download .wep only</button>
+          <button class="ghost" id="download-wep" type="button">Export .wep (Fiddler / PX)</button>
         </div>
       </section>
 
@@ -278,9 +278,9 @@
   </div>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/omggif@1.0.10/omggif.js"></script>
-  <script src="wep_schema.js?v=web40"></script>
-  <script src="aim_bake.js?v=web40"></script>
-  <script src="app.js?v=web40"></script>
+  <script src="wep_schema.js?v=web41"></script>
+  <script src="aim_bake.js?v=web41"></script>
+  <script src="app.js?v=web41"></script>
   <script>
     (() => {
       const root = document.documentElement;
