@@ -177,6 +177,39 @@
       border-color: var(--accent);
       box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
     }
+    .controls-left {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    .sort-toggle {
+      flex: 0 0 auto;
+      padding: 9px 14px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--muted);
+      font: 600 13px/1.2 var(--font-ui);
+      cursor: pointer;
+      transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+    }
+    .sort-toggle:hover {
+      color: var(--ink);
+      border-color: var(--border-strong);
+      background: var(--panel-raised);
+    }
+    .sort-toggle[aria-pressed="true"] {
+      color: #fff;
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .sort-toggle:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
     .meta {
       font: 500 13px/1.3 var(--font-ui);
       color: var(--dim);
@@ -457,13 +490,16 @@
 
     <div class="controls" id="controls">
       <div class="controls-row">
-        <label class="search" aria-label="Search capabilities">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <circle cx="11" cy="11" r="7"></circle>
-            <path d="M20 20l-3.5-3.5"></path>
-          </svg>
-          <input id="search" type="search" placeholder="Search capabilities, hooks, verbs…" autocomplete="off" />
-        </label>
+        <div class="controls-left">
+          <label class="search" aria-label="Search capabilities">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="M20 20l-3.5-3.5"></path>
+            </svg>
+            <input id="search" type="search" placeholder="Search capabilities, hooks, verbs…" autocomplete="off" />
+          </label>
+          <button type="button" class="sort-toggle" id="sort-latest" aria-pressed="true" title="Sort by date: newest first when on, oldest first when off">Latest</button>
+        </div>
         <div class="meta" id="meta">Showing all capabilities</div>
       </div>
       <div class="tabs" id="tabs" role="tablist" aria-label="Capability categories"></div>
@@ -1118,23 +1154,38 @@
 
     let activeCategory = 'all';
     let query = '';
+    let latestFirst = true;
 
     const tabsEl = document.getElementById('tabs');
     const grid = document.getElementById('grid');
     const empty = document.getElementById('empty');
     const meta = document.getElementById('meta');
     const search = document.getElementById('search');
+    const sortLatest = document.getElementById('sort-latest');
 
     tabsEl.innerHTML = CATEGORIES.map((cat) =>
       `<button type="button" class="tab${cat.id === 'all' ? ' active' : ''}" role="tab" data-id="${esc(cat.id)}" aria-selected="${cat.id === 'all'}">${esc(cat.label)}</button>`
     ).join('');
 
+    function sortDate(cap) {
+      const a = cap.updated || '';
+      const b = cap.since || '';
+      return a > b ? a : b;
+    }
+
     function filtered() {
       const q = query.trim().toLowerCase();
-      return CAPABILITIES.filter((cap) => {
+      const list = CAPABILITIES.filter((cap) => {
         const catOk = activeCategory === 'all' || cap.category === activeCategory;
         const searchOk = !q || haystack(cap).includes(q);
         return catOk && searchOk;
+      });
+      const dir = latestFirst ? -1 : 1;
+      return list.slice().sort((a, b) => {
+        const da = sortDate(a);
+        const db = sortDate(b);
+        if (da !== db) return da < db ? -dir : dir;
+        return a.title.localeCompare(b.title);
       });
     }
 
@@ -1209,6 +1260,12 @@
 
     search.addEventListener('input', () => {
       query = search.value;
+      render();
+    });
+
+    sortLatest.addEventListener('click', () => {
+      latestFirst = !latestFirst;
+      sortLatest.setAttribute('aria-pressed', latestFirst ? 'true' : 'false');
       render();
     });
 
