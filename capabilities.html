@@ -846,18 +846,20 @@
       {
         id: 'homing-missile-sprites',
         since: '2026-09-24',
-        release: '0.7',
+        updated: '2026-09-27T21:30:00Z',
+        release: '0.8.1.2',
         category: 'weapons',
         title: 'Stock Homing & Super Sheep Sprites',
-        tagline: 'Homing body remaps stay on homing missiles, and each missile’s remembered body dies with it.',
+        tagline: 'Homing body remaps run only on slots a pack gave its own flight sprite — stock pigeons stay pigeons.',
         maturity: 'Production',
         details: [
           'remap_homing_body_sprites returns unless missile_type at MissileEntity+0x1C4 is homing (1). Other missiles are not rewritten.',
-          'That gate restores the stock super sheep cape at take-off. With any packs loaded, the walking sheep was being written into the empty cape slot.',
-          'HM_CUSTOM and HM_LOGGED are keyed by missile address. MissileEntity__Free (0x508330) drops both entries before WA reuses the memory, and clear_homing() empties them at match start.'
+          '0.8.1.2: only missiles whose slot a pack set a flight sprite (record apply or set_flight_sprite) are remapped, and only the named body fields — no whole fire-params scan, never on WA draw msg 0x3.',
+          'That stops Project X Pigeon Strike pigeons being rewritten from their feather trail id (online desync / broken feathers).',
+          'HM_CUSTOM and HM_LOGGED are HashMap/HashSet keyed by missile address. MissileEntity__Free drops both; clear_homing() empties them at match start.'
         ],
-        luaVerbs: ['stock super sheep / homing missile (no pack verb)'],
-        exampleMod: 'Any loaded pack; stock super sheep and homing missile',
+        luaVerbs: ['flight sprite / set_flight_sprite on a pack slot', 'stock super sheep / homing missile'],
+        exampleMod: 'Any pack with a custom homing body; stock Pigeon Strike untouched',
       },
       {
         id: 'mod-loader-gui',
@@ -882,8 +884,8 @@
       {
         id: 'gameplay-rules-packs',
         since: '2026-09-24',
-        updated: '2026-09-27',
-        release: '0.8',
+        updated: '2026-09-27T21:30:00Z',
+        release: '0.8.1.2',
         category: 'tools',
         title: 'Gameplay / Rules Packs (Highlander)',
         tagline: 'Change match rules without overlaying a weapon slot — deal hands, steal on kill, scheme-agnostic.',
@@ -893,10 +895,10 @@
           'Highlander ports PX Highlander 0rang3 rules on stock WA weapons: three pools, one shot each per turn.',
           'Killing a worm steals its hand for the active worm (including friendly kills), usable immediately.',
           'Cavern maps ban air strikes via wa.world.cavern(); utilities / skip / surrender stay with the scheme.',
-          '0.8 pack wave: scripted strikes, vehicles, sniper/heli/balloon, igniter flight holds, and dozens of art ports.',
+          '0.8.1.2 wave: Double Bazooka, Nuke Rocket, Chilli Bomb, Hang-Glider, sniper muzzle flash, registered pack WAVs — 45 ported slots.',
           'Ships in two educational editions: explicit pure-Lua bookkeeping and the concise inventory/event-verb implementation.'
         ],
-        luaVerbs: ['wa.inventory.create(...)', 'wa.on.turn_start(...)', 'wa.on.death(...)', 'wa.random()'],
+        luaVerbs: ['wa.inventory.create(...)', 'wa.on.turn_start(...)', 'wa.on.death(...)', 'wa.weapons.launch{...}', 'wa.random()'],
         exampleMod: 'highlander / highlander_pure_lua',
       },
       {
@@ -1113,6 +1115,79 @@
         ],
         luaVerbs: ['(automatic on host ready bulb)', 'wa.world.networked()', 'Mods/wormforge.toml'],
         exampleMod: 'Any enabled pack set in an online lobby',
+      },
+      {
+        id: 'weapons-launch',
+        since: '2026-09-27',
+        updated: '2026-09-27T21:30:00Z',
+        release: '0.8.1.2',
+        category: 'weapons',
+        title: 'wa.weapons.launch — Real WA Missiles From Lua',
+        tagline: 'Spawn a stock MissileEntity from a slot’s fire params; wind, trail, blast and lockstep stay WA’s.',
+        maturity: 'Production',
+        details: [
+          'Does what FireWeapon__CreateWeaponProjectile does: object-pool check, physics parent, MissileEntity constructor with a PX-layout shoot description.',
+          'Per-shot overrides (damage, sprite, fuse, sound, explode_into, countdown, explode_on_space) write a copy of the fire params — the weapon record is never mutated.',
+          'Returns the missile id (same as m.id / on_explode’s ev.missile). Simulation callbacks only.',
+          'Powers Highlander’s Double Bazooka second shell, Nuke Rocket climb-out, and Chilli Bomb child burst.'
+        ],
+        luaVerbs: [
+          'wa.weapons.launch{ weapon, owner, x, y, vx, vy, damage, fuse, sprite, sound, explode_into, countdown, explode_on_space }'
+        ],
+        exampleMod: 'highlander (Double Bazooka / Nuke Rocket / Chilli Bomb)',
+      },
+      {
+        id: 'world-gravity-wind',
+        since: '2026-09-27',
+        updated: '2026-09-27T21:30:00Z',
+        release: '0.8.1.2',
+        category: 'physics',
+        title: 'wa.world.gravity() & wa.world.wind()',
+        tagline: 'Read WA’s base gravity and wind (16.16) — Project X Env->Gravity / Env->Wind — before per-object factors.',
+        maturity: 'Production',
+        details: [
+          'Collision manager +0x22C / +0x230; wind changes each turn.',
+          'Same base values WA scales by worm.gravity / worm.wind (and missile factors).',
+          'Needed for scripted flight that matches stock physics (Hang-Glider, Wind Changer, custom debris).'
+        ],
+        luaVerbs: ['wa.world.gravity()', 'wa.world.wind()'],
+        exampleMod: 'highlander Hang-Glider',
+      },
+      {
+        id: 'missile-frame-sprite',
+        since: '2026-09-27',
+        updated: '2026-09-27T21:30:00Z',
+        release: '0.8.1.2',
+        category: 'weapons',
+        title: 'Writable m.sprite on missile_frame',
+        tagline: 'Hide or swap the sprite WA draws for a live missile; 0 draws nothing (PX-style custom flight art).',
+        maturity: 'Production',
+        details: [
+          'm.sprite is MissileEntity+0x2EC — the active blit sprite copied from fire params at construct time.',
+          'Packs may write it from wa.on.missile_frame; the engine writes back only when changed.',
+          'Record sprite stays non-zero so thrown-weapon worm posture still resolves; hide each missile instead.',
+          'Note: after homing lock-on, WA may draw from another field (+0x338) — not covered yet.'
+        ],
+        luaVerbs: ['wa.on.missile_frame(function(m) m.sprite = 0 end)', 'm.sprite'],
+        exampleMod: 'highlander Chilli Bomb',
+      },
+      {
+        id: 'inert-debris-particles',
+        since: '2026-09-27',
+        updated: '2026-09-27T21:30:00Z',
+        release: '0.8.1.2',
+        category: 'physics',
+        title: 'Inert Cluster Debris as Particles',
+        tagline: 'Feathers, blood and other non-interactive cluster bits skip the 700-object missile pool — drawn outside lockstep.',
+        maturity: 'Production',
+        details: [
+          'CreateClusters detour: when every pellet is inert (no blast, cannot touch worms/mines/missiles, no homing/animal/dig, fuse ends), WA’s count is zeroed around the call so it allocates none.',
+          'Particles launch with WA’s formula, then move from the pellet’s own gravity/wind/damping/flutter using wa.world.gravity/wind; terrain pass/stop follows the collision mask landscape bit.',
+          'Never reads WA’s RNG or writes simulation state — both machines skip the same WA draws; old recordings won’t replay past such a burst.',
+          'Restores frame rate on Project X Pigeon Strike / Pogo Sheep online explosions.'
+        ],
+        luaVerbs: ['(automatic for inert cluster records; no pack verb)'],
+        exampleMod: 'Stock / PX Pigeon Strike feathers, Pogo Sheep blood',
       },
     ];
 
