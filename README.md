@@ -13,4 +13,4 @@
 
 </div>
 
-The live weapon mixer ships as a single minified `editor.min.js`. Editable sources live in the private engine tree (`web/weapon-editor/`), not in this repo.
+
