@@ -106,7 +106,7 @@
     if (wep.name) state.name = wep.name;
     const px = W.pxSpriteFields(state.record);
     if (px.length) {
-      setError(`${name} names Project X sprites at ${px.map((o) => "0x" + o.toString(16).toUpperCase()).join(", ")}; WA keeps the slot's stock art there unless you pick sprites in the Sprites tab.`);
+      setError(`${name} names Project X sprites in the record; WA keeps the slot's stock art there unless you pick sprites in the Sprites tab.`);
     }
   }
 
@@ -182,7 +182,6 @@
     const v = rd(f.abs);
     const base = W.rd(state.baseRecord, f.abs);
     const changed = v !== base;
-    const off = `0x${f.abs.toString(16).toUpperCase()}`;
     let control;
     if (f.type === "bool") {
       control = `<label class="check"><input type="checkbox" data-off="${f.abs}" data-type="bool" ${v ? "checked" : ""} /><b>${v ? "yes" : "no"}</b></label>`;
@@ -204,7 +203,7 @@
     }
     const unit = f.type === "ms" ? "ms" : f.type === "fixed" ? "16.16" : "";
     return `<div class="fld ${changed ? "changed" : ""} ${f.sub ? "sub" : ""}">
-      <div class="fld-head"><span class="fld-label">${esc(f.label)}</span><span class="off">${off}${unit ? " · " + unit : ""}</span></div>
+      <div class="fld-head"><span class="fld-label">${esc(f.label)}</span>${unit ? `<span class="off">${unit}</span>` : ""}</div>
       <div class="fld-ctl">${control}
         ${changed ? `<button type="button" class="reset" data-reset="${f.abs}" title="Back to ${esc(state.baseName)}: ${fieldValueText(f, base)}">↺</button>` : ""}
       </div>
@@ -305,7 +304,6 @@
     if (f === "arrow") tabs.push({ id: "arrow", label: "Arrow" });
     if (f === "spray") tabs.push({ id: "spray", label: "Spray" });
     if (f === "mine") tabs.push({ id: "mine", label: "Mine" });
-    if (f === "special") tabs.push({ id: "special", label: "Special" });
     tabs.push({ id: "handling", label: "Handling" });
     tabs.push({ id: "sprites", label: "Sprites" });
     if (canAimHold()) tabs.push({ id: "aim", label: "Aiming" });
@@ -329,7 +327,7 @@
   function flightPanel() {
     const strike = fam() === "strike";
     return groupPanel("flight", strike
-      ? "The munition the plane drops. Same layout as a thrown body, 0x14 bytes later in the record."
+      ? "The munition the plane drops. Same layout as a thrown body, shifted later in the record for strikes."
       : "How the body flies and what it does on touching land. The flight sprite id is stock art; pick pack art in Sprites.");
   }
 
@@ -385,25 +383,20 @@
   }
 
   function advancedPanel() {
-    const named = new Map();
-    for (const f of W.fields(state.record)) if (!named.has(f.abs)) named.set(f.abs, f);
     const rows = [];
-    for (let off = 0x0c; off <= 0x1cc; off += 4) {
-      const v = rd(off);
-      const base = W.rd(state.baseRecord, off);
-      const f = named.get(off);
-      const skip = W.NOT_IMPORTED.has(off);
-      rows.push(`<tr class="${v !== base ? "changed" : ""} ${skip ? "skip" : ""}">
-        <td class="off">0x${off.toString(16).toUpperCase().padStart(3, "0")}</td>
-        <td>${f ? esc(f.label) : "<span class='hint'>unknown</span>"}</td>
-        <td><input type="number" data-off="${off}" data-type="int" value="${v}" ${skip ? "disabled" : ""} /></td>
+    for (const f of W.fields(state.record)) {
+      const v = rd(f.abs);
+      const base = W.rd(state.baseRecord, f.abs);
+      rows.push(`<tr class="${v !== base ? "changed" : ""}">
+        <td>${esc(f.label)}</td>
+        <td><input type="number" data-off="${f.abs}" data-type="int" value="${v}" /></td>
         <td class="basev">${base}</td>
-        <td>${v !== base ? `<button type="button" class="reset" data-reset="${off}">↺</button>` : ""}</td>
+        <td>${v !== base ? `<button type="button" class="reset" data-reset="${f.abs}">↺</button>` : ""}</td>
       </tr>`);
     }
     return `
-      <p class="meta">Every dword WormForge imports from the record, Fiddler style. Greyed rows stay with the slot (defined, availability, enabled). Silly values can crash WA.</p>
-      <table class="raw"><thead><tr><th>Offset</th><th>Field</th><th>Value</th><th>Base</th><th></th></tr></thead><tbody>${rows.join("")}</tbody></table>
+      <p class="meta">Every known field for this weapon’s fire style. Silly values can crash WA.</p>
+      <table class="raw"><thead><tr><th>Field</th><th>Value</th><th>Base</th><th></th></tr></thead><tbody>${rows.join("")}</tbody></table>
     `;
   }
 
@@ -596,13 +589,7 @@
     return state.baseRecord;
   }
 
-  function hex(off) {
-    return "0x" + off.toString(16).toUpperCase().padStart(2, "0");
-  }
-
   function luaNumber(f, v) {
-    // 16.16 fixed point and sprite/flag words read better in hex; the rest as-is.
-    if (f && f.type === "fixed" && v > 0xffff) return "0x" + (v >>> 0).toString(16).toUpperCase();
     return String(v);
   }
 
@@ -619,19 +606,18 @@
     return "";
   }
 
-  /** Every patchable dword that differs from the reference, with its label. */
+  /** Every named, patchable field that differs from the reference. */
   function patchList() {
     const ref = referenceRecord();
-    const known = new Map();
-    for (const f of W.fields(state.record)) if (!known.has(f.abs)) known.set(f.abs, f);
     const out = [];
-    for (let off = 0x0c; off < W.ENTRY_SIZE; off += 4) {
-      if (!W.patchable(off)) continue;
-      const v = rd(off);
-      const was = W.rd(ref, off);
+    const seen = new Set();
+    for (const f of W.fields(state.record)) {
+      if (!f.key || seen.has(f.abs) || !W.patchable(f.abs)) continue;
+      seen.add(f.abs);
+      const v = rd(f.abs);
+      const was = W.rd(ref, f.abs);
       if (v === was) continue;
-      const f = known.get(off);
-      out.push({ off, v, was, f });
+      out.push({ off: f.abs, v, was, f });
     }
     return out;
   }
@@ -641,7 +627,7 @@
     const rank = (e) => { const i = order.indexOf(e.f ? e.f.group : "other"); return i < 0 ? order.length : i; };
     const list = patchList().sort((a, b) => rank(a) - rank(b) || a.off - b.off);
     if (!list.length) return [];
-    const width = Math.max(...list.map((e) => `[${hex(e.off)}] = ${luaNumber(e.f, e.v)},`.length));
+    const width = Math.max(...list.map((e) => `${e.f.key} = ${luaNumber(e.f, e.v)},`.length));
     const lines = ["  patch = {"];
     let lastGroup = null;
     for (const e of list) {
@@ -650,11 +636,10 @@
         lines.push(`    -- ${groupLabel(group)}`);
         lastGroup = group;
       }
-      const cell = `[${hex(e.off)}] = ${luaNumber(e.f, e.v)},`.padEnd(width);
-      const label = e.f ? e.f.label : "raw field";
+      const cell = `${e.f.key} = ${luaNumber(e.f, e.v)},`.padEnd(width);
       const meaning = describeValue(e.f, e.v);
       const was = describeValue(e.f, e.was) || luaNumber(e.f, e.was);
-      lines.push(`    ${cell}  -- ${label}${meaning ? `: ${meaning}` : ""} (was ${was})`);
+      lines.push(`    ${cell}  -- ${e.f.label}${meaning ? `: ${meaning}` : ""} (was ${was})`);
     }
     lines.push("  },");
     return lines;
@@ -666,10 +651,10 @@
     const lines = [`-- ${state.name}: ${mixSummary()}.`];
     if (upload) {
       lines.push(`-- ${wepName} is the weapon table entry this started from; patch lists`);
-      lines.push("-- the fields changed on top of it, by WA weapon entry offset.");
+      lines.push("-- the fields changed on top of it by name. Edit the numbers freely.");
     } else {
-      lines.push(`-- copy_from lays down the stock ${state.baseName}; patch lists every field`);
-      lines.push("-- changed on top of it, by WA weapon entry offset. Edit the numbers freely.");
+      lines.push(`-- copy_from lays down the stock ${state.baseName}; patch lists every`);
+      lines.push("-- changed field by name. Edit the numbers freely.");
     }
     lines.push("", "wa.weapons.replace({", `  weapon = ${luaString(state.slot)},`);
     if (upload) lines.push(`  wep = ${luaString(wepName)},`);
@@ -704,11 +689,6 @@
     a.click();
     URL.revokeObjectURL(url);
   }
-
-  $("download-wep").onclick = () => {
-    setError("");
-    saveBlob(new Blob([wepBytes()], { type: "application/octet-stream" }), `${packFolder()}.wep`);
-  };
 
   $("download").onclick = async () => {
     setError("");
@@ -1318,7 +1298,7 @@
     const sel = ev.target.closest("select.donor");
     if (!sel) return;
     borrowGroup(sel.dataset.group, sel.value);
-    render();
+      render();
     renderCatalog();
   });
 
@@ -1420,7 +1400,7 @@
     writeField(el);
     // Keep focus: refresh everything but the field grid.
     renderWeaponPanel();
-    renderLua();
+      renderLua();
     const box = el.closest(".fld, tr");
     if (box) box.classList.toggle("changed", rd(off) !== W.rd(state.baseRecord, off));
   });
@@ -1463,7 +1443,7 @@
       return;
     }
     state.sprites[state.attachPick] = btn.dataset.name;
-    render();
+      render();
     paintCatalogWindow();
     showPicked();
   });

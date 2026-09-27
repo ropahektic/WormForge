@@ -124,16 +124,16 @@ window.WepSchema = (() => {
     S(0x70, "gravity_pct", "Gravity %", "int", { group: "flight" }),
     S(0x74, "wind_pct", "Wind %", "int", { group: "flight" }),
     S(0x78, "bounce_pct", "Bounce %", "int", { group: "flight" }),
-    S(0x7c, "unk_7c", "Bounce extra", "int", { group: "flight", hint: "Bazooka 100, others 0" }),
-    S(0x80, "unk_80", "Unknown 0x80", "int", { group: "flight" }),
+    S(0x7c, "bounce_extra", "Bounce extra", "int", { group: "flight", hint: "Bazooka 100, others 0" }),
+    S(0x80, "unk_80", "Unknown", "int", { group: "flight", hidden: true }),
     S(0x84, "friction_pct", "Friction %", "int", { group: "flight" }),
     S(0xa4, "missile_type", "Body type", "enum", { options: MISSILE_TYPES, group: "flight" }),
     S(0xa8, "render_size", "Render size", "fixed", { group: "flight", hint: "64.0 bazooka, 66.1 grenade" }),
     S(0xa0, "space_control", "Space key controls it", "bool", { group: "flight", hint: "Sheep, Super Banana, Mole, Skunk" }),
     S(0x90, "alt_sprite", "Alt sprite (+65536 flag)", "int", { group: "flight", hint: "Dynamite 65602 = sprite 66 lit" }),
-    S(0x94, "unk_94", "Glow enable", "int", { group: "flight", hint: "Holy Grenade 1" }),
-    S(0x98, "unk_98", "Glow sprite id", "int", { group: "flight", hint: "Holy Grenade 104" }),
-    S(0x9c, "unk_9c", "Glow time", "ms", { group: "flight", hint: "Holy Grenade 1800" }),
+    S(0x94, "glow_enable", "Glow enable", "int", { group: "flight", hint: "Holy Grenade 1" }),
+    S(0x98, "glow_sprite", "Glow sprite id", "int", { group: "flight", hint: "Holy Grenade 104" }),
+    S(0x9c, "glow_time", "Glow time", "ms", { group: "flight", hint: "Holy Grenade 1800" }),
     // explosion
     S(0x50, "damage", "Damage", "int", { group: "explosion" }),
     S(0x54, "blast", "Blast radius", "int", { group: "explosion" }),
@@ -157,7 +157,7 @@ window.WepSchema = (() => {
     S(0x100, "cluster_power", "Eject power", "int", { group: "clusters", hint: "Cluster 30, Salvation 50; Petrol fire life 4000" }),
     S(0x104, "cluster_angle", "Eject angle base", "int", { group: "clusters", hint: "-1 = follow velocity (Mortar), 0 = up" }),
     S(0x108, "cluster_spread", "Eject spread °", "int", { group: "clusters", hint: "Cluster 45, Banana 25, Mortar 40" }),
-    S(0xf4, "unk_f4", "Unknown 0xF4", "int", { group: "clusters", hint: "Pigeon 51, Sheep Launcher 50" }),
+    S(0xf4, "unk_f4", "Unknown", "int", { group: "clusters", hidden: true, hint: "Pigeon 51, Sheep Launcher 50" }),
     S(0x10c, "c_collision_radius", "Bit collision radius", "fixed", { group: "clusters", sub: true }),
     S(0x110, "c_bias", "Bit explosion bias", "int", { group: "clusters", sub: true }),
     S(0x114, "c_damage", "Bit damage", "int", { group: "clusters", sub: true }),
@@ -194,7 +194,7 @@ window.WepSchema = (() => {
     F(0x48, "h_flag", "Hitscan flag", "int", { group: "hitscan", hint: "Always 1" }),
     F(0x50, "h_range", "Max range", "fixed", { group: "hitscan" }),
     F(0x54, "h_radius", "Impact radius", "int", { group: "hitscan", hint: "Shotgun 5, Minigun 20" }),
-    F(0x58, "h_unk58", "Unknown 0x58", "int", { group: "hitscan", hint: "Shotgun 100, Handgun 50" }),
+    F(0x58, "h_unk58", "Unknown", "int", { group: "hitscan", hidden: true, hint: "Shotgun 100, Handgun 50" }),
     F(0x5c, "h_damage", "Damage per bullet", "int", { group: "hitscan", hint: "Shotgun 25, Uzi 5" }),
     F(0x64, "h_kind", "Bullet kind", "int", { group: "hitscan", hint: "Shotgun 2, Minigun 3, Handgun 4, Uzi 5" }),
     F(0x68, "h_range_px", "Max range px", "int", { group: "hitscan", hint: "32767" }),
@@ -203,8 +203,8 @@ window.WepSchema = (() => {
   // ---- Arrow (fire type 1 method 4: Longbow) -----------------------------
   const ARROW = [
     F(0x3c, "a_param0", "Arrow speed", "int", { group: "arrow", hint: "Longbow 15" }),
-    F(0x40, "a_param1", "Parameter 0x40", "int", { group: "arrow" }),
-    F(0x44, "a_param2", "Parameter 0x44", "int", { group: "arrow" }),
+    F(0x40, "a_param1", "Parameter 2", "int", { group: "arrow", hidden: true }),
+    F(0x44, "a_param2", "Parameter 3", "int", { group: "arrow", hidden: true }),
   ];
 
   // ---- Spray (fire type 1 method 1: Flame Thrower) ------------------------
@@ -221,25 +221,25 @@ window.WepSchema = (() => {
     F(0x40, "m_fuse", "Arm delay", "ms", { group: "mine", hint: "Negative = scheme mine fuse; 4000" }),
     F(0x44, "m_mask", "Detect mask", "int", { group: "mine", hint: "60 = worms" }),
     F(0x48, "m_trigger", "Beep fuse", "ms", { group: "mine", hint: "3000 after a worm is seen" }),
-    F(0x4c, "m_unk4c", "Unknown 0x4C", "int", { group: "mine", hint: "50" }),
+    F(0x4c, "m_unk4c", "Unknown", "int", { group: "mine", hidden: true, hint: "50" }),
     F(0x50, "m_damage", "Damage", "int", { group: "mine" }),
     F(0x54, "m_blast", "Blast radius", "int", { group: "mine" }),
-    F(0x58, "m_unk58", "Unknown 0x58", "int", { group: "mine" }),
+    F(0x58, "m_unk58", "Unknown", "int", { group: "mine", hidden: true }),
   ];
 
   // ---- Strike header (fire type 3) --------------------------------------
   const STRIKE = [
     F(0x3c, "k_count", "Munitions dropped", "int", { group: "strike", hint: "Air Strike 5" }),
     F(0x40, "k_spacing", "Spacing", "int", { group: "strike", hint: "Air Strike 32, Napalm 48" }),
-    F(0x44, "k_unk44", "Unknown 0x44", "int", { group: "strike", hint: "100" }),
-    F(0x48, "k_unk48", "Unknown 0x48", "int", { group: "strike", hint: "52 for most strikes, Sheep Strike 6" }),
+    F(0x44, "k_unk44", "Unknown", "int", { group: "strike", hidden: true, hint: "100" }),
+    F(0x48, "k_unk48", "Unknown", "int", { group: "strike", hidden: true, hint: "52 for most strikes, Sheep Strike 6" }),
     F(0x4c, "k_munition", "Munition type", "enum", { options: MUNITIONS, group: "strike" }),
   ];
 
-  // ---- Special (fire type 4) ---------------------------------------------
+  // ---- Special (fire type 4): raw handler params, hidden from the mixer ----
   const SPECIAL = [];
   for (let i = 0; i < 8; i++) {
-    SPECIAL.push(F(0x3c + i * 4, `p_${i}`, `Parameter ${i + 1} (0x${(0x3c + i * 4).toString(16).toUpperCase()})`, "int", { group: "special" }));
+    SPECIAL.push(F(0x3c + i * 4, `p_${i}`, `Parameter ${i + 1}`, "int", { group: "special", hidden: true }));
   }
 
   const NOT_IMPORTED = new Set([0x00, 0x04, 0x08, 0x10, 0x24, 0x28, 0x2c]);
@@ -284,13 +284,15 @@ window.WepSchema = (() => {
     return field.slab ? field.off + ctx.shift : field.off;
   }
 
-  /** Fields visible for a record, with resolved offsets. */
-  function fields(rec) {
+  /** Fields visible for a record, with resolved offsets. Hidden/unknowns omitted. */
+  function fields(rec, opts) {
+    const includeHidden = opts && opts.hidden;
     const ctx = context(rec);
     const out = [];
     const push = (list) => {
       for (const f of list) {
         if (f.when && !f.when(ctx)) continue;
+        if (f.hidden && !includeHidden) continue;
         out.push(Object.assign({}, f, { abs: offsetOf(f, ctx) }));
       }
     };
