@@ -2,7 +2,7 @@
 
 ![description](https://i.imgur.com/6Yfe1p6.png)
 
-<a href="https://ropahektic.github.io/WormForge">Website</a>
+<a href="https://ropahektic.github.io/WormForge">Web Weapon Editor</a>
 
 <a href="https://ropahektic.github.io/WormForge/capabilities.html">Features</a>
 
