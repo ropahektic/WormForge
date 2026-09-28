@@ -21,6 +21,7 @@ You don’t need to be a C++ reverse engineer or even a programmer to ship somet
 Replays and WormNET are supported out of the box. Start from the site, check features, grab a build, enable an example, and see how far past “just another scheme” you can push a match or improve existing schemes.
 
 INSTALL: drop wkLua.dll next to WA.exe
+
 REQUIRES: Wormkit
 
 </div>
