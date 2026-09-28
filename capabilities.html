@@ -535,8 +535,8 @@
       {
         id: 'weapon-overlay',
         since: '2026-09-22',
-        updated: '2026-09-27T22:15:00Z',
-        release: '0.8.1.3',
+        updated: '2026-09-28T15:40:00Z',
+        release: '0.8.2',
         category: 'weapons',
         title: '71-Slot Table Overlay System',
         tagline: 'Overlay any stock Worms Armageddon weapon without stack-trampling or VFT slicing.',
@@ -546,13 +546,14 @@
           'First loaded mod ID wins a contested slot; conflicting claims are gracefully skipped and logged.',
           'Full parameter control: custom damage, bounce_pct, gravity_pct, wind_pct, blast radius.',
           'Seamless fire-method borrowing via copy_from, a Project X .wep via wep = "file.wep", or a readable patch = { damage = 70 } diff on top of either.',
+          'Named patches also carry the cluster sprite count so bouquet bits never divide-by-zero when leaving .wep for copy_from + patch.',
           'sprite_overrides remap stock sprite ids/names onto pack GPU sheets for trails, bodies, and FX.',
           'on_select = { cursor = true } enters land-cursor mode; eat_fire eats the lockstep click for custom on_click.',
           'Custom panel icons mapped directly to WA’s hi/lo icon sprite pointers.',
           'Copied panel_icon pairs are restored before GameEngine::Shutdown, so WA deletes each image once instead of crashing (EIP 0) at match end.'
         ],
         luaVerbs: ['wa.weapons.replace({ ... })', 'wa.weapons.register({ ... })', 'wep = "hellish.wep"', 'patch = { damage = 70 }', 'sprite_overrides = { ... }', 'eat_fire = true'],
-        exampleMod: 'circle_bazooka / worm_toss / hellish_grenade',
+        exampleMod: 'circle_bazooka / worm_toss / hellish_grenade / highlander',
       },
       {
         id: 'dynamic-equipping',
@@ -686,19 +687,21 @@
       {
         id: 'hurt-layer',
         since: '2026-09-22',
-        release: '0.3',
+        updated: '2026-09-28T15:40:00Z',
+        release: '0.8.2',
         category: 'worms',
         title: 'Lockstep Hurt Hook & Direct Damage',
-        tagline: 'Intercept all damage messages (blast, hit, axe percent, poison) and deal direct damage.',
+        tagline: 'Intercept all damage messages (blast, hit, axe percent, poison) and deal direct damage — or heal.',
         maturity: 'Production',
         details: [
           'Intercepts MSG_EXPLOSION (0x1C), MSG_HIT (0x4B), MSG_NONLETHAL (0x3B), MSG_POISON (0x3E).',
           'Pre-phase: Inspect incoming damage, scale amount, or return "eat" to negate the hit entirely.',
           'Post-phase: Report actual lost HP after WA calculations commit.',
-          'worm:hurt(amount) posts stock SpecialImpact (0x4B) with no impulse knockback for precise combat systems.'
+          'worm:hurt(amount) posts stock SpecialImpact (0x4B) with no impulse knockback for precise combat systems.',
+          'worm:heal(amount) adds health from simulation callbacks (Lightning Strike–style restoration).'
         ],
-        luaVerbs: ['wa.on.hurt(function(hit) ... end)', 'worm:hurt(10)'],
-        exampleMod: 'hurt_lab / turret',
+        luaVerbs: ['wa.on.hurt(function(hit) ... end)', 'worm:hurt(10)', 'worm:heal(25)'],
+        exampleMod: 'hurt_lab / turret / highlander Lightning Strike',
       },
       {
         id: 'custom-aim-sprites',
@@ -738,19 +741,27 @@
       {
         id: 'raycast-landscape',
         since: '2026-09-22',
-        release: '0.3',
+        updated: '2026-09-28T15:40:00Z',
+        release: '0.8.2',
         category: 'physics',
         title: 'Fast Bitgrid Raycasting & Terrain Tracing',
-        tagline: 'Pixel-level hitscan line-of-sight checks against destructible terrain and worms.',
+        tagline: 'Pixel-level hitscan against land — and Project X–style electrical object traces.',
         maturity: 'Production',
         details: [
           'wa.land.trace(x0, y0, x1, y1) runs Bresenham raycasting through the landscape bitgrid.',
-          'Detects line-of-sight obstruction for AI sentries and hitscan bullet paths.',
+          'Returns unit normal / tangent at the hit (nx ny, tx ty) and starts_solid when the start is already inside land.',
+          'Detects line-of-sight obstruction for AI sentries, laser cuts, and hitscan bullet paths.',
           'wa.land.solid(x, y) tests individual 16.16 fixed coordinates for dirt or air.',
+          'wa.world.electrical_trace / electrical_nearby hit terrain plus worms, mines, crates, oil drums and graves (PX electrical weapons).',
           'wa.world.size() returns exact map boundaries in pixels.'
         ],
-        luaVerbs: ['wa.land.trace(x0, y0, x1, y1)', 'wa.land.solid(x, y)'],
-        exampleMod: 'sentry_gun / turret / pooz',
+        luaVerbs: [
+          'wa.land.trace(x0, y0, x1, y1)',
+          'wa.land.solid(x, y)',
+          'wa.world.electrical_trace(x0, y0, x1, y1)',
+          'wa.world.electrical_nearby(x, y, radius_px, graves)'
+        ],
+        exampleMod: 'sentry_gun / highlander Lightning Strike & Electric Grenade / Laser Gun',
       },
       {
         id: 'lockstep-sync',
@@ -884,8 +895,8 @@
       {
         id: 'gameplay-rules-packs',
         since: '2026-09-24',
-        updated: '2026-09-27T21:30:00Z',
-        release: '0.8.1.2',
+        updated: '2026-09-28T15:40:00Z',
+        release: '0.8.2',
         category: 'tools',
         title: 'Gameplay / Rules Packs (Highlander)',
         tagline: 'Change match rules without overlaying a weapon slot — deal hands, steal on kill, scheme-agnostic.',
@@ -895,10 +906,11 @@
           'Highlander ports PX Highlander 0rang3 rules on stock WA weapons: three pools, one shot each per turn.',
           'Killing a worm steals its hand for the active worm (including friendly kills), usable immediately.',
           'Cavern maps ban air strikes via wa.world.cavern(); utilities / skip / surrender stay with the scheme.',
-          '0.8.1.2 wave: Double Bazooka, Nuke Rocket, Chilli Bomb, Hang-Glider, sniper muzzle flash, registered pack WAVs — 45 ported slots.',
+          '0.8.2 wave: Lightning Strike (heal / grave revive), Electric Grenade (terrain arcs), Laser Gun (beam cut + damage) — ribbons, electrical traces, on_fire guns.',
+          'Earlier waves: Double Bazooka, Nuke Rocket, Chilli Bomb, Hang-Glider, sniper muzzle flash, registered pack WAVs.',
           'Ships in two educational editions: explicit pure-Lua bookkeeping and the concise inventory/event-verb implementation.'
         ],
-        luaVerbs: ['wa.inventory.create(...)', 'wa.on.turn_start(...)', 'wa.on.death(...)', 'wa.weapons.launch{...}', 'wa.random()'],
+        luaVerbs: ['wa.inventory.create(...)', 'wa.on.turn_start(...)', 'wa.on.death(...)', 'wa.weapons.launch{...}', 'wa.draw.ribbon{...}', 'wa.random()'],
         exampleMod: 'highlander / highlander_pure_lua',
       },
       {
@@ -957,8 +969,8 @@
       {
         id: 'px-wep-import',
         since: '2026-09-27',
-        updated: '2026-09-27T22:15:00Z',
-        release: '0.8.1.3',
+        updated: '2026-09-28T15:40:00Z',
+        release: '0.8.2',
         category: 'weapons',
         title: 'Project X .wep Table Import',
         tagline: 'Drop a PX weapon file into the pack and fire it through a stock slot without retyping the table entry by hand.',
@@ -967,6 +979,7 @@
           'wep = "file.wep" parses the PX 4-byte tag plus WA’s own weapon table entry and installs that firing path on the claimed slot.',
           'Mutually exclusive with copy_from: each sets how the weapon fires.',
           'patch = { damage = 70, detonation = 1 } writes named weapon fields after copy_from / wep — the web editor’s readable diff (legacy [offset] keys still work).',
+          'Cluster sprite count travels with the patch so Thumper Nade–style bouquet bursts keep a non-zero modulus after leaving a .wep file.',
           'Fire type must stay 0–4; PX sprite ids keep the slot’s stock art as with wep.',
           'Sprite id fields inside the .wep (flight body and siblings) can still be redirected with sprite_overrides or retarget.',
           'Name defaults to the .wep’s embedded display name when the Lua claim omits name.'
@@ -1031,7 +1044,8 @@
       {
         id: 'land-cursor-eat-fire',
         since: '2026-09-27',
-        release: '0.8',
+        updated: '2026-09-28T15:40:00Z',
+        release: '0.8.2',
         category: 'weapons',
         title: 'Land-Cursor Mode & Eaten Lockstep Clicks',
         tagline: 'Teleport-style world cursor input, with the team click eaten so packs own on_click without a planted X or launch anim.',
@@ -1040,28 +1054,35 @@
           'Camera mode (default) parks the OS mouse at screen centre — screen→world math always returns camera centre. Land-cursor mode is required for free placement.',
           'on_select = { cursor = true } enters land-cursor via TeamEntity msg 0x33 (parks on the worm, MOVE=1).',
           'eat_fire = true eats team msg 0x32 at the TeamEntity handler: no planted X, no reset_cursor, no FireWeapon launch.',
+          'on_click position prefers WA’s fire-context cursor (CTX_CURSOR — lockstep copy of the click) before the synced pointer, so strikes land where clicked even before pointer sync starts.',
           'wa.cursor.spawn{ owner, x, y, on } creates an ACTOR_FLAG_CURSOR actor; default sprite = "cursor" uses stock team-coloured cursorr..cursorc.',
           'WA’s own cursor RQ layers are skipped while an eat_fire slot is selected so only the pack cursor draws.'
         ],
         luaVerbs: ['on_select = { cursor = true, on = ... }', 'eat_fire = true', 'wa.cursor.spawn({ owner, x, y, on })', 'wa.world.pointer().down'],
-        exampleMod: 'worm_toss',
+        exampleMod: 'worm_toss / highlander Lightning Strike',
       },
       {
         id: 'freeform-draw-quads',
         since: '2026-09-27',
-        release: '0.8',
+        updated: '2026-09-28T15:40:00Z',
+        release: '0.8.2',
         category: 'graphics',
         title: 'Freeform Draw Pass (wa.on.draw)',
-        tagline: 'Issue arbitrary world-space GPU quads each rendered frame — beams, ribbons, UI chrome — without spawning actors.',
+        tagline: 'Issue arbitrary world-space GPU quads and textured ribbons each rendered frame — beams, arcs, UI chrome — without spawning actors.',
         maturity: 'Production',
         details: [
-          'wa.on.draw handlers run once per Present, after the sim frame; wa.draw.quad is illegal outside them.',
+          'wa.on.draw handlers run once per Present, after the sim frame; wa.draw.quad / wa.draw.ribbon are illegal outside them.',
           'Each quad takes four { x, y } corners in 16.16 world pixels, optional sprite/frame, color or per-vertex colors, blend, and depth.',
-          'wa.random is forbidden inside the draw pass so multiplayer peers cannot diverge from render-only code.',
-          'Composites through the same D3D9 atlas path as actor gfx.'
+          'wa.draw.ribbon draws one textured strip (Project X pxtexbeam): per-point width, u along the strip, averaged normals so bends stay kink-free.',
+          'wa.random is forbidden inside the draw pass so multiplayer peers cannot diverge from render-only code; use wa.draw.random for cosmetic noise.',
+          'Composites through the same D3D9 atlas path as actor gfx (sheet must be a GPU sheet).'
         ],
-        luaVerbs: ['wa.on.draw(function() ... end)', 'wa.draw.quad({ points, color, sprite, blend, depth })'],
-        exampleMod: 'scripted beams / editor previews',
+        luaVerbs: [
+          'wa.on.draw(function() ... end)',
+          'wa.draw.quad({ points, color, sprite, blend, depth })',
+          'wa.draw.ribbon({ points, sprite, blend, depth })'
+        ],
+        exampleMod: 'highlander Lightning Strike / Electric Grenade / Laser Gun / stress',
       },
       {
         id: 'worm-aim-reads',
@@ -1189,6 +1210,70 @@
         luaVerbs: ['(automatic for inert cluster records; no pack verb)'],
         exampleMod: 'Stock / PX Pigeon Strike feathers, Pogo Sheep blood',
       },
+      {
+        id: 'gun-on-fire-shots',
+        since: '2026-09-28',
+        updated: '2026-09-28T15:40:00Z',
+        release: '0.8.2',
+        category: 'weapons',
+        title: 'Gun on_fire & Repeat-Fire Counters',
+        tagline: 'Take every uzi/minigun/handgun/shotgun pellet WA would fire, skip the stock bullet, and hold the shot counters like Project X.',
+        maturity: 'Production',
+        details: [
+          'on_fire on fire type 1 / method 2 (uzi, minigun, handgun, shotgun) receives each shot; WA’s bullet is skipped (PX FireFinal without super).',
+          'fire.x / fire.y are the worm’s position; vx / vy are 0 — read worm.aim and facing for the beam direction.',
+          'Projectile slots still reach on_fire through CreateWeaponProjectile as before.',
+          'worm.shots_fired / worm.shots_to_fire are WA’s repeat-fire counters (+0x290 / +0x294); writable from simulation callbacks only.',
+          'Holding them at 0 of 1 each frame keeps the worm in the firing pose for a continuous beam (Laser Gun).'
+        ],
+        luaVerbs: ['on_fire = function(fire) ... end', 'worm.shots_fired', 'worm.shots_to_fire', 'worm.aim', 'worm.facing'],
+        exampleMod: 'highlander Laser Gun',
+      },
+      {
+        id: 'grave-revive-objects',
+        since: '2026-09-28',
+        updated: '2026-09-28T15:40:00Z',
+        release: '0.8.2',
+        category: 'worms',
+        title: 'Graves, Revive, Mines & Object Hits',
+        tagline: 'Pair gravestones with their worms, rebuild the dead, arm mines, and smack crates / oil drums from Lua.',
+        maturity: 'Production',
+        details: [
+          'wa.graves.all() lists live gravestones; grave.worm_id is team * 16 + index, paired when WA builds the stone (before WormEntity::Free on 3.8.1).',
+          'grave:revive(worm_id, health) rebuilds that worm at the grave (1..1000 HP) and returns the handle — Highlander Lightning restores the hand.',
+          'mine.fuse reads the fuse in ms (negative = random); mine:arm(ms) starts it.',
+          'object:hit(damage, vx, vy) damages crates and oil drums (not worms — use worm:hurt).',
+          'All writes are simulation callbacks only.'
+        ],
+        luaVerbs: [
+          'wa.graves.all()',
+          'grave.worm_id',
+          'grave:revive(worm_id, health)',
+          'mine.fuse',
+          'mine:arm(ms)',
+          'object:hit(damage, vx, vy)'
+        ],
+        exampleMod: 'highlander Lightning Strike / Electric Grenade',
+      },
+      {
+        id: 'signature-hooks',
+        since: '2026-09-28',
+        updated: '2026-09-28T15:40:00Z',
+        release: '0.8.2',
+        category: 'tools',
+        title: 'Masked Signature Hook Resolution',
+        tagline: 'Find WA function entries and globals from on-disk byte patterns — not fixed VAs — so other WormKit modules and 3.8.1 variants still load.',
+        maturity: 'Production',
+        details: [
+          're/Signatures.toml holds masked patterns matched against the unmodified WA.exe on disk at startup (live detours never break the scan).',
+          'Runtime looks up addresses by name (STRIKE_FIRE, SET_TEXTBOX_TEXT, …); object field offsets stay layout constants.',
+          'Hooks install through a chain-aware path: stock bytes, or an existing jump from another module, which MinHook trampolines through.',
+          'Required-hook failures roll back; optional groups disable with a logged reason.',
+          'Agents and engine PRs must not add hardcoded VAs as runtime fallbacks.'
+        ],
+        luaVerbs: ['(engine-only; no pack verb)'],
+        exampleMod: 'wkLua.dll startup on GOG / Steam 3.8.1',
+      },
     ];
 
     function esc(s) {
@@ -1202,8 +1287,10 @@
     // Highlight API / symbol tokens inside prose (same role as original emerald chips).
     const CODE_TOKEN = new RegExp([
       String.raw`\b(?:wa|math)\.[\w.]+(?:\([^)]*\))?`,
-      String.raw`\b(?:worm|a|inventory|self):[\w]+(?:\([^)]*\))?`,
-      String.raw`\bworm\.(?:facing|visible)\b`,
+      String.raw`\b(?:worm|a|inventory|self|grave|mine|object):[\w]+(?:\([^)]*\))?`,
+      String.raw`\bworm\.(?:facing|visible|aim|aiming|shots_fired|shots_to_fire|fuel|body_visible|drilling)\b`,
+      String.raw`\bgrave\.(?:worm_id)\b`,
+      String.raw`\bmine\.(?:fuse)\b`,
       String.raw`\bevent\.(?:victim|attacker|attacker_team|weapon|slot)\b`,
       String.raw`\b(?:get|set|add|remove|clear|list|deal|transfer|apply)(?:\s*\/\s*(?:get|set|add|remove|clear|list|deal|transfer|apply))+`,
       String.raw`\bMSG_[A-Z0-9_]+\b`,
