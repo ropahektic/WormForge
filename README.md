@@ -10,7 +10,7 @@
 
 <a href="https://github.com/ropahektic/WormForge-engine">Engine Repo</a> 
 
-Interested in contributing in the Engine Repository? Please contact ropahektic through Discord handle "caramelos".
+Interested in contributing to the Engine Repository? Please contact ropahektic through Discord handle "caramelos".
 
 
 </div>
