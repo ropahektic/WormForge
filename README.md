@@ -14,3 +14,6 @@
 </div>
 
 
+Interested in contributing in the Engine Repository? Please contact ropahektic through Discord handle "caramelos".
+
+
