@@ -575,6 +575,7 @@
       {
         id: 'lua-actor-lifecycle',
         since: '2026-09-22',
+        updated: '2026-10-07T10:30:00Z',
         release: '0.3',
         category: 'actors',
         title: 'Unified Native LuaActor Architecture',
@@ -584,9 +585,11 @@
           'All custom game entities share ONE native type (LUA_ACTOR_SIZE = 0x154) registered in CollisionManager.',
           'Eliminates dangerous virtual method table (VFT) stacking over stock CWorm or CGObject.',
           'Supports custom state machines, brains, and event loops ticked on stock MSG_FRAME_FINISH.',
-          'Custom orientation, 16.16 fixed-point velocities, and automatic water drowning detection.'
+          'Custom orientation, 16.16 fixed-point velocities, and automatic water drowning detection.',
+          'as_object = true puts an actor on WA’s oil-drum collision layer, so fires, guns and blasts hit it and on.hit receives them (Highlander’s Bowling Ball).',
+          'shape = "missile" gives an actor WA’s missile collision shape; a:fits(x, y) runs WA’s own collision test at a place.'
         ],
-        luaVerbs: ['wa.actors.spawn({ ... })', 'a:move({ terrain = true })', 'a:gravity()', 'a:explode({ ... })', 'a:despawn()'],
+        luaVerbs: ['wa.actors.spawn({ ... })', 'a:move({ terrain = true })', 'a:gravity()', 'a:explode({ ... })', 'a:despawn()', 'wa.actors.spawn({ as_object = true, on = { hit = fn } })', 'a:fits(x, y)'],
         solvedGap: 'Gap 6: Actor IDs are stable spawn-order sequences (ACTOR_SEQ) rather than raw heap addresses.',
         exampleMod: 'gif_donkey_lua / turret',
       },
@@ -687,7 +690,7 @@
       {
         id: 'hurt-layer',
         since: '2026-09-22',
-        updated: '2026-09-28T15:40:00Z',
+        updated: '2026-10-07T10:30:00Z',
         release: '0.8.2',
         category: 'worms',
         title: 'Lockstep Hurt Hook & Direct Damage',
@@ -698,9 +701,10 @@
           'Pre-phase: Inspect incoming damage, scale amount, or return "eat" to negate the hit entirely.',
           'Post-phase: Report actual lost HP after WA calculations commit.',
           'worm:hurt(amount) posts stock SpecialImpact (0x4B) with no impulse knockback for precise combat systems.',
-          'worm:heal(amount) adds health from simulation callbacks (Lightning Strike–style restoration).'
+          'worm:heal(amount) adds health from simulation callbacks (Lightning Strike–style restoration).',
+          'worm:hurt{ amount, vx, vy } also knocks the worm, as WA’s own hits do (PX’s M_GUNEXP force); amount may be 0 for a push alone.'
         ],
-        luaVerbs: ['wa.on.hurt(function(hit) ... end)', 'worm:hurt(10)', 'worm:heal(25)'],
+        luaVerbs: ['wa.on.hurt(function(hit) ... end)', 'worm:hurt(10)', 'worm:heal(25)', 'worm:hurt{ amount = 10, vx = ..., vy = ... }'],
         exampleMod: 'hurt_lab / turret / highlander Lightning Strike',
       },
       {
@@ -766,6 +770,7 @@
       {
         id: 'lockstep-sync',
         since: '2026-09-22',
+        updated: '2026-10-07T10:30:00Z',
         release: '0.4',
         category: 'network',
         title: 'Network Input Sync & Checkpoint Hashing',
@@ -773,18 +778,19 @@
         maturity: 'Live-Accepted',
         details: [
           'Private 12-byte carrier opcode 0x80 integrated into WA 3.8.1 compact network packet stream.',
-          'Transmits key bitmask (A, D, W, S, Shift, Q, Space) and 16-bit signed world pointer coordinates.',
+          'Transmits key bitmask (A, D, W, S, Shift, Q, Space, Ctrl, +, −, Alt, Pause and the digit held) and 16-bit signed world pointer coordinates.',
           'Event-driven: Sends immediately on key edge changes, throttled during pointer drag, with 1s heartbeat.',
           'Component checkpoint verification every 50 frames: Hashes game_rng, net_rng, worms, and actors.',
           'Zeroes uninitialized stack locals in stock SpriteAnimation__play_1 (Empty Sprite Info fix).'
         ],
-        luaVerbs: ['wa.world.keys()', 'wa.world.pointer()', 'wa.world.networked()'],
+        luaVerbs: ['wa.world.keys()', 'wa.world.pointer()', 'wa.world.networked()', 'wa.world.keys().ctrl', 'wa.world.keys().plus_key'],
         solvedGap: 'Gap 1 & 2: Async local input converted to synchronized lockstep network stream.',
         exampleMod: 'pooz / q_bazooka / worm_toss',
       },
       {
         id: 'deterministic-primitives',
         since: '2026-09-22',
+        updated: '2026-10-07T10:30:00Z',
         release: '0.4',
         category: 'network',
         title: 'Shared LCG RNG & Deterministic Iteration',
@@ -794,9 +800,10 @@
           'wa.random(min, max) directly calls WA’s internal 3.8.1 RNG at GameWorld+0x45EC.',
           'Advances the single shared LCG across both peers and replays identically.',
           'Strictly forbids math.random and math.randomseed (which vary per process).',
-          'wa.sorted(table) provides deterministic key ordering across Lua 5.4 randomized string hash seeds.'
+          'wa.sorted(table) provides deterministic key ordering across Lua 5.4 randomized string hash seeds.',
+          'wa.math.sin / wa.math.cos / wa.math.atan give the same bits on every machine (WA’s own sine table), for aim and flight in simulation code.'
         ],
-        luaVerbs: ['wa.random(min, max)', 'wa.sorted(table)'],
+        luaVerbs: ['wa.random(min, max)', 'wa.sorted(table)', 'wa.math.sin(r)', 'wa.math.atan(y, x)'],
         solvedGap: 'Gap 4 & 5: Routed RNG to engine LCG and provided wa.sorted for string tables.',
         exampleMod: 'sentry_gun',
       },
@@ -895,7 +902,7 @@
       {
         id: 'gameplay-rules-packs',
         since: '2026-09-24',
-        updated: '2026-09-28T15:40:00Z',
+        updated: '2026-10-07T10:30:00Z',
         release: '0.8.2',
         category: 'tools',
         title: 'Gameplay / Rules Packs (Highlander)',
@@ -908,7 +915,8 @@
           'Cavern maps ban air strikes via wa.world.cavern(); utilities / skip / surrender stay with the scheme.',
           '0.8.2 wave: Lightning Strike (heal / grave revive), Electric Grenade (terrain arcs), Laser Gun (beam cut + damage) — ribbons, electrical traces, on_fire guns.',
           'Earlier waves: Double Bazooka, Nuke Rocket, Chilli Bomb, Hang-Glider, sniper muzzle flash, registered pack WAVs.',
-          'Ships in two educational editions: explicit pure-Lua bookkeeping and the concise inventory/event-verb implementation.'
+          'Ships in two educational editions: explicit pure-Lua bookkeeping and the concise inventory/event-verb implementation.',
+          'October wave: Bowling Ball Strike, Ferret, Electromagnet, Crate Strike, Sentry Gun, Sentry Laser, Kamikaze Rocket and Portal Gun, plus one Weapon Crate for every worm each turn (see “Highlander: Nine More Project X Weapons”).'
         ],
         luaVerbs: ['wa.inventory.create(...)', 'wa.on.turn_start(...)', 'wa.on.death(...)', 'wa.weapons.launch{...}', 'wa.draw.ribbon{...}', 'wa.random()'],
         exampleMod: 'highlander / highlander_pure_lua',
@@ -933,6 +941,7 @@
       {
         id: 'virtual-worm-inventories',
         since: '2026-09-24',
+        updated: '2026-10-07T10:30:00Z',
         release: '0.7.1',
         category: 'tools',
         title: 'Per-Worm Virtual Inventories',
@@ -943,9 +952,10 @@
           'get / set / add / remove / clear / list compose ownership without touching the live weapon panel.',
           'deal draws deterministically through WA’s shared RNG; transfer moves or copies all, selected, or counted weapons between arbitrary worms.',
           'apply materializes one worm’s virtual inventory into WA’s alliance-scoped ammo only when gameplay needs it.',
-          'Explicit source and target handles let normal Lua conditions implement steal-on-hit, steal-on-kill, classes, shops, and drafting.'
+          'Explicit source and target handles let normal Lua conditions implement steal-on-hit, steal-on-kill, classes, shops, and drafting.',
+          'Gains (add, set upward, transfer) report as wa.on.weapon_grant events with the acquisition position; deal, apply, refills and removals stay silent.'
         ],
-        luaVerbs: ['wa.inventory.create({ id, slots })', 'inventory:deal(worm, pool, count)', 'inventory:transfer(from, to, opts)', 'inventory:apply(worm, opts)'],
+        luaVerbs: ['wa.inventory.create({ id, slots })', 'inventory:deal(worm, pool, count)', 'inventory:transfer(from, to, opts)', 'inventory:apply(worm, opts)', 'wa.on.weapon_grant(fn)'],
         exampleMod: 'highlander (compare with highlander_pure_lua)',
       },
       {
@@ -1273,6 +1283,132 @@
         ],
         luaVerbs: ['(engine-only; no pack verb)'],
         exampleMod: 'wkLua.dll startup on GOG / Steam 3.8.1',
+      },
+      {
+        id: 'highlander-october-weapons',
+        since: '2026-10-07',
+        updated: '2026-10-07T10:30:00Z',
+        category: 'weapons',
+        title: 'Highlander: Nine More Project X Weapons',
+        tagline: 'Bowling Balls, Ferret, Electromagnet, Crate Strike, two sentries, Kamikaze Rocket, Portal Gun — and a Weapon Crate every turn.',
+        maturity: 'Production',
+        details: [
+          'Bowling Ball Strike (Sheep Strike slot): three balls on PX’s CBowlingBall physics; they knock, crush and zap worms, and take WA’s fires, guns and blasts.',
+          'Ferret (Salvation Army slot): runs along the terrain’s outline with WA’s missile collision shape.',
+          'Electromagnet (Baseball Bat slot): a placed field that pulls or pushes mines and missiles; + switches it between red (attracting) and blue (repelling).',
+          'Crate Strike (Donkey slot): three of WA’s own crates on parachutes.',
+          'Sentry Gun (Kamikaze slot) fires on moving enemy worms; Sentry Laser (Dragon Ball slot) disintegrates enemy missiles, mines and Bowling Balls. Both are drawn in their team’s colour.',
+          'Kamikaze Rocket (Suicide Bomber slot): WA’s own Kamikaze flight, steered with left and right, fired with Ctrl + Space; it blows up after 4 seconds.',
+          'Portal Gun (Scales of Justice slot): team portal pairs that carry worms and objects through; − and + pick the portal, Pause switches the pair on and off, and it fires in mid-air.',
+          'Weapon Crate (Freeze slot): every worm gets one each turn, dropped in front of it.'
+        ],
+        luaVerbs: ['wa.world.trace{ ... }', 'wa.crates.spawn{ ... }', 'object:impulse(dx, dy)', 'worm:warp{ x, y }', 'worm:air_fire()'],
+        exampleMod: 'highlander / highlander_test',
+      },
+      {
+        id: 'world-shape-queries',
+        since: '2026-10-07',
+        updated: '2026-10-07T10:30:00Z',
+        category: 'physics',
+        title: 'Circle Sweeps Against Land & Objects',
+        tagline: 'Sweep a circle through the world and get what it hits first: terrain, worms, crates, oil drums, mines or graves.',
+        maturity: 'Production',
+        details: [
+          'wa.world.trace{ x0, y0, x1, y1, radius, with, ignore } sweeps a circle (0–64 px) against WA’s collision bitmap and the objects named in with (PX’s TraceMaskEx).',
+          'Returns the last free position before contact, the surface normal and tangent, and the object touched (nil for terrain).',
+          'wa.world.collides{ x, y, radius, with } says whether a circle there overlaps anything (PX’s CheckCollisionEx).',
+          'Integer maths plus one square root, at most a pixel per step: every machine gets the same answer.'
+        ],
+        luaVerbs: ['wa.world.trace{ ... }', 'wa.world.collides{ ... }'],
+        exampleMod: 'highlander Bowling Ball / Sentry Laser',
+      },
+      {
+        id: 'stock-object-control',
+        since: '2026-10-07',
+        updated: '2026-10-07T10:30:00Z',
+        category: 'physics',
+        title: 'Stock Object Control: Team, Push, Warp, Remove',
+        tagline: 'Read who owns a missile or mine, push it, move it anywhere, remove it quietly — and spawn WA’s own crates.',
+        maturity: 'Production',
+        details: [
+          'object.team / object.alliance: the team (and its colour) that fired a stock missile or laid a mine.',
+          'object:impulse(dx, dy) pushes a stock mine or missile, as PX’s magnet does; object:remove() frees one without it bursting.',
+          'worm:warp / object:warp / a:warp move any worm, object or actor at once, optionally with a new speed and facing.',
+          'wa.on.body_move(fn, { kinds }) runs before WA moves each body of those kinds, every frame — the place for portals and force fields.',
+          'object.uid is a body’s identity for the whole match (addresses get reused); wa.arrows.all() lists WA’s arrows.',
+          'wa.crates.spawn{ x, y, kind, drop } builds one of WA’s own weapon, utility or health crates, on a parachute or teleported in.'
+        ],
+        luaVerbs: ['object.team', 'object:impulse(dx, dy)', 'object:remove()', 'object:warp{ x, y }', 'wa.on.body_move(fn, { kinds })', 'wa.crates.spawn{ kind = "weapon" }'],
+        exampleMod: 'highlander Electromagnet / Sentry Laser / Portal Gun / Crate Strike',
+      },
+      {
+        id: 'scripted-airborne-fire',
+        since: '2026-10-07',
+        updated: '2026-10-07T10:30:00Z',
+        category: 'weapons',
+        title: 'Scripted, Airborne & Ctrl-Gated Fire',
+        tagline: 'Fire any pack’s weapon from a script, fire in mid-air where WA refuses, and gate a fire on a held key.',
+        maturity: 'Production',
+        details: [
+          'wa.weapons.fire{ weapon, worm, x, y, ... } runs the on_fire of whichever pack claims that slot; wa.weapons.click does the same for on_click. No wind-up, no ammo used, the turn goes on.',
+          'The spec’s extra fields reach the handler (Highlander’s Electromagnet reads polarity).',
+          'worm:air_fire() lets a pack weapon fire while the worm is jumping or falling; the handler sees fire.airborne.',
+          'on_fire events carry fire.power, the charge from 0 to 1.',
+          'A pack can return "eat" on WA’s fire message to require a held key: the Kamikaze Rocket fires only with Ctrl.',
+          'The stress test pack uses them to drop Electromagnets and Bowling Ball Strikes across the map.'
+        ],
+        luaVerbs: ['wa.weapons.fire{ ... }', 'wa.weapons.click{ ... }', 'worm:air_fire()', 'fire.power'],
+        exampleMod: 'stress / highlander Portal Gun / Kamikaze Rocket',
+      },
+      {
+        id: 'team-colour-poses',
+        since: '2026-10-07',
+        updated: '2026-10-07T10:30:00Z',
+        category: 'graphics',
+        title: 'Team-Coloured & Switchable Worm Poses',
+        tagline: 'Colour part of a weapon pose per team at draw time, and switch a worm’s sheets with a synced key.',
+        maturity: 'Production',
+        details: [
+          'worm_sprites_team_tint: a pose’s overlay coloured with the worm’s team colour as it is drawn — no extra atlas space per team.',
+          'worm_sprites_toggle = { key = "plus_key", ... }: alternate sheets the engine flips on each press of the synced + key (the Electromagnet’s red and blue).',
+          'worm_sprites may name the Dynamite’s draw and the Kamikaze’s take-out and launch; worm.state reads "kamikaze" during WA’s Kamikaze flight.'
+        ],
+        luaVerbs: ['worm_sprites_team_tint = { ... }', 'worm_sprites_toggle = { key = "plus_key" }', 'worm.state == "kamikaze"'],
+        exampleMod: 'highlander Sentry Gun / Electromagnet / Kamikaze Rocket',
+      },
+      {
+        id: 'weapon-grant-events',
+        since: '2026-10-07',
+        updated: '2026-10-07T10:30:00Z',
+        category: 'tools',
+        title: 'Weapon Grant Events & Collect Viewer',
+        tagline: 'Know when a worm gets weapons — from a crate, a kill or a script — and show it only to that side.',
+        maturity: 'Experimental',
+        details: [
+          'wa.on.weapon_grant(fn) fires after every completed acquisition with the worm, items, position, coalition and source (crate, inventory or script).',
+          'Collect Viewer pack: panel icons float up where your side got weapons — at the crate, or at the killed worm for Highlander loot — seen only by that coalition.',
+          'wa.weapons.visual(slot) gives any weapon’s panel symbol for drawing; wa.world.is_local_alliance(colour), in draw and HUD callbacks only, says whether this screen belongs to that coalition.',
+          'Scripts granting ammo directly report it with wa.weapons.notify_grant{ worm, items }.',
+          'Network and replay playtesting are still to do.'
+        ],
+        luaVerbs: ['wa.on.weapon_grant(fn)', 'wa.weapons.visual("grenade")', 'wa.world.is_local_alliance(colour)', 'wa.weapons.notify_grant{ ... }'],
+        exampleMod: 'collect_viewer / highlander',
+      },
+      {
+        id: 'network-pack-guard',
+        since: '2026-10-07',
+        updated: '2026-10-07T10:30:00Z',
+        category: 'network',
+        title: 'Packs Only When Every Machine Runs WormForge',
+        tagline: 'Online rounds run packs only when every player has WormForge; otherwise the round is plain WA, safe for everyone.',
+        maturity: 'Live-Accepted',
+        details: [
+          'Online, packs load only from the host’s frozen set, and only when every player runs WormForge; a player’s own installed Mods/ never run online.',
+          'Otherwise the round is plain WA: no packs, and nothing of WormForge’s on the wire, so players without WormForge play normally.',
+          'Each WormForge machine says in the match chat which packs it runs; the HUD says when WormForge is off and why, or when another player’s packs differ.'
+        ],
+        luaVerbs: ['(engine-only; no pack verb)'],
+        exampleMod: 'any online match',
       },
     ];
 
