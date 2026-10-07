@@ -615,7 +615,7 @@
       {
         id: 'gpu-truecolor-renderer',
         since: '2026-09-22',
-        updated: '2026-09-27',
+        updated: '2026-10-07T10:45:00Z',
         release: '0.8',
         category: 'graphics',
         title: 'Direct3D 9 Truecolor Atlas Renderer (EdLud)',
@@ -628,7 +628,9 @@
           'Per-vertex team tinting (a:tint(0xRRGGBB)) allows 1 greyscale sheet to serve all 6 teams.',
           'Additive blending (a:blend("add")) via premultiplied alpha 0 under D3DBLEND_ONE / INVSRCALPHA.',
           'sheet_id + gpu_alias resolve mirrored / reverse blit flags so virtual worm sheets and sprite_overrides keep drawing.',
-          'Draws in a clean second BeginScene/EndScene block before Present at 0.15ms per 500 quads (296x faster than UP).'
+          'Draws in a clean second BeginScene/EndScene block before Present at 0.15ms per 500 quads (296x faster than UP).',
+          'Pack sprites WA must keep in its 256-colour palette (weapon bodies, cluster bits) are drawn from true-colour copies, so a map with a full palette no longer shifts their colours.',
+          'Pack quads and ribbons now sort with the sprites by depth, so a quad can sit behind a sprite.'
         ],
         luaVerbs: ['a:gfx({ angle = 37, scale = 1.2, tint = 0xFF8000, blend = "add", depth = 0x10000 })', 'a:angle(deg)', 'a:scale(s)'],
         exampleMod: 'sentry_gun',
@@ -745,7 +747,7 @@
       {
         id: 'raycast-landscape',
         since: '2026-09-22',
-        updated: '2026-09-28T15:40:00Z',
+        updated: '2026-10-07T10:45:00Z',
         release: '0.8.2',
         category: 'physics',
         title: 'Fast Bitgrid Raycasting & Terrain Tracing',
@@ -757,20 +759,21 @@
           'Detects line-of-sight obstruction for AI sentries, laser cuts, and hitscan bullet paths.',
           'wa.land.solid(x, y) tests individual 16.16 fixed coordinates for dirt or air.',
           'wa.world.electrical_trace / electrical_nearby hit terrain plus worms, mines, crates, oil drums and graves (PX electrical weapons).',
-          'wa.world.size() returns exact map boundaries in pixels.'
+          'wa.world.size() returns exact map boundaries in pixels.',
+          'wa.land.stamp{ sprite, frame, x, y } draws a pack frame into the terrain itself, through WA’s own girder routine (the Javelin sticking in the land).'
         ],
         luaVerbs: [
           'wa.land.trace(x0, y0, x1, y1)',
           'wa.land.solid(x, y)',
           'wa.world.electrical_trace(x0, y0, x1, y1)',
           'wa.world.electrical_nearby(x, y, radius_px, graves)'
-        ],
+        , 'wa.land.stamp{ sprite, frame, x, y }'],
         exampleMod: 'sentry_gun / highlander Lightning Strike & Electric Grenade / Laser Gun',
       },
       {
         id: 'lockstep-sync',
         since: '2026-09-22',
-        updated: '2026-10-07T10:30:00Z',
+        updated: '2026-10-07T10:45:00Z',
         release: '0.4',
         category: 'network',
         title: 'Network Input Sync & Checkpoint Hashing',
@@ -781,7 +784,8 @@
           'Transmits key bitmask (A, D, W, S, Shift, Q, Space, Ctrl, +, −, Alt, Pause and the digit held) and 16-bit signed world pointer coordinates.',
           'Event-driven: Sends immediately on key edge changes, throttled during pointer drag, with 1s heartbeat.',
           'Component checkpoint verification every 50 frames: Hashes game_rng, net_rng, worms, and actors.',
-          'Zeroes uninitialized stack locals in stock SpriteAnimation__play_1 (Empty Sprite Info fix).'
+          'Zeroes uninitialized stack locals in stock SpriteAnimation__play_1 (Empty Sprite Info fix).',
+          'Simulation writes from wa.on.draw or wa.on.hud are refused (render time differs on every machine), and so is wa.random there.'
         ],
         luaVerbs: ['wa.world.keys()', 'wa.world.pointer()', 'wa.world.networked()', 'wa.world.keys().ctrl', 'wa.world.keys().plus_key'],
         solvedGap: 'Gap 1 & 2: Async local input converted to synchronized lockstep network stream.',
@@ -810,6 +814,7 @@
       {
         id: 'replay-container',
         since: '2026-09-23',
+        updated: '2026-10-07T10:45:00Z',
         release: '0.6',
         category: 'replay',
         title: 'Trailer Replays on WA’s Own .WAgame',
@@ -822,7 +827,9 @@
           'Recording streams into replay-pending/ and atomically replaces the .WAgame at match end. A crash leftover is finalised at the next start; one that cannot be finalised stays a vanilla replay.',
           'Playback hooks ReplayLoader (0x00462DF0), resolves collection assets (re-hashed on every read), loads the archived packs, and lets WA read the file itself.',
           'Verifies sync checkpoints during playback, halting immediately if a simulation difference occurs.',
-          'Older .WF_WAgame sidecars are ignored. Their .WAgame still plays as vanilla; watching the recorded match needs the build that wrote them.'
+          'Older .WF_WAgame sidecars are ignored. Their .WAgame still plays as vanilla; watching the recorded match needs the build that wrote them.',
+          'Checkpoints hash every worm’s WA state too, and check gameplay, visual and network randomness separately, so a cosmetic difference is reported without stopping the match.',
+          'WA’s instant (action) replay is off while WormForge runs: it would restore a turn without its Lua actors and pack state.'
         ],
         luaVerbs: ['wf-replay inspect FILE.WAgame', 'wf-replay extract FILE.WAgame OUTPUT.WAgame'],
         exampleMod: 'Full system feature across all mods',
@@ -902,7 +909,7 @@
       {
         id: 'gameplay-rules-packs',
         since: '2026-09-24',
-        updated: '2026-10-07T10:30:00Z',
+        updated: '2026-10-07T10:45:00Z',
         release: '0.8.2',
         category: 'tools',
         title: 'Gameplay / Rules Packs (Highlander)',
@@ -916,7 +923,8 @@
           '0.8.2 wave: Lightning Strike (heal / grave revive), Electric Grenade (terrain arcs), Laser Gun (beam cut + damage) — ribbons, electrical traces, on_fire guns.',
           'Earlier waves: Double Bazooka, Nuke Rocket, Chilli Bomb, Hang-Glider, sniper muzzle flash, registered pack WAVs.',
           'Ships in two educational editions: explicit pure-Lua bookkeeping and the concise inventory/event-verb implementation.',
-          'October wave: Bowling Ball Strike, Ferret, Electromagnet, Crate Strike, Sentry Gun, Sentry Laser, Kamikaze Rocket and Portal Gun, plus one Weapon Crate for every worm each turn (see “Highlander: Nine More Project X Weapons”).'
+          'October wave: Bowling Ball Strike, Ferret, Electromagnet, Crate Strike, Sentry Gun, Sentry Laser, Kamikaze Rocket and Portal Gun, plus one Weapon Crate for every worm each turn (see “Highlander: Nine More Project X Weapons”).',
+          'Also since 0.8.2: Javelin, Super Tele, Valyrian Fire, Ice Arrow, Reinforcement, Skip Go and Surrender on one slot (Ctrl + Space surrenders), the Hang Glider and Hot Air Balloon as Lua vehicles, and the Helicopter and Swim Suit on the worm handoff verbs.'
         ],
         luaVerbs: ['wa.inventory.create(...)', 'wa.on.turn_start(...)', 'wa.on.death(...)', 'wa.weapons.launch{...}', 'wa.draw.ribbon{...}', 'wa.random()'],
         exampleMod: 'highlander / highlander_pure_lua',
@@ -961,6 +969,7 @@
       {
         id: 'rule-lifecycle-events',
         since: '2026-09-24',
+        updated: '2026-10-07T10:45:00Z',
         release: '0.7.1',
         category: 'tools',
         title: 'Turn, Death & Combat Attribution Events',
@@ -971,9 +980,10 @@
           'wa.on.death emits exactly once per death with victim and current active worm.',
           'Death and hurt events expose optional attacker, attacker_team, weapon, slot, and damage kind when provenance is proven.',
           'Unknown or delayed provenance stays nil instead of guessing, preventing rules from crediting the wrong worm or weapon.',
-          'Existing wa.on.hurt pre/post rewriting remains compatible and gains the same optional attribution fields.'
+          'Existing wa.on.hurt pre/post rewriting remains compatible and gains the same optional attribution fields.',
+          'wa.on.turn_retreat (weapon use over, retreat starts), wa.on.turn_end (retreat over, movement stopped) and wa.on.turn_cleanup (WA has cleared the turn) fire in that order, even with zero retreat time.'
         ],
-        luaVerbs: ['wa.on.turn_start(function(event) ... end)', 'wa.on.death(function(event) ... end)', 'event.victim', 'event.attacker', 'event.weapon'],
+        luaVerbs: ['wa.on.turn_start(function(event) ... end)', 'wa.on.death(function(event) ... end)', 'event.victim', 'event.attacker', 'event.weapon', 'wa.on.turn_end(function(event) ... end)'],
         exampleMod: 'highlander / damage-conditioned loot rules',
       },
       {
@@ -1131,7 +1141,7 @@
       {
         id: 'network-asset-sync',
         since: '2026-09-27',
-        updated: '2026-09-27T16:29:00Z',
+        updated: '2026-10-07T10:45:00Z',
         release: '0.8',
         category: 'network',
         title: 'Lobby Pack Freeze & Peer Asset Sync',
@@ -1142,7 +1152,8 @@
           'Peers verify against installed Mods/ (including disabled packs), .WFAssets, and the last session; only missing blobs are fetched over the lobby chat carrier.',
           'Start is blocked until every connected client reports the manifest digest and a compatible WormForge build.',
           'Network rounds load from the frozen session copy, not live Mods/. Offline play and replay playback are unchanged.',
-          'When a peer finishes sync, each new pack is also copied into Mods/<id>/ and listed in the ModLoader disabled by default so it can be used later offline or as host; packs already present are left alone if identical, or updated in place without changing their on/off toggle.'
+          'When a peer finishes sync, each new pack is also copied into Mods/<id>/ and listed in the ModLoader disabled by default so it can be used later offline or as host; packs already present are left alone if identical, or updated in place without changing their on/off toggle.',
+          'While packs sync, a green lobby line every three seconds shows the phase, bytes and percentage; the host’s shows who is ready and who is still downloading.'
         ],
         luaVerbs: ['(automatic on host ready bulb)', 'wa.world.networked()', 'Mods/wormforge.toml'],
         exampleMod: 'Any enabled pack set in an online lobby',
@@ -1344,7 +1355,7 @@
       {
         id: 'scripted-airborne-fire',
         since: '2026-10-07',
-        updated: '2026-10-07T10:30:00Z',
+        updated: '2026-10-07T10:45:00Z',
         category: 'weapons',
         title: 'Scripted, Airborne & Ctrl-Gated Fire',
         tagline: 'Fire any pack’s weapon from a script, fire in mid-air where WA refuses, and gate a fire on a held key.',
@@ -1355,9 +1366,10 @@
           'worm:air_fire() lets a pack weapon fire while the worm is jumping or falling; the handler sees fire.airborne.',
           'on_fire events carry fire.power, the charge from 0 to 1.',
           'A pack can return "eat" on WA’s fire message to require a held key: the Kamikaze Rocket fires only with Ctrl.',
-          'The stress test pack uses them to drop Electromagnets and Bowling Ball Strikes across the map.'
+          'The stress test pack uses them to drop Electromagnets and Bowling Ball Strikes across the map.',
+          'stock_fire_choice = { held = "ctrl", alternate = "surrender" } on a claim fires a pristine stock Surrender while Ctrl is held; on the Skip Go slot the worm also shows the Surrender pose while Ctrl is down (Highlander).'
         ],
-        luaVerbs: ['wa.weapons.fire{ ... }', 'wa.weapons.click{ ... }', 'worm:air_fire()', 'fire.power'],
+        luaVerbs: ['wa.weapons.fire{ ... }', 'wa.weapons.click{ ... }', 'worm:air_fire()', 'fire.power', 'stock_fire_choice = { held = "ctrl", ... }'],
         exampleMod: 'stress / highlander Portal Gun / Kamikaze Rocket',
       },
       {
@@ -1409,6 +1421,123 @@
         ],
         luaVerbs: ['(engine-only; no pack verb)'],
         exampleMod: 'any online match',
+      },
+      {
+        id: 'worm-handoff',
+        since: '2026-10-07',
+        updated: '2026-10-07T10:45:00Z',
+        category: 'worms',
+        title: 'Worm Handoff: Take, Release & Jet Pack Steering',
+        tagline: 'Hand a worm to the pack and back through WA’s own states — vehicles, tazers and swim suits without frozen worms.',
+        maturity: 'Production',
+        details: [
+          'worm:take{ hide, turn = "run" | "freeze" } hands a worm to the pack: it stays where the pack puts it, its move keys and jump are the pack’s to read and consume, and WA’s water leaves it alone.',
+          'worm:release(vx, vy) gives it back flying, through WA’s own falling state; { tumble = true } gives it back out of control, as after a hit.',
+          'The engine lets go by itself at the turn’s end, when WA knocks the worm flying, and when it dies held, so a held worm can’t hang the match; worm.taken tells the pack.',
+          'worm:jetpack_steer(on): WA’s jet pack ignores the move keys so the pack steers it, while WA keeps its collisions, fuel HUD and landing.',
+          'worm:fits(x, y) runs WA’s own collision test of the worm’s shape at a place.',
+          'worm.state names WA’s known states, worm.state_id / state_label give the raw value for logs, and the worm_state_logger pack shows them live. worm:set_state is now an opt-in debugging tool.'
+        ],
+        luaVerbs: ['worm:take{ turn = "run" }', 'worm:release(vx, vy)', 'worm:jetpack_steer(true)', 'worm:fits(x, y)', 'worm.state'],
+        exampleMod: 'highlander Hang Glider / Hot Air Balloon / Helicopter / Swim Suit / worm_state_logger',
+      },
+      {
+        id: 'worm-spawn-freeze-windup',
+        since: '2026-10-07',
+        updated: '2026-10-07T10:45:00Z',
+        category: 'worms',
+        title: 'New Worms, Freezing & Wind-Up Control',
+        tagline: 'Add a worm to a team mid-match, freeze a worm the way WA does, and decide when a weapon is released.',
+        maturity: 'Production',
+        details: [
+          'wa.worms.spawn{ team, x, y, name, health } adds a worm to a team in its next free place, standing at once (Highlander’s Reinforcement).',
+          'worm:freeze() puts a worm in WA’s own frozen state (Highlander’s Ice Arrow); wa.on.hurt’s hit.source_weapon says which bow weapon an arrow came from.',
+          'worm.windup replaces WA’s wind-up before a weapon is released: 0 fires at once (Super Tele during worm placement), n waits n frames, nil gives it back to WA.'
+        ],
+        luaVerbs: ['wa.worms.spawn{ team, x, y }', 'worm:freeze()', 'hit.source_weapon', 'worm.windup = 0'],
+        exampleMod: 'highlander Reinforcement / Ice Arrow / Super Tele',
+      },
+      {
+        id: 'fire-spawn',
+        since: '2026-10-07',
+        updated: '2026-10-07T10:45:00Z',
+        category: 'physics',
+        title: 'WA Fires From Lua (wa.fire.spawn)',
+        tagline: 'Start WA’s own fires anywhere: they burn, spread and hurt as WA’s do, with per-fire damage, knockback and colour.',
+        maturity: 'Production',
+        details: [
+          'wa.fire.spawn{ owner, x, y, vx, vy, count, duration, damage, ... } starts one of WA’s fires, as the Petrol Bomb does; WA burns, spreads, draws and hurts with it.',
+          'damage_scale and knock_scale make that fire’s hits on worms stronger or weaker (Valyrian Fire: 25 % more damage, twice the knockback).',
+          'tint = 0xRRGGBB colours its flames (with the D3D9 shader renderer).'
+        ],
+        luaVerbs: ['wa.fire.spawn{ ... }', 'damage_scale = 1.25', 'tint = 0x4BE14B'],
+        exampleMod: 'highlander Valyrian Fire',
+      },
+      {
+        id: 'engine-weapon-holds',
+        since: '2026-10-07',
+        updated: '2026-10-07T10:45:00Z',
+        category: 'graphics',
+        title: 'Engine-Drawn Weapon Holds',
+        tagline: 'Draw a held weapon and hand over the worm’s aim pose from data alone — no simulation actors.',
+        maturity: 'Production',
+        details: [
+          'hold = { sheet, hand, ... } on a weapon claim: the engine draws the held weapon, the hand, its animation and muzzle flash in the GPU path, following WA’s live aim and facing.',
+          'Hidden the moment the worm walks and back when it aims again; kept through firing and WA’s put-away animation.',
+          'Highlander’s eight Project X holds use it.'
+        ],
+        luaVerbs: ['hold = { sheet = "sprites/weapon", hand = "sprites/hand" }'],
+        exampleMod: 'highlander',
+      },
+      {
+        id: 'pack-modules-require',
+        since: '2026-10-07',
+        updated: '2026-10-07T10:45:00Z',
+        category: 'tools',
+        title: 'Pack Modules: Scoped require',
+        tagline: 'Split a big pack into files: each pack loads its own Lua modules, and nothing outside its folder.',
+        maturity: 'Production',
+        details: [
+          'require("lib/shared") loads lib/shared.lua from the pack’s own folder only; each module runs once per match in its own environment and returns the same value to every caller.',
+          'Paths leaving the pack, symlinks and require cycles are refused.',
+          'Highlander is now split into lib/, weapons/ and scheme/ modules, one file per weapon.'
+        ],
+        luaVerbs: ['require("lib/shared")', 'require("weapons/javelin")'],
+        exampleMod: 'highlander',
+      },
+      {
+        id: 'component-profiles',
+        since: '2026-10-07',
+        updated: '2026-10-07T10:45:00Z',
+        category: 'tools',
+        title: 'Component Bundles & Profiles',
+        tagline: 'Install large catalogs and pick only the weapons, scheme and features you want, frozen for every player and replay.',
+        maturity: 'Experimental',
+        details: [
+          'A format_version = 2 mod.toml declares components — weapons, schemes and features — a player can choose one by one.',
+          'A [profile] table in Mods/wormforge.toml selects them and their weapon-panel positions; the engine resolves it against the installed bundles and logs every problem.',
+          'The selection is frozen with the packs, so peers and replays run the same one; old sessions and replays run without components, as before.',
+          'Hand-edited for now; the loader window will write it.'
+        ],
+        luaVerbs: ['[[components]]', '[profile]', '[profile.weapons]'],
+        exampleMod: 'component_demo',
+      },
+      {
+        id: 'perf-profiler-filters',
+        since: '2026-10-07',
+        updated: '2026-10-07T10:45:00Z',
+        category: 'tools',
+        title: 'Profiler, FPS Counter & Message Filters',
+        tagline: 'Measure what a pack costs in game, and keep worm hooks from running Lua for messages they ignore.',
+        maturity: 'Production',
+        details: [
+          'wa.perf.enable{ counter, profile, spikes } turns on an FPS counter and a frame profiler in wkLua.log; any single Lua call of 5 ms or more is logged as a spike.',
+          'wa.on.worm_message(fn, { msgs = { ... } }) runs a handler only for the messages it names; the engine skips Lua for the rest.',
+          'Highlander idle: worm_message 10.5 → 0.85 ms per frame, 63 → 119 fps.',
+          'The stress pack fires stock, custom and Highlander projectiles in the first turn, for comparing frame times and replays.'
+        ],
+        luaVerbs: ['wa.perf.enable{ ... }', 'wa.on.worm_message(fn, { msgs = { wa.msg.FRAME_FINISH } })'],
+        exampleMod: 'stress / perf / highlander',
       },
     ];
 
