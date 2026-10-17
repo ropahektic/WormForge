@@ -1,0 +1,798 @@
+# Project X's weapons, ported to WormForge, as a component bundle: each
+# weapon is a component any profile can place (the loader's Weapons tab lists
+# them), credited to its Project X authors. A weapon goes on any panel place.
+#
+# Highlander's rules are the hl.rules add-on (scheme/). Each PX weapon
+# suggests its PX pool for them; a profile may set any weapon's. The profiles
+# in profiles/ (Highlander, and the same weapons without the rules) are
+# copied into WormForge/Profiles when the loader installs this bundle. Where PX
+# uses WA's own weapon unchanged (Teleport, Fast Walk, Crate Spy, Crate
+# Shower, Flame Thrower) they place the stock one.
+#
+# rules.lua is the Highlander pack in one piece, as the Lua tests load it.
+id = "px.ports"
+name = "Project X ports"
+version = "0.10.0"
+author = "Project X authors"
+api_version = 4
+format_version = 2
+[[components]]
+
+id = "hl.rules"
+type = "feature"
+name = "Highlander rules"
+description = "Project X's Highlander: each worm is dealt one weapon from each of three pools, may use each once a turn, and takes everything a worm it kills carried. Each placed weapon's pool is one of its settings."
+entry = "components/highlander.lua"
+before_weapons = true
+
+[[components.weapon_options]]
+key = "pool"
+type = "choice"
+choices = ["offensive", "second", "movement", "not dealt"]
+default = "not dealt"
+label = "Highlander pool"
+description = "Each worm is dealt one weapon from each pool."
+
+[[components.weapon_options]]
+key = "cavern"
+type = "bool"
+default = true
+label = "Dealt on cavern maps"
+description = "Off for weapons that come from the sky."
+[[components]]
+
+id = "px.double_bazooka"
+type = "weapon"
+name = "Double Bazooka"
+authors = ["PyroMan"]
+description = "Highlander's Double Bazooka."
+entry = "components/weapon.lua"
+icon = "sprites/double_bazooka/double_bazooka_ico.png"
+default_position = { row = "F1", column = 1 }
+
+[components.suggests."hl.rules"]
+pool = "offensive"
+[[components]]
+
+id = "px.igniter"
+type = "weapon"
+name = "Igniter"
+description = "Highlander's Igniter."
+entry = "components/weapon.lua"
+icon = "sprites/igniter/igniter_ico.png"
+default_position = { row = "F1", column = 2 }
+
+[components.suggests."hl.rules"]
+pool = "offensive"
+[[components]]
+
+id = "px.s_m_a_r_t_bomb"
+type = "weapon"
+name = "S.M.A.R.T Bomb"
+authors = ["Curtis"]
+description = "Highlander's S.M.A.R.T Bomb."
+entry = "components/weapon.lua"
+icon = "sprites/smart_bomb/smart_ico.png"
+default_position = { row = "F1", column = 3 }
+
+[components.suggests."hl.rules"]
+pool = "offensive"
+[[components]]
+
+id = "px.blaster_worm"
+type = "weapon"
+name = "Blaster Worm"
+authors = ["Curtis"]
+description = "Highlander's Blaster Worm."
+entry = "components/weapon.lua"
+icon = "sprites/blaster_worm/bworm_ico.png"
+default_position = { row = "F1", column = 4 }
+
+[components.suggests."hl.rules"]
+pool = "offensive"
+[[components]]
+
+id = "px.burning_sheep_launcher"
+type = "weapon"
+name = "Burning Sheep Launcher"
+authors = ["StepS"]
+description = "Highlander's Burning Sheep Launcher."
+entry = "components/weapon.lua"
+icon = "sprites/launchers/burning_sheep_launcher_ico.png"
+default_position = { row = "F1", column = 5 }
+
+[components.suggests."hl.rules"]
+pool = "offensive"
+[[components]]
+
+id = "px.sticky_bomb"
+type = "weapon"
+name = "Sticky Bomb"
+authors = ["Twicken"]
+description = "Highlander's Sticky Bomb."
+entry = "components/weapon.lua"
+icon = "sprites/sticky_bomb/sbico.png"
+default_position = { row = "F2", column = 1 }
+
+[components.suggests."hl.rules"]
+pool = "offensive"
+[[components]]
+
+id = "px.windy_cluster"
+type = "weapon"
+name = "Windy Cluster"
+authors = ["Curtis"]
+description = "Highlander's Windy Cluster."
+entry = "components/weapon.lua"
+icon = "sprites/windy_cluster/ico_windyc.png"
+default_position = { row = "F2", column = 2 }
+
+[components.suggests."hl.rules"]
+pool = "offensive"
+[[components]]
+
+id = "px.super_gravedigger"
+type = "weapon"
+name = "Super Gravedigger"
+authors = ["Curtis"]
+description = "Highlander's Super Gravedigger."
+entry = "components/weapon.lua"
+icon = "sprites/super_gravedigger/sgrave_ico.png"
+default_position = { row = "F2", column = 3 }
+
+[components.suggests."hl.rules"]
+pool = "offensive"
+[[components]]
+
+id = "px.thumper_nade"
+type = "weapon"
+name = "Thumper Nade"
+authors = ["Curtis"]
+description = "Highlander's Thumper Nade."
+entry = "components/weapon.lua"
+icon = "sprites/thumper_nade/thumpern_ico.png"
+default_position = { row = "F2", column = 4 }
+
+[components.suggests."hl.rules"]
+pool = "offensive"
+[[components]]
+
+id = "px.electric_grenade"
+type = "weapon"
+name = "Electric Grenade"
+authors = ["reddaz"]
+description = "Highlander's Electric Grenade."
+entry = "components/weapon.lua"
+icon = "sprites/electric_grenade/icon.png"
+default_position = { row = "F2", column = 5 }
+
+[components.suggests."hl.rules"]
+pool = "offensive"
+[[components]]
+
+id = "px.real_shotgun"
+type = "weapon"
+name = "Real Shotgun"
+description = "Highlander's Real Shotgun."
+entry = "components/weapon.lua"
+icon = "sprites/real_shotgun/real_shotgun_ico.png"
+default_position = { row = "F3", column = 1 }
+
+[components.suggests."hl.rules"]
+pool = "second"
+[[components]]
+
+id = "px.sniper_rifle"
+type = "weapon"
+name = "Sniper Rifle"
+authors = ["Twicken"]
+credits = "laser sight by ZED"
+description = "Highlander's Sniper Rifle."
+entry = "components/weapon.lua"
+icon = "sprites/sniper_rifle/srico.png"
+default_position = { row = "F3", column = 2 }
+
+[components.suggests."hl.rules"]
+pool = "second"
+[[components]]
+
+id = "px.laser_gun"
+type = "weapon"
+name = "Laser Gun"
+credits = "probably _Killburn"
+description = "Highlander's Laser Gun."
+entry = "components/weapon.lua"
+icon = "sprites/laser_gun/ico_lasergun.png"
+default_position = { row = "F3", column = 3 }
+
+[components.suggests."hl.rules"]
+pool = "second"
+[[components]]
+
+id = "px.burst_rifle"
+type = "weapon"
+name = "Burst Rifle"
+authors = ["Curtis"]
+description = "Highlander's Burst Rifle."
+entry = "components/weapon.lua"
+icon = "sprites/burst_rifle/ico_burstr.png"
+default_position = { row = "F3", column = 4 }
+
+[components.suggests."hl.rules"]
+pool = "second"
+[[components]]
+
+id = "px.shadow_bolt"
+type = "weapon"
+name = "Shadow-Bolt"
+authors = ["Curtis"]
+description = "Highlander's Shadow-Bolt."
+entry = "components/weapon.lua"
+icon = "sprites/shadow_bolt/ico_shadowb.png"
+default_position = { row = "F3", column = 5 }
+
+[components.suggests."hl.rules"]
+pool = "second"
+[[components]]
+
+id = "px.fire_jump"
+type = "weapon"
+name = "Fire Jump"
+credits = "new icon by 0rang3"
+description = "Highlander's Fire Jump."
+entry = "components/weapon.lua"
+icon = "sprites/fire_jump/fire_jump_ico.png"
+default_position = { row = "F4", column = 1 }
+
+[components.suggests."hl.rules"]
+pool = "second"
+[[components]]
+
+id = "px.sentry_laser"
+type = "weapon"
+name = "Sentry Laser"
+authors = ["rafa''2"]
+credits = "from code by _Killburn"
+description = "Highlander's Sentry Laser."
+entry = "components/weapon.lua"
+icon = "sprites/sentry_laser/icon.png"
+default_position = { row = "F4", column = 2 }
+
+[components.suggests."hl.rules"]
+pool = "second"
+[[components]]
+
+id = "px.sentry_gun"
+type = "weapon"
+name = "Sentry Gun"
+credits = "probably _Killburn"
+description = "Highlander's Sentry Gun."
+entry = "components/weapon.lua"
+icon = "sprites/sentry_gun/icon.png"
+default_position = { row = "F4", column = 3 }
+
+[components.suggests."hl.rules"]
+pool = "second"
+[[components]]
+
+id = "px.kamikaze_rocket"
+type = "weapon"
+name = "Kamikaze Rocket"
+authors = ["Pablo"]
+credits = "updated by rafa''2"
+description = "Highlander's Kamikaze Rocket."
+entry = "components/weapon.lua"
+icon = "sprites/kamikaze_rocket/icon.png"
+default_position = { row = "F4", column = 4 }
+[[components]]
+
+id = "px.javelin"
+type = "weapon"
+name = "Javelin"
+authors = ["Zed", "rafa''2"]
+description = "Highlander's Javelin."
+entry = "components/weapon.lua"
+icon = "sprites/javelin/icon.png"
+default_position = { row = "F4", column = 5 }
+
+[components.suggests."hl.rules"]
+pool = "second"
+[[components]]
+
+id = "px.nuke_rocket"
+type = "weapon"
+name = "Nuke Rocket"
+authors = ["PyroMan"]
+description = "Highlander's Nuke Rocket."
+entry = "components/weapon.lua"
+icon = "sprites/nuke_rocket/nuke_rocket_ico.png"
+default_position = { row = "F5", column = 2 }
+
+[components.suggests."hl.rules"]
+pool = "offensive"
+[[components]]
+
+id = "px.pogo_sheep"
+type = "weapon"
+name = "Pogo Sheep"
+authors = ["Curtis"]
+description = "Highlander's Pogo Sheep."
+entry = "components/weapon.lua"
+icon = "sprites/pogo_sheep/psheep_ico.png"
+default_position = { row = "F5", column = 3 }
+
+[components.suggests."hl.rules"]
+pool = "offensive"
+[[components]]
+
+id = "px.ghost_sheep"
+type = "weapon"
+name = "Ghost Sheep"
+authors = ["StepS"]
+description = "Highlander's Ghost Sheep."
+entry = "components/weapon.lua"
+icon = "sprites/ghost_sheep/ghost_sheep_ico.png"
+default_position = { row = "F5", column = 5 }
+
+[components.suggests."hl.rules"]
+pool = "offensive"
+[[components]]
+
+id = "px.gravler"
+type = "weapon"
+name = "Gravler"
+authors = ["Curtis"]
+description = "Highlander's Gravler."
+entry = "components/weapon.lua"
+icon = "sprites/gravler/gravler_ico.png"
+default_position = { row = "F5", column = 6 }
+[[components]]
+
+id = "px.mortar_strike"
+type = "weapon"
+name = "Mortar Strike"
+authors = ["Curtis"]
+description = "Highlander's Mortar Strike."
+entry = "components/weapon.lua"
+icon = "sprites/mortar_strike/ico_mortarst.png"
+default_position = { row = "F6", column = 1 }
+
+[components.suggests."hl.rules"]
+pool = "offensive"
+cavern = false
+[[components]]
+
+id = "px.lightning_strike"
+type = "weapon"
+name = "Lightning Strike"
+description = "Highlander's Lightning Strike."
+entry = "components/weapon.lua"
+icon = "sprites/lightning/icon.png"
+default_position = { row = "F6", column = 2 }
+
+[components.suggests."hl.rules"]
+pool = "second"
+cavern = false
+[[components]]
+
+id = "px.pigeon_strike"
+type = "weapon"
+name = "Pigeon Strike"
+authors = ["Curtis"]
+description = "Highlander's Pigeon Strike."
+entry = "components/weapon.lua"
+icon = "sprites/pigeon_strike/ico_pigeonst.png"
+default_position = { row = "F6", column = 3 }
+
+[components.suggests."hl.rules"]
+pool = "offensive"
+cavern = false
+[[components]]
+
+id = "px.gravler_strike"
+type = "weapon"
+name = "Gravler Strike"
+authors = ["Curtis"]
+description = "Highlander's Gravler Strike."
+entry = "components/weapon.lua"
+icon = "sprites/gravler/gravlerst_ico.png"
+default_position = { row = "F6", column = 5 }
+
+[components.suggests."hl.rules"]
+pool = "offensive"
+cavern = false
+[[components]]
+
+id = "px.blowtorch"
+type = "weapon"
+name = "BlowTorch"
+description = "Highlander's BlowTorch."
+entry = "components/weapon.lua"
+icon = "blow_torch"
+default_position = { row = "F7", column = 1 }
+
+[components.suggests."hl.rules"]
+pool = "second"
+[[components]]
+
+id = "px.super_drill"
+type = "weapon"
+name = "Super Drill"
+authors = ["StepS"]
+description = "Highlander's Super Drill."
+entry = "components/weapon.lua"
+icon = "sprites/super_drill/ico_superdrill.png"
+default_position = { row = "F7", column = 2 }
+
+[components.suggests."hl.rules"]
+pool = "second"
+[[components]]
+
+id = "px.electromagnet"
+type = "weapon"
+name = "Electromagnet"
+description = "Highlander's Electromagnet."
+entry = "components/weapon.lua"
+icon = "sprites/electromagnet/ico_magnet.png"
+default_position = { row = "F7", column = 4 }
+
+[components.suggests."hl.rules"]
+pool = "second"
+[[components]]
+
+id = "px.3_girder_pack"
+type = "weapon"
+name = "3 Girder Pack"
+description = "Highlander's 3 Girder Pack."
+entry = "components/weapon.lua"
+icon = "girder_pack"
+default_position = { row = "F7", column = 5 }
+
+[components.suggests."hl.rules"]
+pool = "movement"
+[[components]]
+
+id = "px.jump"
+type = "weapon"
+name = "Jump"
+description = "Highlander's Jump."
+entry = "components/weapon.lua"
+icon = "sprites/jump/jumpic.png"
+default_position = { row = "F8", column = 1 }
+
+[components.suggests."hl.rules"]
+pool = "movement"
+[[components]]
+
+id = "px.hot_air_balloon"
+type = "weapon"
+name = "Hot Air Balloon"
+authors = ["rafa''2"]
+credits = "modified by 0rang3"
+description = "Highlander's Hot Air Balloon."
+entry = "components/weapon.lua"
+icon = "sprites/balloon/balloon_icon.png"
+default_position = { row = "F8", column = 2 }
+[[components]]
+
+id = "px.hang_glider"
+type = "weapon"
+name = "Hang-Glider"
+description = "Highlander's Hang-Glider."
+entry = "components/weapon.lua"
+icon = "sprites/hang_glider/ico_glider.png"
+default_position = { row = "F8", column = 3 }
+
+[components.suggests."hl.rules"]
+pool = "movement"
+[[components]]
+
+id = "px.super_tele"
+type = "weapon"
+name = "Super Tele"
+authors = ["StepS"]
+description = "Highlander's Super Tele."
+entry = "components/weapon.lua"
+icon = "sprites/super_tele/icon.png"
+default_position = { row = "F8", column = 4 }
+
+[components.suggests."hl.rules"]
+pool = "movement"
+[[components]]
+
+id = "px.portal_gun"
+type = "weapon"
+name = "Portal Gun"
+authors = ["PyroMan"]
+description = "Highlander's Portal Gun."
+entry = "components/weapon.lua"
+icon = "sprites/portal_gun/icon.png"
+default_position = { row = "F8", column = 5 }
+
+[components.suggests."hl.rules"]
+pool = "second"
+[[components]]
+
+id = "px.chilli_bomb"
+type = "weapon"
+name = "Chilli Bomb"
+authors = ["PyroMan"]
+description = "Highlander's Chilli Bomb."
+entry = "components/weapon.lua"
+icon = "sprites/chilli_bomb/chilli_ico.png"
+default_position = { row = "F9", column = 1 }
+
+[components.suggests."hl.rules"]
+pool = "offensive"
+[[components]]
+
+id = "px.hellish_hand_grenade"
+type = "weapon"
+name = "Hellish Hand-Grenade"
+authors = ["Twicken"]
+description = "Highlander's Hellish Hand-Grenade."
+entry = "components/weapon.lua"
+icon = "sprites/hellish/hhh_ico.png"
+default_position = { row = "F9", column = 2 }
+
+[components.suggests."hl.rules"]
+pool = "offensive"
+[[components]]
+
+id = "px.ferret"
+type = "weapon"
+name = "Ferret"
+authors = ["rafa''2"]
+description = "Highlander's Ferret."
+entry = "components/weapon.lua"
+icon = "sprites/ferret/icon.png"
+default_position = { row = "F9", column = 4 }
+
+[components.suggests."hl.rules"]
+pool = "offensive"
+cavern = false
+[[components]]
+
+id = "px.banana_express"
+type = "weapon"
+name = "Banana Express"
+description = "Highlander's Banana Express."
+entry = "components/weapon.lua"
+icon = "sprites/banana_express/banana_express_ico.png"
+default_position = { row = "F9", column = 5 }
+
+[components.suggests."hl.rules"]
+pool = "offensive"
+cavern = false
+[[components]]
+
+id = "px.valyrian_fire"
+type = "weapon"
+name = "Valyrian Fire"
+authors = ["rafa''2"]
+description = "Highlander's Valyrian Fire."
+entry = "components/weapon.lua"
+icon = "sprites/valyrian_fire/icon.png"
+default_position = { row = "F10", column = 1 }
+
+[components.suggests."hl.rules"]
+pool = "offensive"
+[[components]]
+
+id = "px.remote_roller"
+type = "weapon"
+name = "Remote Roller"
+authors = ["Curtis"]
+description = "Highlander's Remote Roller."
+entry = "components/weapon.lua"
+icon = "sprites/remote_roller/rroller_ico.png"
+default_position = { row = "F10", column = 2 }
+
+[components.suggests."hl.rules"]
+pool = "offensive"
+[[components]]
+
+id = "px.priceless_ming_vase"
+type = "weapon"
+name = "Priceless Ming Vase"
+description = "Highlander's Priceless Ming Vase."
+entry = "components/weapon.lua"
+icon = "ming_vase"
+default_position = { row = "F10", column = 3 }
+
+[components.suggests."hl.rules"]
+pool = "offensive"
+[[components]]
+
+id = "px.bowling_ball_strike"
+type = "weapon"
+name = "Bowling Ball Strike"
+authors = ["Entuser"]
+description = "Highlander's Bowling Ball Strike."
+entry = "components/weapon.lua"
+icon = "sprites/bowling_ball/strike_icon.png"
+default_position = { row = "F10", column = 4 }
+
+[components.suggests."hl.rules"]
+pool = "offensive"
+cavern = false
+[[components]]
+
+id = "px.thumper_nade_strike"
+type = "weapon"
+name = "Thumper Nade Strike"
+authors = ["Curtis"]
+description = "Highlander's Thumper Nade Strike."
+entry = "components/weapon.lua"
+icon = "sprites/thumper_nade/thumpernst_ico.png"
+default_position = { row = "F10", column = 5 }
+
+[components.suggests."hl.rules"]
+pool = "offensive"
+cavern = false
+[[components]]
+
+id = "px.cow_launcher"
+type = "weapon"
+name = "Cow Launcher"
+description = "Highlander's Cow Launcher."
+entry = "components/weapon.lua"
+icon = "sprites/launchers/cow_launcher_ico.png"
+default_position = { row = "F11", column = 1 }
+
+[components.suggests."hl.rules"]
+pool = "offensive"
+[[components]]
+
+id = "px.old_woman_launcher"
+type = "weapon"
+name = "Old Woman Launcher"
+description = "Highlander's Old Woman Launcher."
+entry = "components/weapon.lua"
+icon = "sprites/launchers/old_woman_launcher_ico.png"
+default_position = { row = "F11", column = 2 }
+
+[components.suggests."hl.rules"]
+pool = "offensive"
+[[components]]
+
+id = "px.crate_strike"
+type = "weapon"
+name = "Crate Strike"
+authors = ["StepS"]
+credits = "with rafa''2 and 0rang3"
+description = "Highlander's Crate Strike."
+entry = "components/weapon.lua"
+icon = "sprites/crate_strike/icon.png"
+default_position = { row = "F11", column = 3 }
+
+[components.suggests."hl.rules"]
+pool = "second"
+cavern = false
+[[components]]
+
+id = "px.reinforcement"
+type = "weapon"
+name = "Reinforcement"
+authors = ["StepS"]
+description = "Highlander's Reinforcement."
+entry = "components/weapon.lua"
+icon = "sprites/reinforcement/icon.png"
+default_position = { row = "F11", column = 4 }
+
+[components.suggests."hl.rules"]
+pool = "second"
+cavern = false
+[[components]]
+
+id = "px.ice_arrow"
+type = "weapon"
+name = "Ice Arrow"
+authors = ["StepS"]
+description = "Highlander's Ice Arrow."
+entry = "components/weapon.lua"
+icon = "sprites/ice_arrow/icon.png"
+default_position = { row = "F11", column = 5 }
+
+[components.suggests."hl.rules"]
+pool = "second"
+[[components]]
+
+id = "px.skip_go_surrender"
+type = "weapon"
+name = "Skip Go/Surrender"
+description = "Highlander's Skip Go/Surrender."
+entry = "components/weapon.lua"
+icon = "sprites/skip_go/icon.png"
+default_position = { row = "F12", column = 1 }
+[[components]]
+
+id = "px.wind_changer"
+type = "weapon"
+name = "Wind Changer"
+authors = ["ravander"]
+credits = "improved by 0rang3"
+description = "Highlander's Wind Changer."
+entry = "components/weapon.lua"
+icon = "sprites/wind_changer/ico_windchanger.png"
+default_position = { row = "F12", column = 2 }
+[[components]]
+
+id = "px.weapon_crate"
+type = "weapon"
+name = "Weapon Crate"
+authors = ["StepS", "rafa''2"]
+credits = "with 0rang3"
+description = "Highlander's Weapon Crate."
+entry = "components/weapon.lua"
+icon = "sprites/weapon_crate/icon.png"
+default_position = { row = "F12", column = 4 }
+[[components]]
+
+id = "px.cluster_bomb"
+type = "weapon"
+name = "Cluster Bomb"
+description = "Highlander's Cluster Bomb."
+entry = "components/weapon.lua"
+icon = "cluster_bomb"
+default_position = { row = "F12", column = 5 }
+[[components]]
+
+id = "px.helicopter"
+type = "weapon"
+name = "Helicopter"
+authors = ["StepS"]
+credits = "sprites by raffie"
+description = "Highlander's Helicopter."
+entry = "components/weapon.lua"
+icon = "sprites/helicopter/heli_ico.png"
+default_position = { row = "utility", column = 1 }
+
+[components.suggests."hl.rules"]
+pool = "movement"
+[[components]]
+
+id = "px.gravity_control"
+type = "weapon"
+name = "Gravity Control"
+authors = ["DabbyB"]
+credits = "edited by 0rang3"
+description = "Highlander's Gravity Control."
+entry = "components/weapon.lua"
+icon = "sprites/gravity_control/gravity_control_ico.png"
+default_position = { row = "utility", column = 2 }
+
+[components.suggests."hl.rules"]
+pool = "movement"
+[[components]]
+
+id = "px.swim_suit"
+type = "weapon"
+name = "Swim Suit"
+authors = ["StepS"]
+credits = "diving by PyroMan"
+description = "Highlander's Swim Suit."
+entry = "components/weapon.lua"
+icon = "sprites/swim_suit/ico_swimsuit.png"
+default_position = { row = "utility", column = 4 }
+
+[components.suggests."hl.rules"]
+pool = "movement"
+[[components]]
+
+id = "px.skunk"
+type = "weapon"
+name = "Skunk"
+description = "Highlander's Skunk."
+entry = "components/weapon.lua"
+icon = "skunk"
+default_position = { row = "utility", column = 6 }
+[[components]]
+
+id = "px.mole_bomb"
+type = "weapon"
+name = "Mole Bomb"
+description = "Highlander's Mole Bomb."
+entry = "components/weapon.lua"
+icon = "mole_bomb"
+default_position = { row = "utility", column = 8 }

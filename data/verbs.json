@@ -1,62 +1,92 @@
 {
- "engine": "ropahektic/WormForge-engine main",
- "api_version": 2,
- "updated": "2026-10-11",
+ "engine": "WormForge main, 2026-10-16",
+ "api_version": 4,
+ "updated": "2026-10-16",
  "units": "Lua speaks pixels: positions and sizes in pixels, speeds in pixels per frame, with fractions. The engine converts to WA's 16.16 once.",
  "sections": [
   {
    "id": "weapons",
    "title": "Weapons",
-   "lead": "Claim a stock weapon slot, or fire a pack's weapon from a script.",
+   "lead": "Give a placed weapon its record, art and behaviour, read it back, or fire one from a script. A weapon is named by its id (px.javelin, or stock.bazooka for WA's own), never by a slot.",
    "verbs": [
     {
      "key": "wa.weapons.replace",
-     "sig": "wa.weapons.replace{ weapon, ... }",
-     "desc": "Claims a stock weapon slot and gives it the pack's record, art and behaviour (see Claim fields).",
+     "sig": "wa.weapons.replace{ copy_from, name, missile, ... }",
+     "desc": "In a weapon's install: gives the weapon the profile placed its record, art and behaviour (see Claim fields). It names no slot; it claims the weapon's own.",
      "units": "",
      "aliases": []
     },
     {
      "key": "wa.weapons.register",
      "sig": "wa.weapons.register{ based_on, ... }",
-     "desc": "Identical to replace today: the slot is named by based_on. Kept for adding new weapons once there are slots beyond WA's 71.",
+     "desc": "The older form: claims a stock slot named by based_on. A bundle's weapon uses replace.",
      "units": "",
      "aliases": []
     },
     {
      "key": "wa.weapons.launch",
-     "sig": "wa.weapons.launch{ weapon, owner, x, y, vx, vy, damage, sprite, fuse, countdown, explode_into }",
-     "desc": "Fires a real WA missile from a slot's fire parameters.",
+     "sig": "wa.weapons.launch{ weapon, owner, x, y, vx, vy, missile, clusters }",
+     "desc": "Fires a real WA missile: a placed weapon as itself, else stock.<name> as WA's own. missile = { ... } and clusters = { ... } change that shot's record fields (fuse, sprite, explosion.power, burst, ...).",
      "units": "position px · speed px/frame · fuse, countdown ms",
      "aliases": []
     },
     {
      "key": "wa.weapons.fire",
      "sig": "wa.weapons.fire{ weapon, worm, x, y, vx, vy, ... }",
-     "desc": "Runs the on_fire of whichever pack claims that slot, from a script. Extra fields reach the handler. No wind-up, no ammo used.",
+     "desc": "Runs a placed weapon's on_fire from a script, by its id. Extra fields reach the handler. No wind-up, no ammo used.",
      "units": "position px · speed px/frame",
      "aliases": []
     },
     {
      "key": "wa.weapons.click",
      "sig": "wa.weapons.click{ weapon, worm, x, y, vx, vy }",
-     "desc": "Runs the on_click of whichever pack claims that slot, from a script.",
+     "desc": "Runs a placed weapon's on_click from a script, by its id.",
      "units": "position px · speed px/frame",
+     "aliases": []
+    },
+    {
+     "key": "wa.weapons.fire_bullet",
+     "sig": "wa.weapons.fire_bullet{ weapon, owner, x, y, dx, dy, damage, ignore }",
+     "desc": "Fires one native hitscan round from a point, as WA's shotgun, handgun, uzi or minigun (weapon = stock.<name>, a template). The owner must be a living worm.",
+     "units": "position px",
+     "aliases": []
+    },
+    {
+     "key": "wa.weapons.data",
+     "sig": "wa.weapons.data(weapon)",
+     "desc": "A weapon's record as the claim's named tables, with fires.as naming its family: a placed weapon's as this round has it, WA's untouched one for a stock.<name> not on the panel.",
+     "units": "",
      "aliases": []
     },
     {
      "key": "wa.weapons.retarget",
      "sig": "wa.weapons.retarget{ weapon, sprite, cluster }",
-     "desc": "Swaps a stock weapon's flight sprite and cluster sprite at runtime.",
+     "desc": "Swaps a placed weapon's flight sprite and cluster sprite (WA sprite names) at runtime.",
      "units": "",
      "aliases": []
     },
     {
      "key": "wa.weapons.visual",
-     "sig": "wa.weapons.visual(slot)",
-     "desc": "A weapon's panel symbol { sprite, frame, width, height, kind }, for drawing.",
+     "sig": "wa.weapons.visual(weapon)",
+     "desc": "A placed weapon's panel symbol { sprite, frame, width, height, kind }, for drawing.",
      "units": "",
      "aliases": []
+    },
+    {
+     "key": "wa.weapons.panel_icon",
+     "sig": "wa.weapons.panel_icon(weapon, n)",
+     "desc": "Shows icon n in the weapon's panel tile: 0 its panel_icon, 1 and on its panel_icons. Only the panel changes, so any callback may call it.",
+     "units": "",
+     "aliases": []
+    },
+    {
+     "key": "wa.panel.layout",
+     "sig": "wa.panel.layout() / wa.panel.set_layout{ [id] = { row, column } }",
+     "desc": "Each placed weapon's panel position by id (rows F1..F12 and utility, columns 1..10), and moving them mid-round (simulation only). Only where a weapon shows changes: F-keys and clicks follow at once.",
+     "units": "",
+     "aliases": [
+      "wa.panel.set_layout"
+     ]
     },
     {
      "key": "wa.weapons.notify_grant",
@@ -68,16 +98,21 @@
     {
      "key": "claim",
      "sig": "Claim fields",
-     "desc": "Fields read by replace / register. Record: wep, patch, copy_from, params, damage, blast, fuse, bounce_pct, gravity_pct, wind_pct, cluster, homing, mine, plane, proximity. Behaviour: on_fire, on_click, on_select, on_explode, on_place, on_proximity, eat_fire, fire_repeat, stock_fire_choice, actor, is_weapon. Art and sound: panel_icon, icon, sprites, sprite_overrides, truecolor, sounds, hold, worm_sprites, worm_sprites_animate, worm_sprites_toggle, worm_sprites_team_tint, gpu_worm_sprites, mole_dig_rotation.",
+     "desc": "Fields read by replace. Record: copy_from (stock.<name>) or wep (a .wep file), and the record as named tables: fires, handling, missile, clusters, mine, gun, strike, jet_pack; raw = { [offset] = value } for a field without a name. Behaviour: on_fire, on_click, on_select, on_explode, on_place, on_proximity, eat_fire, click_finish, fire_repeat, stock_fire_choice, airborne, actor, is_weapon. Art and sound: name, panel_icon, panel_icons, icon, sprites, sprite_overrides, sounds, hold, worm_sprites, worm_sprites_animate, worm_sprites_toggle, worm_sprites_team_tint, mole_dig_rotation; params for drawing (gpu_prefix, layer, depth, truecolor, gpu_worm_sprites).",
      "units": "",
      "aliases": [
       "wep",
-      "patch",
       "copy_from",
+      "fires",
+      "handling",
+      "missile",
+      "clusters",
+      "mine",
+      "gun",
+      "strike",
+      "jet_pack",
+      "raw",
       "params",
-      "bounce_pct",
-      "gravity_pct",
-      "wind_pct",
       "on_fire",
       "on_click",
       "on_select",
@@ -85,12 +120,17 @@
       "on_place",
       "on_proximity",
       "eat_fire",
+      "click_finish",
       "fire_repeat",
       "stock_fire_choice",
+      "airborne",
       "is_weapon",
+      "name",
       "panel_icon",
+      "panel_icons",
       "sprite_overrides",
       "truecolor",
+      "sounds",
       "hold",
       "worm_sprites",
       "worm_sprites_animate",
@@ -103,14 +143,14 @@
     {
      "key": "fire-event",
      "sig": "on_fire / on_click events",
-     "desc": "An on_fire handler gets fire.x, fire.y, fire.vx, fire.vy, fire.slot, fire.worm, fire.power (charge 0 to 1) and fire.airborne. An on_click handler gets click.x, click.y, click.sky, click.vx, click.vy, click.slot and click.worm.",
+     "desc": "An on_fire handler gets fire.x, fire.y, fire.vx, fire.vy, fire.weapon (its id), fire.worm, fire.power (charge 0 to 1) and fire.airborne. An on_click handler gets click.x, click.y, click.sky, click.vx, click.vy, click.weapon and click.worm.",
      "units": "position px · speed px/frame · power 0–1",
      "aliases": [
       "fire.x",
       "fire.y",
       "fire.vx",
       "fire.vy",
-      "fire.slot",
+      "fire.weapon",
       "fire.worm",
       "fire.power",
       "fire.airborne",
@@ -119,10 +159,120 @@
       "click.sky",
       "click.vx",
       "click.vy",
-      "click.slot",
+      "click.weapon",
       "click.worm",
       "ev.vx",
       "ev.vy"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "weapon-data",
+   "title": "Weapon data",
+   "lead": "What a weapon declares in its defaults and a profile's weapon_settings override, field by field; the weapon's install reads it as ctx.data. WA's own weapons answer as WA does where a field is left out.",
+   "verbs": [
+    {
+     "key": "data.ammo",
+     "sig": "ammo = { round_start, turn_start = { amount, mode }, crate_collect, stockpiling }",
+     "desc": "Ammo at round start, given each turn (add or replace), from a crate, and between rounds (off, on, anti). -1 is infinite.",
+     "units": "",
+     "aliases": [
+      "ammo",
+      "round_start",
+      "turn_start",
+      "stockpiling"
+     ]
+    },
+    {
+     "key": "data.delay",
+     "sig": "delay = n",
+     "desc": "Turns before the weapon can be used.",
+     "units": "turns",
+     "aliases": [
+      "delay"
+     ]
+    },
+    {
+     "key": "data.crate",
+     "sig": "crate = { chance_pct, type }",
+     "desc": "Its weight in WA's crate draw, and which crates it comes in (weapon, utility, super).",
+     "units": "",
+     "aliases": [
+      "crate",
+      "chance_pct"
+     ]
+    },
+    {
+     "key": "data.after_use",
+     "sig": "after_use = \"end\" | \"retreat\" | \"continue\"",
+     "desc": "What the turn does once the weapon is used: ends at once (as WA's Teleport), ends after the retreat time, or goes on.",
+     "units": "",
+     "aliases": [
+      "after_use"
+     ]
+    },
+    {
+     "key": "data.shots",
+     "sig": "shots = n",
+     "desc": "Shots per use; mid-air each fire press fires the next.",
+     "units": "",
+     "aliases": [
+      "shots"
+     ]
+    },
+    {
+     "key": "data.mid_air",
+     "sig": "mid_air = true | false",
+     "desc": "Whether it fires on the rope, bungee, parachute or jet pack.",
+     "units": "",
+     "aliases": [
+      "mid_air"
+     ]
+    },
+    {
+     "key": "data.airborne",
+     "sig": "airborne = true | false",
+     "desc": "Whether it fires while the worm jumps or falls.",
+     "units": "",
+     "aliases": [
+      "airborne"
+     ]
+    },
+    {
+     "key": "data.on_collect",
+     "sig": "on_collect = \"use\" | \"keep\"",
+     "desc": "A utility from a crate: switched on at once, or kept to use by hand.",
+     "units": "",
+     "aliases": [
+      "on_collect"
+     ]
+    },
+    {
+     "key": "data.placement",
+     "sig": "placement = \"girder\" | \"girder_pack\"",
+     "desc": "Placed as WA places its girders: the cursor shows the girder, the arrow keys turn it, a click places one where WA allows.",
+     "units": "",
+     "aliases": [
+      "placement"
+     ]
+    },
+    {
+     "key": "data.cursor_sprite",
+     "sig": "cursor_sprite = \"<WA sprite>\"",
+     "desc": "One of WA's sprites drawn at the cursor while aiming, as WA draws the worm where its Teleport would land.",
+     "units": "",
+     "aliases": [
+      "cursor_sprite"
+     ]
+    },
+    {
+     "key": "data.aims_straight_up",
+     "sig": "aims_straight_up = true | false",
+     "desc": "false keeps the aim a little short of straight up, as WA's Mortar.",
+     "units": "",
+     "aliases": [
+      "aims_straight_up"
      ]
     }
    ]
@@ -178,7 +328,7 @@
     {
      "key": "worm.readonly",
      "sig": "Worm fields (read only)",
-     "desc": "id, team, alliance, ammo_group, hp, kind, slot, weapon, turn, aim, aiming, drilling, state, state_id, state_label, keys, taken.",
+     "desc": "id, team, alliance, ammo_group, hp, kind, weapon (its id), turn, aim, aiming, drilling, state, state_id, state_label, keys, taken.",
      "units": "aim 0 (down) to 1 (up)",
      "aliases": [
       "worm.id",
@@ -187,7 +337,6 @@
       "worm.ammo_group",
       "worm.hp",
       "worm.kind",
-      "worm.slot",
       "worm.weapon",
       "worm.turn",
       "worm.aim",
@@ -202,15 +351,15 @@
     },
     {
      "key": "worm:ammo",
-     "sig": "worm:ammo(name, n) / worm:ammo(name, { set = n })",
-     "desc": "Reads, adds or sets the team's ammo for a weapon.",
+     "sig": "worm:ammo(weapon, n) / worm:ammo(weapon, { set = n })",
+     "desc": "Reads, adds or sets the team's ammo for a placed weapon, by its id.",
      "units": "",
      "aliases": []
     },
     {
      "key": "worm:equip",
-     "sig": "worm:equip(name)",
-     "desc": "Arms a weapon on the spot.",
+     "sig": "worm:equip(weapon)",
+     "desc": "Arms a placed weapon on the spot, by its id.",
      "units": "",
      "aliases": []
     },
@@ -304,6 +453,13 @@
      "desc": "Enters a WA state. Debugging only, opt-in per pack (debug_worm_state).",
      "units": "",
      "aliases": []
+    },
+    {
+     "key": "worm:input",
+     "sig": "worm:input{ fire, aim, fuse, bounce, click, key }",
+     "desc": "Sends WA's own input messages for a worm: an offline diagnostic, opt-in per bundle (debug_input). Every call is logged; network rounds refuse it.",
+     "units": "",
+     "aliases": []
     }
    ]
   },
@@ -380,6 +536,13 @@
      "aliases": []
     },
     {
+     "key": "a:collision_ignore",
+     "sig": "a:collision_ignore(worm, on)",
+     "desc": "Lets one worm pass through the actor's body and mask, or not (simulation only). Returns whether it could be set.",
+     "units": "",
+     "aliases": []
+    },
+    {
      "key": "a:in_water",
      "sig": "a:in_water()",
      "desc": "Whether it is in the water.",
@@ -394,10 +557,10 @@
      "aliases": []
     },
     {
-     "key": "a:dig",
-     "sig": "a:dig{ radius }",
-     "desc": "Cuts a hole in the terrain where it is.",
-     "units": "radius px",
+     "key": "a:cut",
+     "sig": "a:cut{ shape, ... }",
+     "desc": "Cuts the terrain where it is: wa.land.cut at the actor.",
+     "units": "px",
      "aliases": []
     },
     {
@@ -665,11 +828,12 @@
     },
     {
      "key": "wa.world.retreat",
-     "sig": "wa.world.retreat() / wa.world.turn_clock()",
-     "desc": "Retreat countdown / turn clock left.",
+     "sig": "wa.world.retreat() / wa.world.turn_clock() / wa.world.set_turn_clock(ms)",
+     "desc": "Retreat countdown and turn clock left; set_turn_clock sets the turn clock (simulation only).",
      "units": "ms",
      "aliases": [
-      "wa.world.turn_clock"
+      "wa.world.turn_clock",
+      "wa.world.set_turn_clock"
      ]
     },
     {
@@ -743,16 +907,9 @@
      "aliases": []
     },
     {
-     "key": "wa.land.dig",
-     "sig": "wa.land.dig{ x, y, radius }",
-     "desc": "Cuts a round hole.",
-     "units": "px",
-     "aliases": []
-    },
-    {
      "key": "wa.land.cut",
-     "sig": "wa.land.cut{ x, y, shape, facing, angle }",
-     "desc": "Cuts WA's drill or blowtorch shape.",
+     "sig": "wa.land.cut{ x, y, shape = \"circle\" | \"drill\" | \"torch\", radius, facing, angle }",
+     "desc": "Cuts the land: a round hole (radius 1..200), WA's drill shape, or its blowtorch tunnel (facing ±1, angle −1..1). Simulation only.",
      "units": "px",
      "aliases": []
     },
@@ -812,20 +969,19 @@
     {
      "key": "wa.on.death",
      "sig": "wa.on.death(fn)",
-     "desc": "Once per worm death, with the attacker when known.",
+     "desc": "Once per worm death, with the attacker when known and the weapon's id.",
      "units": "",
      "aliases": [
       "event.victim",
       "event.attacker",
       "event.attacker_team",
-      "event.weapon",
-      "event.slot"
+      "event.weapon"
      ]
     },
     {
      "key": "wa.on.hurt",
      "sig": "wa.on.hurt(fn)",
-     "desc": "On every damage message. It can change the amount or eat the hit; hit.source_weapon names an arrow's bow weapon.",
+     "desc": "On every damage message. It can change the amount or eat the hit; hit.source_weapon is the id of an arrow's weapon.",
      "units": "",
      "aliases": [
       "hit.source_weapon"
@@ -895,10 +1051,17 @@
      "desc": "Stock message names: START_TURN, FRAME_FINISH, FIRE_WEAPON, RELEASE_WEAPON, JUMP, JUMP_UP, HIT, EXPLOSION, IMPACT, NONLETHAL, POISON.",
      "units": "",
      "aliases": [
-      "wa.msg.FRAME_FINISH",
       "wa.msg.START_TURN",
+      "wa.msg.FRAME_FINISH",
       "wa.msg.FIRE_WEAPON",
-      "wa.msg.JUMP"
+      "wa.msg.RELEASE_WEAPON",
+      "wa.msg.JUMP",
+      "wa.msg.JUMP_UP",
+      "wa.msg.HIT",
+      "wa.msg.EXPLOSION",
+      "wa.msg.IMPACT",
+      "wa.msg.NONLETHAL",
+      "wa.msg.POISON"
      ]
     }
    ]
@@ -906,7 +1069,7 @@
   {
    "id": "drawing",
    "title": "Drawing, HUD, sprites and sound",
-   "lead": "Read-only drawing at render time, and named draw depths.",
+   "lead": "Read-only drawing at render time, named draw depths, and a component's own art and sounds.",
    "verbs": [
     {
      "key": "wa.draw.quad",
@@ -947,6 +1110,13 @@
      "key": "wa.sprites.key",
      "sig": "wa.sprites.key(name)",
      "desc": "Resolves a pack sprite name once, for reuse in draw calls.",
+     "units": "",
+     "aliases": []
+    },
+    {
+     "key": "wa.assets.load",
+     "sig": "wa.assets.load{ sprites, sounds, gpu_prefix }",
+     "desc": "Loads a component's own sprites and sounds on no weapon, from its install: how an add-on draws and plays its own art.",
      "units": "",
      "aliases": []
     },

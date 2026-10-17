@@ -1,0 +1,13 @@
+# Kill the King: Project X's game mode, as an add-on.
+id = "example.kill_the_king"
+version = "1.1.0"
+author = "WormForge Porting Engine"
+api_version = 4
+format_version = 2
+[[components]]
+
+id = "ktk.control"
+type = "feature"
+name = "Kill the King"
+description = "Project X's Kill the King (CKtkControl): the attackers must destroy the defenders' king before the timer runs out."
+entry = "init.lua"

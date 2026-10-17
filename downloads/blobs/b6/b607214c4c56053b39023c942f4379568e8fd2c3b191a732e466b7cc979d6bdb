@@ -1,0 +1,15 @@
+# POOZ: selecting the weapon turns its worm into a runner (a Lua actor).
+id = "example.pooz"
+version = "0.2.0"
+author = "wkLua"
+api_version = 4
+format_version = 2
+[[components]]
+
+id = "pooz.runner"
+type = "weapon"
+name = "POOZ"
+description = "Selecting it turns the worm into the POOZ runner: A/D move, W jumps (again in the air for a flip), Shift sprints. Switch weapon to drop out."
+entry = "weapons.lua"
+icon = "shotgun"
+default_position = { row = "F3", column = 1 }

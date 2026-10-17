@@ -1,0 +1,41 @@
+# The demo's weapon set, crates and HUD line. Load it in the mod loader's
+# Profile tab once the loader has copied it into WormForge/Profiles.
+description = "Big Bazooka plus a few stock weapons; nothing else on the panel."
+features = ["demo.turn_note"]
+# Chance per turn of each crate kind, in %; the rest is no crate.
+crates = { weapon = 40, health = 10, utility = 20 }
+
+# The profile owns the whole panel: a slot left out here has no ammo and
+# never comes in a crate. stock.<slot> is WA's own weapon.
+[weapons]
+"demo.big_bazooka" = { row = "F1", column = 1 }
+"stock.grenade" = { row = "F2", column = 1 }
+"stock.shotgun" = { row = "F3", column = 1 }
+"stock.ninja_rope" = { row = "F8", column = 1 }
+"stock.teleport" = { row = "F8", column = 4 }
+"stock.skip_go" = { row = "F12", column = 1 }
+"stock.surrender" = { row = "F12", column = 2 }
+
+# Over each weapon's own data; stock weapons have none, so what is left
+# unset keeps the lobby scheme's.
+[weapon_settings."demo.big_bazooka"]
+delay = 1
+
+[weapon_settings."stock.grenade"]
+ammo = -1
+
+[weapon_settings."stock.shotgun"]
+ammo = -1
+
+[weapon_settings."stock.ninja_rope"]
+ammo = 5
+
+[weapon_settings."stock.teleport"]
+ammo = 2
+crate = 40
+
+[weapon_settings."stock.skip_go"]
+ammo = -1
+
+[weapon_settings."stock.surrender"]
+ammo = -1

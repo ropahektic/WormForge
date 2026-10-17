@@ -1,0 +1,68 @@
+# Core utilities (format_version 2): one feature with the match settings the
+# lobby scheme doesn't have and some players' favourite packs as switches, and
+# an instant utility of our own (+10 Seconds).
+# Nothing runs until a profile selects it (the mod loader's Profile tab).
+# See README.md.
+id = "core.utilities"
+name = "Core utilities"
+version = "0.4.0"
+author = "WormForge"
+api_version = 4
+format_version = 2
+[[components]]
+
+id = "core.utilities"
+type = "feature"
+name = "Utilities"
+description = "Match settings the lobby scheme doesn't have, and some players' favourite packs as switches."
+entry = "features/utilities.lua"
+credits = "ExTurnSide by red, Live HP by reddaz, Agility by Zed and 0rang3 (port by red)"
+
+[[components.options]]
+key = "heal_per_turn"
+type = "int"
+default = 0
+min = 0
+max = 50
+label = "Heal at turn start (HP)"
+description = "Health the worm whose turn starts gets."
+
+[[components.options]]
+key = "ex_turn_side"
+type = "bool"
+default = false
+label = "ExTurnSide"
+description = "Left and right turn the worm during rope swings and other actions. By red."
+
+[[components.options]]
+key = "agility"
+type = "bool"
+default = false
+label = "Agility"
+description = "The arrow keys steer the worm a little in the air. By Zed and 0rang3, port by red."
+
+[[components.options]]
+key = "live_hp"
+type = "bool"
+default = false
+label = "Live HP"
+description = "Health bars follow damage as it happens, not at the turn's end. By reddaz."
+
+[[components.options]]
+key = "collect_viewer"
+type = "bool"
+default = false
+label = "Collect viewer"
+description = "What a crate gave pops up over it, for the team that took it."
+
+# An instant utility of our own: ten more seconds of turn, in utility crates.
+# Used on pickup, or kept for later, as the profile's on_collect says.
+[[components]]
+
+id = "utilities.plus_ten"
+type = "weapon"
+name = "+10 Seconds"
+description = "Adds ten seconds to the turn. From a crate it's used at once, or kept for later if the profile says keep; fired, it doesn't end the turn."
+entry = "weapons/plus_ten.lua"
+icon = "sprites/plus_ten.png"
+default_position = { row = "utility", column = 6 }

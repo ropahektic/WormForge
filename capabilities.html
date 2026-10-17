@@ -570,9 +570,9 @@
       <a class="brand" href="./">
         <span class="mark">WF</span>
         <strong>WormForge</strong>
-        <span>0.8 · WA 3.8.1</span>
+        <span>0.9 · WA 3.8.1</span>
       </a>
-      <a href="https://github.com/ropahektic/WormForge/releases/latest">wkLua.zip</a>
+      <a href="https://github.com/EdLud/WormForge/releases/latest">wkLua.zip</a>
       <span class="sep">·</span>
       <a class="here" href="capabilities.html">Capabilities</a>
       <span class="sep">·</span>
@@ -633,41 +633,40 @@
       {
         id: 'weapon-overlay',
         since: '2026-09-22',
-        updated: '2026-09-28T15:40:00Z',
+        updated: '2026-10-16T11:29:00Z',
         release: '0.8.2',
         category: 'weapons',
-        title: '71-Slot Table Overlay System',
-        tagline: 'Overlay any stock Worms Armageddon weapon without stack-trampling or VFT slicing.',
+        title: 'Weapon Table: WA’s 71 Slots and 185 More',
+        tagline: 'The slot is only WA’s id for a weapon: WA’s own weapons stay home, every other weapon gets one past WA’s 70.',
         maturity: 'Production',
         details: [
-          'Non-destructive overlay onto the stock 71-slot WeaponTable at GameWorld+0x510.',
-          'First loaded mod ID wins a contested slot; conflicting claims are gracefully skipped and logged.',
-          'Full parameter control: custom damage, bounce_pct, gravity_pct, wind_pct, blast radius.',
-          'Seamless fire-method borrowing via copy_from, a Project X .wep via wep = "file.wep", or a readable patch = { damage = 70 } diff on top of either.',
-          'Named patches also carry the cluster sprite count so bouquet bits never divide-by-zero when leaving .wep for copy_from + patch.',
-          'sprite_overrides remap stock sprite ids/names onto pack GPU sheets for trails, bodies, and FX.',
-          'on_select = { cursor = true } enters land-cursor mode; eat_fire eats the lockstep click for custom on_click.',
-          'Custom panel icons mapped directly to WA’s hi/lo icon sprite pointers.',
-          'Copied panel_icon pairs are restored before GameEngine::Shutdown, so WA deletes each image once instead of crashing (EIP 0) at match end.'
+          'A profile places weapons by id (px.javelin, or stock.bazooka for WA’s own). WA’s own keep their home slots; every other weapon gets a slot past 70, in id order, where WA ties nothing to the id.',
+          'When a round places a weapon past 70, WA’s 71-record WeaponTable (GameWorld+0x510) is swapped for one of 256; WA reads the table through that pointer every time, so its own code takes the new ids.',
+          'Ammo, delay, panel icons and the crate draw past 70 have their own tables, through hooks on GetAmmo, SubtractAmmo, ReduceDelayOnTurnStart, the panel tiles and the held-weapon icon.',
+          'A weapon’s install calls wa.weapons.replace with no slot: it claims the one it was placed on. Its record comes from copy_from = "stock.<name>" or wep = "file.wep", its fields as named tables (missile = { explosion = { power = 70 } }, clusters, mine, ...), raw = { [offset] = value } for a field without a name.',
+          'The panel is ours, apart from the slots: rows F1–F12 and utility, up to 10 columns, F-keys and clicks follow the profile’s layout, and wa.panel.set_layout moves weapons mid-round.',
+          'What WA ties to an id is redirected through weapon data, defaulting to WA’s own answer: placement (girders), cursor_sprite (the Teleport’s cursor), after_use (end, retreat, continue), aims_straight_up (the Mortar’s cap), jet_pack.fuel, on_collect, mid_air and crate.type. A worm with nothing to keep is given WA’s choice among 1–70, else the first weapon past 70.',
+          'Without a profile that places a weapon past 70, the table, the ammo and WA’s code are untouched.'
         ],
-        luaVerbs: ['wa.weapons.replace({ ... })', 'wa.weapons.register({ ... })', 'wep = "hellish.wep"', 'patch = { damage = 70 }', 'sprite_overrides = { ... }', 'eat_fire = true'],
-        exampleMod: 'circle_bazooka / worm_toss / hellish_grenade / highlander',
+        luaVerbs: ['wa.weapons.replace({ copy_from = "stock.bazooka", missile = { ... } })', 'wep = "hellish.wep"', 'raw = { [0x74] = 50 }', 'wa.panel.set_layout({ ... })', 'placement = "girder"', 'after_use = "end"'],
+        exampleMod: 'component_demo / px (Highlander)',
       },
       {
         id: 'dynamic-equipping',
         since: '2026-09-22',
+        updated: '2026-10-16T11:29:00Z',
         release: '0.3',
         category: 'weapons',
-        title: 'Arbitrary Slot Arming & Hotkeying',
+        title: 'Arbitrary Weapon Arming & Hotkeying',
         tagline: 'Arm and fire any weapon in the game on-the-fly, bypassing scheme inventory limits.',
         maturity: 'Production',
         details: [
-          'Call worm:equip(slot) from any key hook (e.g. Q key in q_bazooka) to arm weapons dynamically.',
+          'Call worm:equip(weapon) with a placed weapon’s id from any key hook (e.g. Q key in q_bazooka) to arm it on the spot.',
           'Gifts 1 ammo if the team has 0 ammo, unlocks the weapon in the table, and resets delay.',
           'Native Space hold-to-charge power bar pump (StartFiring / ReleaseWeapon) works seamlessly.',
           'Auto-reclaims temporary gifted ammunition once fired to preserve game balance.'
         ],
-        luaVerbs: ['worm:equip("bazooka")', 'worm:ammo("bazooka", delta)', 'wa.world.keys().q'],
+        luaVerbs: ['worm:equip("stock.bazooka")', 'worm:ammo("stock.bazooka", delta)', 'wa.world.keys().q'],
         exampleMod: 'q_bazooka',
       },
       {
@@ -810,10 +809,10 @@
       {
         id: 'custom-aim-sprites',
         since: '2026-09-22',
-        updated: '2026-09-27',
+        updated: '2026-10-16T11:29:00Z',
         release: '0.8',
         category: 'worms',
-        title: 'Per-Slot Worm Pose Remapping (worm_sprites)',
+        title: 'Per-Weapon Worm Pose Remapping (worm_sprites)',
         tagline: 'Give any custom weapon custom aiming angles and equip animations for all ground slopes.',
         maturity: 'Production',
         details: [
@@ -912,7 +911,7 @@
       {
         id: 'replay-container',
         since: '2026-09-23',
-        updated: '2026-10-07T10:45:00Z',
+        updated: '2026-10-17T15:00:00Z',
         release: '0.6',
         category: 'replay',
         title: 'Trailer Replays on WA’s Own .WAgame',
@@ -921,9 +920,9 @@
         details: [
           'The .WAgame is WA’s own bytes plus trailer sections [hdr, pack, wf, chk] and a 32-byte "WFTR" footer (format, lengths, CRC32).',
           'No footer means a vanilla replay and is left to WA. A recognised footer that fails its checks is refused, never played as a different match.',
-          'mod.toml and Lua are always embedded. Other pack files are Raw, or Asset(sha256) when WormForge.WFAssets holds those exact bytes.',
+          'mod.toml and Lua are always embedded. Other pack files are Raw, or Asset(sha256) when WormForge.WFAssets or the public store holds those exact bytes (see Small Replays from the Public Store).',
           'Recording streams into replay-pending/ and atomically replaces the .WAgame at match end. A crash leftover is finalised at the next start; one that cannot be finalised stays a vanilla replay.',
-          'Playback hooks ReplayLoader (0x00462DF0), resolves collection assets (re-hashed on every read), loads the archived packs, and lets WA read the file itself.',
+          'Playback hooks ReplayLoader (0x00462DF0), or WA’s mod load where WA bypasses it, resolves the assets by hash (re-hashed on every read), loads the archived packs and the frozen profile, and lets WA read the file itself.',
           'Verifies sync checkpoints during playback, halting immediately if a simulation difference occurs.',
           'Older .WF_WAgame sidecars are ignored. Their .WAgame still plays as vanilla; watching the recorded match needs the build that wrote them.',
           'Checkpoints hash every worm’s WA state too, and check gameplay, visual and network randomness separately, so a cosmetic difference is reported without stopping the match.',
@@ -969,11 +968,11 @@
       {
         id: 'homing-missile-sprites',
         since: '2026-09-24',
-        updated: '2026-09-27T21:30:00Z',
+        updated: '2026-10-16T11:29:00Z',
         release: '0.8.1.2',
         category: 'weapons',
         title: 'Stock Homing & Super Sheep Sprites',
-        tagline: 'Homing body remaps run only on slots a pack gave its own flight sprite — stock pigeons stay pigeons.',
+        tagline: 'Homing body remaps run only on weapons a pack gave its own flight sprite — stock pigeons stay pigeons.',
         maturity: 'Production',
         details: [
           'remap_homing_body_sprites returns unless missile_type at MissileEntity+0x1C4 is homing (1). Other missiles are not rewritten.',
@@ -981,40 +980,39 @@
           'That stops Project X Pigeon Strike pigeons being rewritten from their feather trail id (online desync / broken feathers).',
           'HM_CUSTOM and HM_LOGGED are HashMap/HashSet keyed by missile address. MissileEntity__Free drops both; clear_homing() empties them at match start.'
         ],
-        luaVerbs: ['flight sprite / set_flight_sprite on a pack slot', 'stock super sheep / homing missile'],
+        luaVerbs: ['flight sprite / set_flight_sprite on a pack weapon', 'stock super sheep / homing missile'],
         exampleMod: 'Any pack with a custom homing body; stock Pigeon Strike untouched',
       },
       {
         id: 'mod-loader-gui',
         since: '2026-09-24',
-        updated: '2026-09-27',
+        updated: '2026-10-17T15:00:00Z',
         release: '0.7',
         category: 'tools',
         title: 'Win32 Companion Mod Loader Window',
-        tagline: 'In-game UI to toggle packs, detect weapon slot conflicts, and download new mods from the web.',
+        tagline: 'In-game UI to pick a profile and its weapons, and download new mods from the web.',
         maturity: 'Production',
         details: [
-          'Native Win32 list view window running on a background thread alongside WA.',
-          'All / Weapons / Gameplay tabs: kind = "gameplay" (or empty weapon claims) rule packs sit apart from slot overlays.',
-          'Enables/disables mods via Mods/wormforge.toml without moving files; Wine-safe atomic overwrite.',
-          'Instant slot conflict detection (names every pack contesting the same weapon slot).',
-          'Built-in WinHTTP downloader: Fetches the public github.io downloads/packs/index.toml, verifies SHA-256, installs one zip per pack.',
-          'Online catalogue is always the github.io index — not the private engine repo.'
+          'Native Win32 window on its own thread beside WA, with Profile, Weapons and .wsc tabs: the profile, its weapons on WA’s panel with their settings, and the scheme.',
+          'The installed mods are listed under the profile; their add-ons and weapons are picked there. No slot conflicts: a profile places each weapon by id, and every weapon that isn’t WA’s own gets its own slot past 70.',
+          'Check online reads the signed catalogue, lists mods to install and marks mods with an update in red; Update all installs them, each zip checked against its SHA-256.',
+          'It opens again, or comes to the front, when a replay needs files, and shows their download.',
+          'Wine-safe writes: WormForge/wormforge.toml and saved profiles are replaced, never rewritten in place.'
         ],
-        luaVerbs: ['kind = "gameplay"', 'Mods/wormforge.toml', 'Check online → Install'],
+        luaVerbs: ['WormForge/wormforge.toml', 'WormForge/Profiles', 'Check online → Update all'],
         exampleMod: 'Modloader GUI / highlander',
       },
       {
         id: 'gameplay-rules-packs',
         since: '2026-09-24',
-        updated: '2026-10-07T10:45:00Z',
+        updated: '2026-10-16T11:29:00Z',
         release: '0.8.2',
         category: 'tools',
         title: 'Gameplay / Rules Packs (Highlander)',
-        tagline: 'Change match rules without overlaying a weapon slot — deal hands, steal on kill, scheme-agnostic.',
+        tagline: 'Change match rules without claiming a weapon — deal hands, steal on kill, scheme-agnostic.',
         maturity: 'Production',
         details: [
-          'Packs may claim zero replace/overlay slots and still load; the loader tags them as Gameplay.',
+          'An add-on (a feature component) claims no weapon at all; Highlander’s rules are one, over the weapons the profile places.',
           'Highlander ports PX Highlander 0rang3 rules on stock WA weapons: three pools, one shot each per turn.',
           'Killing a worm steals its hand for the active worm (including friendly kills), usable immediately.',
           'Cavern maps ban air strikes via wa.world.cavern(); utilities / skip / surrender stay with the scheme.',
@@ -1022,7 +1020,7 @@
           'Earlier waves: Double Bazooka, Nuke Rocket, Chilli Bomb, Hang-Glider, sniper muzzle flash, registered pack WAVs.',
           'Ships in two educational editions: explicit pure-Lua bookkeeping and the concise inventory/event-verb implementation.',
           'October wave: Bowling Ball Strike, Ferret, Electromagnet, Crate Strike, Sentry Gun, Sentry Laser, Kamikaze Rocket and Portal Gun, plus one Weapon Crate for every worm each turn (see “Highlander: Nine More Project X Weapons”).',
-          'Also since 0.8.2: Javelin, Super Tele, Valyrian Fire, Ice Arrow, Reinforcement, Skip Go and Surrender on one slot (Ctrl + Space surrenders), the Hang Glider and Hot Air Balloon as Lua vehicles, and the Helicopter and Swim Suit on the worm handoff verbs.'
+          'Also since 0.8.2: Javelin, Super Tele, Valyrian Fire, Ice Arrow, Reinforcement, Skip Go and Surrender as one weapon (Ctrl + Space surrenders), the Hang Glider and Hot Air Balloon as Lua vehicles, and the Helicopter and Swim Suit on the worm handoff verbs.'
         ],
         luaVerbs: ['wa.inventory.create(...)', 'wa.on.turn_start(...)', 'wa.on.death(...)', 'wa.weapons.launch{...}', 'wa.draw.ribbon{...}', 'wa.random()'],
         exampleMod: 'highlander / highlander_pure_lua',
@@ -1067,7 +1065,7 @@
       {
         id: 'rule-lifecycle-events',
         since: '2026-09-24',
-        updated: '2026-10-07T10:45:00Z',
+        updated: '2026-10-16T11:29:00Z',
         release: '0.7.1',
         category: 'tools',
         title: 'Turn, Death & Combat Attribution Events',
@@ -1076,7 +1074,7 @@
         details: [
           'wa.on.turn_start receives the active worm directly from WA’s lockstep START_TURN message.',
           'wa.on.death emits exactly once per death with victim and current active worm.',
-          'Death and hurt events expose optional attacker, attacker_team, weapon, slot, and damage kind when provenance is proven.',
+          'Death and hurt events expose optional attacker, attacker_team, weapon (its id) and damage kind when provenance is proven.',
           'Unknown or delayed provenance stays nil instead of guessing, preventing rules from crediting the wrong worm or weapon.',
           'Existing wa.on.hurt pre/post rewriting remains compatible and gains the same optional attribution fields.',
           'wa.on.turn_retreat (weapon use over, retreat starts), wa.on.turn_end (retreat over, movement stopped) and wa.on.turn_cleanup (WA has cleared the turn) fire in that order, even with zero retreat time.'
@@ -1087,22 +1085,22 @@
       {
         id: 'px-wep-import',
         since: '2026-09-27',
-        updated: '2026-09-28T15:40:00Z',
+        updated: '2026-10-16T11:29:00Z',
         release: '0.8.2',
         category: 'weapons',
         title: 'Project X .wep Table Import',
-        tagline: 'Drop a PX weapon file into the pack and fire it through a stock slot without retyping the table entry by hand.',
+        tagline: 'Drop a PX weapon file into the bundle and build a weapon on it without retyping the table entry by hand.',
         maturity: 'Production',
         details: [
-          'wep = "file.wep" parses the PX 4-byte tag plus WA’s own weapon table entry and installs that firing path on the claimed slot.',
+          'wep = "file.wep" parses the PX 4-byte tag plus WA’s own weapon table entry and installs that firing path as the weapon’s record.',
           'Mutually exclusive with copy_from: each sets how the weapon fires.',
-          'patch = { damage = 70, detonation = 1 } writes named weapon fields after copy_from / wep — the web editor’s readable diff (legacy [offset] keys still work).',
+          'Named record tables (missile = { explosion = { power = 70 } }, clusters, mine, ...) write fields over copy_from / wep; raw = { [offset] = value } for a field without a name. patch is gone since Lua API 4.',
           'Cluster sprite count travels with the patch so Thumper Nade–style bouquet bursts keep a non-zero modulus after leaving a .wep file.',
-          'Fire type must stay 0–4; PX sprite ids keep the slot’s stock art as with wep.',
+          'Fire type must stay 0–4; PX sprite ids keep the base weapon’s stock art as with wep.',
           'Sprite id fields inside the .wep (flight body and siblings) can still be redirected with sprite_overrides or retarget.',
           'Name defaults to the .wep’s embedded display name when the Lua claim omits name.'
         ],
-        luaVerbs: ['wep = "hellish.wep"', 'copy_from = "bazooka"', 'patch = { damage = 70, detonation = 1 }', 'wa.weapons.replace({ wep = "...", ... })'],
+        luaVerbs: ['wep = "hellish.wep"', 'copy_from = "stock.bazooka"', 'missile = { explosion = { power = 70 } }', 'wa.weapons.replace({ wep = "...", ... })'],
         exampleMod: 'hellish_grenade / highlander ports / web weapon mixer',
       },
       {
@@ -1145,24 +1143,24 @@
         id: 'weapon-retarget',
         since: '2026-09-25',
         release: '0.7.4',
-        updated: '2026-09-27',
+        updated: '2026-10-16T11:29:00Z',
         category: 'weapons',
         title: 'Runtime Flight Sprite Retarget',
-        tagline: 'Swap a slot’s in-flight (and optional cluster) body graphic after the weapon table is live.',
+        tagline: 'Swap a weapon’s in-flight (and optional cluster) body graphic after the weapon table is live.',
         maturity: 'Production',
         details: [
-          'wa.weapons.retarget({ weapon = "bazooka", sprite = "banana" }) rewrites the flight sprite fields the slot already owns.',
+          'wa.weapons.retarget({ weapon = "px.chilli_bomb", sprite = "banana" }) rewrites the flight sprite fields a placed weapon’s record already has.',
           'Optional cluster bank for weapons that fan secondary bits.',
           'Pair with sprite_overrides when the replacement art lives only on the GPU atlas.',
           'Example pack random_sprites demonstrates per-shot body swaps.'
         ],
-        luaVerbs: ['wa.weapons.retarget({ weapon = "bazooka", sprite = "banana" })'],
+        luaVerbs: ['wa.weapons.retarget({ weapon = "px.chilli_bomb", sprite = "banana" })'],
         exampleMod: 'random_sprites',
       },
       {
         id: 'land-cursor-eat-fire',
         since: '2026-09-27',
-        updated: '2026-09-28T15:40:00Z',
+        updated: '2026-10-16T11:29:00Z',
         release: '0.8.2',
         category: 'weapons',
         title: 'Land-Cursor Mode & Eaten Lockstep Clicks',
@@ -1174,7 +1172,7 @@
           'eat_fire = true eats team msg 0x32 at the TeamEntity handler: no planted X, no reset_cursor, no FireWeapon launch.',
           'on_click position prefers WA’s fire-context cursor (CTX_CURSOR — lockstep copy of the click) before the synced pointer, so strikes land where clicked even before pointer sync starts.',
           'wa.cursor.spawn{ owner, x, y, on } creates an ACTOR_FLAG_CURSOR actor; default sprite = "cursor" uses stock team-coloured cursorr..cursorc.',
-          'WA’s own cursor RQ layers are skipped while an eat_fire slot is selected so only the pack cursor draws.'
+          'WA’s own cursor RQ layers are skipped while an eat_fire weapon is selected so only the pack cursor draws.'
         ],
         luaVerbs: ['on_select = { cursor = true, on = ... }', 'eat_fire = true', 'wa.cursor.spawn({ owner, x, y, on })', 'wa.world.pointer().down'],
         exampleMod: 'worm_toss / highlander Lightning Strike',
@@ -1240,18 +1238,17 @@
       {
         id: 'network-asset-sync',
         since: '2026-09-27',
-        updated: '2026-10-07T10:45:00Z',
+        updated: '2026-10-17T15:00:00Z',
         release: '0.8',
         category: 'network',
         title: 'Lobby Pack Freeze & Peer Asset Sync',
         tagline: 'Host ready-bulb freezes enabled packs; peers pull missing blobs; Start stays gated until the match set matches.',
         maturity: 'Production',
         details: [
-          'Lighting the host ready bulb freezes the enabled pack set into %LOCALAPPDATA%\\WormForge\\sync\\… with a manifest of paths, sizes, and SHA-256.',
-          'Peers verify against installed Mods/ (including disabled packs), .WFAssets, and the last session; only missing blobs are fetched over the lobby chat carrier.',
+          'Lighting the host ready bulb freezes the profile and the bundles it uses into WormForge/Mods/sync/… with a manifest of paths, sizes, and SHA-256.',
+          'Peers verify against their installed mods, .WFAssets, and the last session; only missing blobs are fetched over the lobby chat carrier.',
           'Start is blocked until every connected client reports the manifest digest and a compatible WormForge build.',
           'Network rounds load from the frozen session copy, not live Mods/. Offline play and replay playback are unchanged.',
-          'When a peer finishes sync, each new pack is also copied into Mods/<id>/ and listed in the ModLoader disabled by default so it can be used later offline or as host; packs already present are left alone if identical, or updated in place without changing their on/off toggle.',
           'While packs sync, a green lobby line every three seconds shows the phase, bytes and percentage; the host’s shows who is ready and who is still downloading.'
         ],
         luaVerbs: ['(automatic on host ready bulb)', 'wa.world.networked()', 'Mods/wormforge.toml'],
@@ -1260,11 +1257,11 @@
       {
         id: 'weapons-launch',
         since: '2026-09-27',
-        updated: '2026-09-27T21:30:00Z',
+        updated: '2026-10-16T11:29:00Z',
         release: '0.8.1.2',
         category: 'weapons',
         title: 'wa.weapons.launch — Real WA Missiles From Lua',
-        tagline: 'Spawn a stock MissileEntity from a slot’s fire params; wind, trail, blast and lockstep stay WA’s.',
+        tagline: 'Spawn a stock MissileEntity from a weapon’s fire params; wind, trail, blast and lockstep stay WA’s.',
         maturity: 'Production',
         details: [
           'Does what FireWeapon__CreateWeaponProjectile does: object-pool check, physics parent, MissileEntity constructor with a PX-layout shoot description.',
@@ -1333,7 +1330,7 @@
       {
         id: 'gun-on-fire-shots',
         since: '2026-09-28',
-        updated: '2026-09-28T15:40:00Z',
+        updated: '2026-10-16T11:29:00Z',
         release: '0.8.2',
         category: 'weapons',
         title: 'Gun on_fire & Repeat-Fire Counters',
@@ -1342,7 +1339,7 @@
         details: [
           'on_fire on fire type 1 / method 2 (uzi, minigun, handgun, shotgun) receives each shot; WA’s bullet is skipped (PX FireFinal without super).',
           'fire.x / fire.y are the worm’s position; vx / vy are 0 — read worm.aim and facing for the beam direction.',
-          'Projectile slots still reach on_fire through CreateWeaponProjectile as before.',
+          'Projectile weapons still reach on_fire through CreateWeaponProjectile as before.',
           'worm.shots_fired / worm.shots_to_fire are WA’s repeat-fire counters (+0x290 / +0x294); writable from simulation callbacks only.',
           'Holding them at 0 of 1 each frame keeps the worm in the firing pose for a continuous beam (Laser Gun).'
         ],
@@ -1397,20 +1394,20 @@
       {
         id: 'highlander-october-weapons',
         since: '2026-10-07',
-        updated: '2026-10-07T10:30:00Z',
+        updated: '2026-10-16T11:29:00Z',
         category: 'weapons',
         title: 'Highlander: Nine More Project X Weapons',
         tagline: 'Bowling Balls, Ferret, Electromagnet, Crate Strike, two sentries, Kamikaze Rocket, Portal Gun — and a Weapon Crate every turn.',
         maturity: 'Production',
         details: [
-          'Bowling Ball Strike (Sheep Strike slot): three balls on PX’s CBowlingBall physics; they knock, crush and zap worms, and take WA’s fires, guns and blasts.',
-          'Ferret (Salvation Army slot): runs along the terrain’s outline with WA’s missile collision shape.',
-          'Electromagnet (Baseball Bat slot): a placed field that pulls or pushes mines and missiles; + switches it between red (attracting) and blue (repelling).',
-          'Crate Strike (Donkey slot): three of WA’s own crates on parachutes.',
-          'Sentry Gun (Kamikaze slot) fires on moving enemy worms; Sentry Laser (Dragon Ball slot) disintegrates enemy missiles, mines and Bowling Balls. Both are drawn in their team’s colour.',
-          'Kamikaze Rocket (Suicide Bomber slot): WA’s own Kamikaze flight, steered with left and right, fired with Ctrl + Space; it blows up after 4 seconds.',
-          'Portal Gun (Scales of Justice slot): team portal pairs that carry worms and objects through; − and + pick the portal, Pause switches the pair on and off, and it fires in mid-air.',
-          'Weapon Crate (Freeze slot): every worm gets one each turn, dropped in front of it.'
+          'Bowling Ball Strike (built on the Sheep Strike): three balls on PX’s CBowlingBall physics; they knock, crush and zap worms, and take WA’s fires, guns and blasts.',
+          'Ferret (built on the Salvation Army): runs along the terrain’s outline with WA’s missile collision shape.',
+          'Electromagnet (built on the Baseball Bat): a placed field that pulls or pushes mines and missiles; + switches it between red (attracting) and blue (repelling).',
+          'Crate Strike (built on the Donkey): three of WA’s own crates on parachutes.',
+          'Sentry Gun (built on the Kamikaze) fires on moving enemy worms; Sentry Laser (built on the Dragon Ball) disintegrates enemy missiles, mines and Bowling Balls. Both are drawn in their team’s colour.',
+          'Kamikaze Rocket (built on the Suicide Bomber): WA’s own Kamikaze flight, steered with left and right, fired with Ctrl + Space; it blows up after 4 seconds.',
+          'Portal Gun (built on the Scales of Justice): team portal pairs that carry worms and objects through; − and + pick the portal, Pause switches the pair on and off, and it fires in mid-air.',
+          'Weapon Crate (built on the Freeze): every worm gets one each turn, dropped in front of it.'
         ],
         luaVerbs: ['wa.world.trace{ ... }', 'wa.crates.spawn{ ... }', 'object:impulse(dx, dy)', 'worm:warp{ x, y }', 'worm:air_fire()'],
         exampleMod: 'highlander / highlander_test',
@@ -1454,19 +1451,19 @@
       {
         id: 'scripted-airborne-fire',
         since: '2026-10-07',
-        updated: '2026-10-07T10:45:00Z',
+        updated: '2026-10-16T11:29:00Z',
         category: 'weapons',
         title: 'Scripted, Airborne & Ctrl-Gated Fire',
         tagline: 'Fire any pack’s weapon from a script, fire in mid-air where WA refuses, and gate a fire on a held key.',
         maturity: 'Production',
         details: [
-          'wa.weapons.fire{ weapon, worm, x, y, ... } runs the on_fire of whichever pack claims that slot; wa.weapons.click does the same for on_click. No wind-up, no ammo used, the turn goes on.',
+          'wa.weapons.fire{ weapon, worm, x, y, ... } runs a placed weapon’s on_fire, by its id; wa.weapons.click does the same for on_click. No wind-up, no ammo used, the turn goes on.',
           'The spec’s extra fields reach the handler (Highlander’s Electromagnet reads polarity).',
           'worm:air_fire() lets a pack weapon fire while the worm is jumping or falling; the handler sees fire.airborne.',
           'on_fire events carry fire.power, the charge from 0 to 1.',
           'A pack can return "eat" on WA’s fire message to require a held key: the Kamikaze Rocket fires only with Ctrl.',
           'The stress test pack uses them to drop Electromagnets and Bowling Ball Strikes across the map.',
-          'stock_fire_choice = { held = "ctrl", alternate = "surrender" } on a claim fires a pristine stock Surrender while Ctrl is held; on the Skip Go slot the worm also shows the Surrender pose while Ctrl is down (Highlander).'
+          'stock_fire_choice = { held = "ctrl", alternate = "stock.surrender" } on a claim fires a pristine stock Surrender while Ctrl is held; on Skip Go the worm also shows the Surrender pose while Ctrl is down (Highlander).'
         ],
         luaVerbs: ['wa.weapons.fire{ ... }', 'wa.weapons.click{ ... }', 'worm:air_fire()', 'fire.power', 'stock_fire_choice = { held = "ctrl", ... }'],
         exampleMod: 'stress / highlander Portal Gun / Kamikaze Rocket',
@@ -1490,7 +1487,7 @@
       {
         id: 'weapon-grant-events',
         since: '2026-10-07',
-        updated: '2026-10-07T10:30:00Z',
+        updated: '2026-10-16T11:29:00Z',
         category: 'tools',
         title: 'Weapon Grant Events & Collect Viewer',
         tagline: 'Know when a worm gets weapons — from a crate, a kill or a script — and show it only to that side.',
@@ -1498,7 +1495,7 @@
         details: [
           'wa.on.weapon_grant(fn) fires after every completed acquisition with the worm, items, position, coalition and source (crate, inventory or script).',
           'Collect Viewer pack: panel icons float up where your side got weapons — at the crate, or at the killed worm for Highlander loot — seen only by that coalition.',
-          'wa.weapons.visual(slot) gives any weapon’s panel symbol for drawing; wa.world.is_local_alliance(colour), in draw and HUD callbacks only, says whether this screen belongs to that coalition.',
+          'wa.weapons.visual(weapon) gives a placed weapon’s panel symbol for drawing; wa.world.is_local_alliance(colour), in draw and HUD callbacks only, says whether this screen belongs to that coalition.',
           'Scripts granting ammo directly report it with wa.weapons.notify_grant{ worm, items }.',
           'Network and replay playtesting are still to do.'
         ],
@@ -1607,16 +1604,16 @@
       {
         id: 'component-profiles',
         since: '2026-10-07',
-        updated: '2026-10-07T10:45:00Z',
+        updated: '2026-10-17T15:00:00Z',
         category: 'tools',
         title: 'Component Bundles & Profiles',
-        tagline: 'Install large catalogs and pick only the weapons, scheme and features you want, frozen for every player and replay.',
-        maturity: 'Experimental',
+        tagline: 'Install large catalogs and pick only the weapons, scheme and add-ons you want, frozen for every player and replay.',
+        maturity: 'Production',
         details: [
-          'A format_version = 2 mod.toml declares components — weapons, schemes and features — a player can choose one by one.',
-          'A [profile] table in Mods/wormforge.toml selects them and their weapon-panel positions; the engine resolves it against the installed bundles and logs every problem.',
-          'The selection is frozen with the packs, so peers and replays run the same one; old sessions and replays run without components, as before.',
-          'Hand-edited for now; the loader window will write it.'
+          'Every mod is a bundle (format_version = 2): weapons and add-ons a player picks one by one. A mod has no switch of its own; the profile decides what runs.',
+          'A profile is the weapon set and its panel, each weapon’s settings, the add-ons and their options, the crate odds and the whole scheme. The loader edits it; saved profiles live in WormForge/Profiles.',
+          'A profile with a weapon set owns the whole panel: every slot it doesn’t place starts empty and never comes in a crate.',
+          'The selection is frozen with the packs, so peers and replays run the same one. One that can’t be built holds a hosted start, with the reason in the lobby.'
         ],
         luaVerbs: ['[[components]]', '[profile]', '[profile.weapons]'],
         exampleMod: 'component_demo',
@@ -1641,7 +1638,7 @@
       {
         id: 'pixel-units',
         since: '2026-10-11',
-        updated: '2026-10-11T17:41:00Z',
+        updated: '2026-10-16T11:29:00Z',
         category: 'tools',
         title: 'Pixel Units Across the Lua API (API v2)',
         tagline: 'Lua speaks pixels: write worm.x + 3, not worm.x + 3 * 0x10000. The engine converts to WA’s 16.16 once.',
@@ -1649,13 +1646,125 @@
         details: [
           'Positions, distances and sizes are pixels; speeds pixels per frame; world gravity and wind pixels per frame²; worm gravity and wind plain factors (1 = normal). Fractions keep WA’s 1/65536 precision.',
           'One converter in the Lua host: reads are exact, writes round to the nearest 1/65536 pixel. Verbs and packs never convert by hand.',
-          'Packs declare api_version = 2; version 1 packs are refused, and so are the scripts inside replays recorded with them.',
+          'Pixel units came with api_version = 2. Bundles now declare api_version = 4 (3: weapons by id, never by slot; 4: records as named tables); older ones are refused, and so are the scripts inside replays recorded with them.',
           'Draw depths have names: wa.depth.FRONT, EFFECTS, WORMS, OBJECTS, TERRAIN, BEHIND_TERRAIN. Colours stay 0xRRGGBB.',
           'Deterministic online: simulation callbacks run under fixed float settings, and simulation code uses wa.math for trig.',
           'Tested in game and online between Wine and Windows on 11 Oct 2026 with no desync.'
         ],
-        luaVerbs: ['api_version = 2', 'worm.vx = 0.3', 'wa.depth.FRONT', 'wa.math.sin(r)'],
+        luaVerbs: ['api_version = 4', 'worm.vx = 0.3', 'wa.depth.FRONT', 'wa.math.sin(r)'],
         exampleMod: 'every example pack; see “All verbs” for each verb’s units',
+      },
+      {
+        id: 'public-store-replays',
+        since: '2026-10-17',
+        updated: '2026-10-17T15:00:00Z',
+        release: '0.9.0',
+        category: 'replay',
+        title: 'Small Replays from the Public Store',
+        tagline: 'A replay names the published mod files it used by SHA-256; playback fetches what this machine lacks.',
+        maturity: 'Live-Accepted',
+        details: [
+          'The public store keeps every published mod file once, as downloads/blobs/<aa>/<sha256>, with blobs/hashes.txt listing them and each published version’s file list. It is append-only: a published version never changes, new content needs a new version.',
+          'Recording stores a file the store holds as its hash. Lua and mod.toml are always embedded, and so is anything unpublished. A Highlander round went from 15.6 MB to 324 KB.',
+          'The store’s list comes with Check online, and on its own at WA’s start when it is missing or a day old.',
+          'Playback looks for each hash in WormForge.WFAssets, then the local library (WormForge/Library), then the installed mods, and downloads the rest, every file checked against its hash.',
+          'WA’s loading screen stays up while files come in, with the progress, the source and any retries; Esc cancels and keeps what came in. A replay that can’t be completed ends before its first frame: it never plays without its mods.',
+          'Downloads run on 16 connections, each file tried again after 2 to 30 s when the host is busy or a slow line drops: a whole replay’s 2,749 files in under a minute.',
+          'A round past the first records the ammo each team carried in from the round before, so its replay plays back on its own.'
+        ],
+        luaVerbs: ['WormForge/Library', 'downloads/blobs/hashes.txt', 'wf-replay inspect FILE.WAgame'],
+        exampleMod: 'any round with px.ports',
+      },
+      {
+        id: 'signed-catalogue',
+        since: '2026-10-17',
+        updated: '2026-10-17T15:00:00Z',
+        release: '0.9.0',
+        category: 'tools',
+        title: 'Signed Online Catalogue',
+        tagline: 'The loader uses nothing from a catalogue that a WormForge publisher’s key didn’t sign.',
+        maturity: 'Experimental',
+        details: [
+          'index.toml.sig is an Ed25519 signature of index.toml’s exact bytes. The loader checks it against the public keys built into the DLL before it uses anything from the index, a test catalogue included.',
+          'The index names every mod zip’s SHA-256 and the store list’s, and every store file is named by its own, so one signature vouches for all of it: a hijacked host can’t publish.',
+          'Each publisher signs with their own key: tools/publish-packs.py --new-key makes one and prints its public half for the next DLL. The private half never leaves their machine.',
+          'WormForge/online.toml points the loader at a test catalogue (https only) to try a publish before it reaches the public front; every Check online message names it.',
+          'mods.zip, every mod at once, is no longer published: the loader installs from the per-mod zips.'
+        ],
+        luaVerbs: ['publish-packs.py --new-key', 'index.toml.sig', 'WormForge/online.toml'],
+        exampleMod: 'Check online',
+      },
+      {
+        id: 'scheme-in-profile',
+        since: '2026-10-17',
+        updated: '2026-10-17T15:00:00Z',
+        release: '0.9.0',
+        category: 'tools',
+        title: 'The Whole WA Scheme in a Profile',
+        tagline: 'A profile owns every setting a .wsc has, so a match plays the same whatever scheme the lobby shows.',
+        maturity: 'Live-Accepted',
+        details: [
+          'The profile’s [scheme] holds every game option, the extended 3.8 options included, and [weapon_settings] every WA weapon’s ammo, power, delay and crate share. Anything left out takes WA’s Intermediate value.',
+          'The loader’s .wsc tab lists the options in groups, with search; WA’s lobby scheme editor is untouched.',
+          'Before WA’s session starts the engine hands it the profile’s full version 3 scheme, so WA’s own setup, replay recording and settings read later in the match all see it.',
+          'wsc-to-profile bakes a .wsc into profile settings; no .wsc ships with WormForge.'
+        ],
+        luaVerbs: ['[scheme]', '[weapon_settings."stock.grenade"]', 'wsc-to-profile input.wsc'],
+        exampleMod: 'Kaos League profiles',
+      },
+      {
+        id: 'crate-shares',
+        since: '2026-10-17',
+        updated: '2026-10-17T15:00:00Z',
+        release: '0.9.0',
+        category: 'weapons',
+        title: 'Crate Odds as Percentages',
+        tagline: 'Give a weapon its share of its kind’s crates with any precision; the loader shows what WA’s draw really gives.',
+        maturity: 'Experimental',
+        details: [
+          'crate_pct = 2.5 is the weapon’s share of weapon, super or utility crates. Weapons without one share what is left by their default weights; shares not adding up to 100 are scaled to it.',
+          'Each round the engine turns a kind’s shares into WA’s draw weights, whole numbers adding up to 32,767: the most WA’s draw takes before its signed 32-bit sum overflows. WA samples 16 bits, so the finest step is about 0.003%.',
+          'A weapon WA leaves out of the match (Invisibility offline) stays out; the rest share its part. WA still skips what the receiving team can’t be given.',
+          'The old crate weights and named utility weights still read; the loader turns them into shares when it opens a profile, the odds kept.'
+        ],
+        luaVerbs: ['crate_pct = 2.5', 'crate = { type = "super" }'],
+        exampleMod: 'any profile',
+      },
+      {
+        id: 'stockpiling-every-weapon',
+        since: '2026-10-17',
+        updated: '2026-10-17T15:00:00Z',
+        release: '0.9.0',
+        category: 'weapons',
+        title: 'Stockpiling for Every Weapon',
+        tagline: 'Between rounds, each weapon carries its ammo as its own stockpiling says, weapons past 70 included.',
+        maturity: 'Live-Accepted',
+        details: [
+          'ammo.stockpiling = "off" | "on" | "anti" per weapon, else the scheme’s: off gives the round’s ammo again, on adds it to what was left, anti keeps what was left.',
+          'WA carries only its own 71 weapons; the engine keeps what each team had left of every weapon past 70 at the round’s end and gives it back the same way.',
+          'The ammo a round starts from is frozen with its replay, so a round-2 replay plays back without round 1.',
+          'What each team carries is hidden: public builds don’t write it to the log.'
+        ],
+        luaVerbs: ['ammo = { stockpiling = "anti" }'],
+        exampleMod: 'px.ports, Kaos League',
+      },
+      {
+        id: 'safe-public-builds',
+        since: '2026-10-17',
+        updated: '2026-10-17T15:00:00Z',
+        release: '0.9.0',
+        category: 'tools',
+        title: 'Public Builds That Fail Safe',
+        tagline: 'What a player runs never reads outside its mods, never shows what other teams hold, and never plays a broken round.',
+        maturity: 'Production',
+        details: [
+          'A sprite, sound, panel icon or .wep a script names must be a plain path inside its own mod: no "..", no root, no drive.',
+          'A public build leaves diagnostic-only components out of a profile and runs the rest; the loader names what it left out.',
+          'A round whose mods fail to load runs as plain WA, with a notice, instead of a half-set-up round.',
+          'Ammo carried between rounds and what crates gave whom are diagnostic-build log lines only; the build check refuses a public DLL that carries them.'
+        ],
+        luaVerbs: ['diagnostics = true', 'sprites = { "sprites/x.png" }'],
+        exampleMod: 'any public DLL',
       },
     ];
 

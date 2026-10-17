@@ -6,7 +6,7 @@
 
 <a href="https://ropahektic.github.io/WormForge/capabilities.html">Features</a>
 
-<a href="https://github.com/ropahektic/WormForge/releases">Download</a>
+<a href="https://github.com/EdLud/WormForge/releases">Download</a>
 
 <a href="https://github.com/ropahektic/WormForge-engine">Engine Repo</a> 
 

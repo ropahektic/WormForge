@@ -1,0 +1,78 @@
+# WormForge profile "Funny": made in the mod loader; safe to edit by hand.
+description = "Best of the Best"
+features = ["core.utilities"]
+
+[options."core.utilities"]
+agility = true
+collect_viewer = true
+
+[weapon_settings."stock.ninja_rope"]
+ammo = -1
+
+[weapons."gif.flags"]
+column = 1
+row = "F1"
+
+[weapons."gif.lua"]
+column = 2
+row = "F1"
+
+[weapons."pooz.runner"]
+column = 1
+row = "F3"
+
+[weapons."px.banana_express"]
+column = 5
+row = "F1"
+
+[weapons."px.bowling_ball_strike"]
+column = 4
+row = "F10"
+
+[weapons."px.burst_rifle"]
+column = 4
+row = "F3"
+
+[weapons."px.crate_strike"]
+column = 2
+row = "F7"
+
+[weapons."px.helicopter"]
+column = 1
+row = "utility"
+
+[weapons."px.ice_arrow"]
+column = 5
+row = "F11"
+
+[weapons."px.kamikaze_rocket"]
+column = 4
+row = "F4"
+
+[weapons."px.portal_gun"]
+column = 1
+row = "F7"
+
+[weapons."px.sentry_gun"]
+column = 4
+row = "F1"
+
+[weapons."px.skip_go_surrender"]
+column = 2
+row = "F12"
+
+[weapons."px.swim_suit"]
+column = 1
+row = "F2"
+
+[weapons."stock.ninja_rope"]
+column = 3
+row = "F7"
+
+[weapons."stock.surrender"]
+column = 1
+row = "F12"
+
+[weapons."wormcraft.wormcraft"]
+column = 3
+row = "F1"

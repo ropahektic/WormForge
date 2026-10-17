@@ -1,0 +1,255 @@
+# Project X's Highlander (Highlander 0rang3 1.1): every PX weapon where PX's
+# layout puts it, dealt by the Highlander rules. Each PX weapon's pool is its
+# own suggestion (px/mod.toml); WA's Dynamite, Flame Thrower and Mine Strike
+# stand in for PX's.
+description = "Project X's Highlander: each worm is dealt one weapon from each of three pools, may use each once a turn, and takes everything a worm it kills carried."
+features = ["hl.rules"]
+
+[weapons]
+"px.double_bazooka" = { row = "F1", column = 1 }
+"px.igniter" = { row = "F1", column = 2 }
+"px.s_m_a_r_t_bomb" = { row = "F1", column = 3 }
+"px.blaster_worm" = { row = "F1", column = 4 }
+"px.burning_sheep_launcher" = { row = "F1", column = 5 }
+"px.sticky_bomb" = { row = "F2", column = 1 }
+"px.windy_cluster" = { row = "F2", column = 2 }
+"px.super_gravedigger" = { row = "F2", column = 3 }
+"px.thumper_nade" = { row = "F2", column = 4 }
+"px.electric_grenade" = { row = "F2", column = 5 }
+"px.real_shotgun" = { row = "F3", column = 1 }
+"px.sniper_rifle" = { row = "F3", column = 2 }
+"px.laser_gun" = { row = "F3", column = 3 }
+"px.burst_rifle" = { row = "F3", column = 4 }
+"px.shadow_bolt" = { row = "F3", column = 5 }
+"px.fire_jump" = { row = "F4", column = 1 }
+"px.sentry_laser" = { row = "F4", column = 2 }
+"px.sentry_gun" = { row = "F4", column = 3 }
+"px.kamikaze_rocket" = { row = "F4", column = 4 }
+"px.javelin" = { row = "F4", column = 5 }
+"stock.dynamite" = { row = "F5", column = 1 }
+"px.nuke_rocket" = { row = "F5", column = 2 }
+"px.pogo_sheep" = { row = "F5", column = 3 }
+"stock.super_sheep" = { row = "F5", column = 4 }
+"px.ghost_sheep" = { row = "F5", column = 5 }
+"px.gravler" = { row = "F5", column = 6 }
+"px.mortar_strike" = { row = "F6", column = 1 }
+"px.lightning_strike" = { row = "F6", column = 2 }
+"px.pigeon_strike" = { row = "F6", column = 3 }
+"stock.mine_strike" = { row = "F6", column = 4 }
+"px.gravler_strike" = { row = "F6", column = 5 }
+"px.blowtorch" = { row = "F7", column = 1 }
+"px.super_drill" = { row = "F7", column = 2 }
+"stock.baseball_bat" = { row = "F7", column = 3 }
+"px.electromagnet" = { row = "F7", column = 4 }
+"px.3_girder_pack" = { row = "F7", column = 5 }
+"px.jump" = { row = "F8", column = 1 }
+"px.hot_air_balloon" = { row = "F8", column = 2 }
+"px.hang_glider" = { row = "F8", column = 3 }
+"px.super_tele" = { row = "F8", column = 4 }
+"px.portal_gun" = { row = "F8", column = 5 }
+"px.chilli_bomb" = { row = "F9", column = 1 }
+"px.hellish_hand_grenade" = { row = "F9", column = 2 }
+"stock.flame_thrower" = { row = "F9", column = 3 }
+"px.ferret" = { row = "F9", column = 4 }
+"px.banana_express" = { row = "F9", column = 5 }
+"px.valyrian_fire" = { row = "F10", column = 1 }
+"px.remote_roller" = { row = "F10", column = 2 }
+"px.priceless_ming_vase" = { row = "F10", column = 3 }
+"px.bowling_ball_strike" = { row = "F10", column = 4 }
+"px.thumper_nade_strike" = { row = "F10", column = 5 }
+"px.cow_launcher" = { row = "F11", column = 1 }
+"px.old_woman_launcher" = { row = "F11", column = 2 }
+"px.crate_strike" = { row = "F11", column = 3 }
+"px.reinforcement" = { row = "F11", column = 4 }
+"px.ice_arrow" = { row = "F11", column = 5 }
+"px.skip_go_surrender" = { row = "F12", column = 1 }
+"px.wind_changer" = { row = "F12", column = 2 }
+"stock.select_worm" = { row = "F12", column = 3 }
+"px.weapon_crate" = { row = "F12", column = 4 }
+"px.cluster_bomb" = { row = "F12", column = 5 }
+"px.helicopter" = { row = "utility", column = 1 }
+"px.gravity_control" = { row = "utility", column = 2 }
+"stock.fast_walk" = { row = "utility", column = 3 }
+"px.swim_suit" = { row = "utility", column = 4 }
+"stock.teleport" = { row = "utility", column = 5 }
+"px.skunk" = { row = "utility", column = 6 }
+"stock.crate_spy" = { row = "utility", column = 7 }
+"px.mole_bomb" = { row = "utility", column = 8 }
+"stock.crate_shower" = { row = "utility", column = 9 }
+
+[weapon_options."hl.rules"."stock.mine_strike"]
+pool = "offensive"
+cavern = false
+
+[weapon_options."hl.rules"."stock.flame_thrower"]
+pool = "second"
+
+[weapon_options."hl.rules"."stock.baseball_bat"]
+pool = "second"
+
+[weapon_options."hl.rules"."stock.dynamite"]
+pool = "offensive"
+
+# PX's GiveWeapons: the Hot Air Balloons refilled to 3 and the Wind Changer
+# to 1 each turn; each team gets one Weapon Crate a round.
+[weapon_settings."px.hot_air_balloon"]
+ammo = 3
+each_turn = { amount = 3, mode = "replace" }
+
+[weapon_settings."px.wind_changer"]
+ammo = 1
+each_turn = { amount = 1, mode = "replace" }
+after_use = "continue"
+
+[weapon_settings."px.weapon_crate"]
+ammo = 1
+after_use = "continue"
+
+# Highlander lets a worm fire its whole hand in one turn: these weapons
+# don't end it, as in PX.
+
+[weapon_settings."px.3_girder_pack"]
+after_use = "continue"
+
+[weapon_settings."px.banana_express"]
+after_use = "continue"
+
+[weapon_settings."stock.baseball_bat"]
+after_use = "continue"
+
+[weapon_settings."px.blaster_worm"]
+after_use = "continue"
+
+[weapon_settings."px.blowtorch"]
+after_use = "continue"
+
+[weapon_settings."px.bowling_ball_strike"]
+after_use = "continue"
+
+[weapon_settings."px.burning_sheep_launcher"]
+after_use = "continue"
+
+[weapon_settings."px.burst_rifle"]
+after_use = "continue"
+
+[weapon_settings."px.chilli_bomb"]
+after_use = "continue"
+
+[weapon_settings."px.cow_launcher"]
+after_use = "continue"
+
+[weapon_settings."px.crate_strike"]
+after_use = "continue"
+
+[weapon_settings."px.double_bazooka"]
+after_use = "continue"
+
+[weapon_settings."px.electric_grenade"]
+after_use = "continue"
+
+[weapon_settings."px.electromagnet"]
+after_use = "continue"
+
+[weapon_settings."px.ferret"]
+after_use = "continue"
+
+[weapon_settings."px.fire_jump"]
+after_use = "continue"
+
+[weapon_settings."px.ghost_sheep"]
+after_use = "continue"
+
+[weapon_settings."px.gravler"]
+after_use = "continue"
+
+[weapon_settings."px.gravler_strike"]
+after_use = "continue"
+
+[weapon_settings."px.hellish_hand_grenade"]
+after_use = "continue"
+
+[weapon_settings."px.ice_arrow"]
+after_use = "continue"
+
+[weapon_settings."px.igniter"]
+after_use = "continue"
+
+[weapon_settings."px.javelin"]
+after_use = "continue"
+
+[weapon_settings."px.kamikaze_rocket"]
+after_use = "continue"
+
+[weapon_settings."px.laser_gun"]
+after_use = "continue"
+
+[weapon_settings."px.lightning_strike"]
+after_use = "continue"
+
+[weapon_settings."px.mortar_strike"]
+after_use = "continue"
+
+[weapon_settings."px.nuke_rocket"]
+after_use = "continue"
+
+[weapon_settings."px.old_woman_launcher"]
+after_use = "continue"
+
+[weapon_settings."px.pigeon_strike"]
+after_use = "continue"
+
+[weapon_settings."px.pogo_sheep"]
+after_use = "continue"
+
+[weapon_settings."px.priceless_ming_vase"]
+after_use = "continue"
+
+[weapon_settings."px.real_shotgun"]
+after_use = "continue"
+
+[weapon_settings."px.reinforcement"]
+after_use = "continue"
+
+[weapon_settings."px.remote_roller"]
+after_use = "continue"
+
+[weapon_settings."px.s_m_a_r_t_bomb"]
+after_use = "continue"
+
+[weapon_settings."px.shadow_bolt"]
+after_use = "continue"
+
+[weapon_settings."px.sniper_rifle"]
+after_use = "continue"
+
+[weapon_settings."px.sticky_bomb"]
+after_use = "continue"
+
+[weapon_settings."px.super_drill"]
+after_use = "continue"
+
+[weapon_settings."px.super_gravedigger"]
+after_use = "continue"
+
+[weapon_settings."px.super_tele"]
+after_use = "continue"
+
+[weapon_settings."px.thumper_nade"]
+after_use = "continue"
+
+[weapon_settings."px.thumper_nade_strike"]
+after_use = "continue"
+
+[weapon_settings."px.valyrian_fire"]
+after_use = "continue"
+
+[weapon_settings."px.windy_cluster"]
+after_use = "continue"
+
+[weapon_settings."stock.dynamite"]
+after_use = "continue"
+
+# PX had the Teleport on a utility slot, so it came in utility crates; WA's
+# own Teleport comes in weapon crates wherever it is placed.
+[weapon_settings."stock.teleport"]
+crate_type = "utility"

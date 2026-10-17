@@ -1,0 +1,15 @@
+# WormCraft: a full-screen cut-in, a courier, and WormCraft spelled out.
+id = "example.wormcraft"
+version = "0.2.0"
+author = "wkLua"
+api_version = 4
+format_version = 2
+[[components]]
+
+id = "wormcraft.wormcraft"
+type = "weapon"
+name = "WormCraft"
+description = "Aimed as WA's Cluster Bomb; the shot brings a full-screen cut-in, a courier, then WormCraft spelled letter by letter."
+entry = "weapons.lua"
+icon = "sprites/icon.png"
+default_position = { row = "F2", column = 2 }

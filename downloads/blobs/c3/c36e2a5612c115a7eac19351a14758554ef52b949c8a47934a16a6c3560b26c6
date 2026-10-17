@@ -1,0 +1,38 @@
+# A component bundle (format_version 2): nothing runs until a profile selects
+# its components. profiles/ holds two to load in the mod loader. See README.md.
+id = "example.components"
+version = "0.1.0"
+author = "wkLua"
+api_version = 4
+format_version = 2
+[[components]]
+
+id = "demo.big_bazooka"
+type = "weapon"
+name = "Big Bazooka"
+entry = "weapons/big_bazooka.lua"
+icon = "bazooka"
+default_position = { row = "F1", column = 1 }
+
+# Not in the preset: add it from the Profile tab's search. Any weapon may go
+# at any position; this is where it goes when added without one.
+[[components]]
+
+id = "demo.big_mortar"
+type = "weapon"
+name = "Big Mortar"
+entry = "weapons/big_mortar.lua"
+icon = "mortar"
+default_position = { row = "F1", column = 3 }
+[[components]]
+
+id = "demo.turn_note"
+type = "feature"
+name = "Turn note"
+entry = "features/turn_note.lua"
+
+[[components.options]]
+key = "show"
+type = "bool"
+default = true
+label = "Show a HUD line"
